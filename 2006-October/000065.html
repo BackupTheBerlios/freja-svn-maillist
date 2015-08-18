@@ -1,0 +1,95 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Freja-svn] r68 - trunk/examples/contacts/views
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/freja-svn/2006-October/index.html" >
+   <LINK REL="made" HREF="mailto:freja-svn%40lists.berlios.de?Subject=Re%3A%20%5BFreja-svn%5D%20r68%20-%20trunk/examples/contacts/views&In-Reply-To=%3C200610202126.k9KLQ7Et024302%40sheep.berlios.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   
+   
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Freja-svn] r68 - trunk/examples/contacts/views</H1>
+    <B>cedsav at mail.berlios.de</B> 
+    <A HREF="mailto:freja-svn%40lists.berlios.de?Subject=Re%3A%20%5BFreja-svn%5D%20r68%20-%20trunk/examples/contacts/views&In-Reply-To=%3C200610202126.k9KLQ7Et024302%40sheep.berlios.de%3E"
+       TITLE="[Freja-svn] r68 - trunk/examples/contacts/views">cedsav at mail.berlios.de
+       </A><BR>
+    <I>Fri Oct 20 23:26:07 CEST 2006</I>
+    <P><UL>
+        
+        
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#65">[ date ]</a>
+              <a href="thread.html#65">[ thread ]</a>
+              <a href="subject.html#65">[ subject ]</a>
+              <a href="author.html#65">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Author: cedsav
+Date: 2006-10-20 23:26:04 +0200 (Fri, 20 Oct 2006)
+New Revision: 68
+
+Modified:
+   trunk/examples/contacts/views/create.xsl
+   trunk/examples/contacts/views/index.xsl
+Log:
+Fixed contact example. Thx to Sias Mey
+
+Modified: trunk/examples/contacts/views/create.xsl
+===================================================================
+--- trunk/examples/contacts/views/create.xsl	2006-08-10 20:30:50 UTC (rev 67)
++++ trunk/examples/contacts/views/create.xsl	2006-10-20 21:26:04 UTC (rev 68)
+@@ -3,7 +3,7 @@
+ 	xmlns:xsl=&quot;<A HREF="http://www.w3.org/1999/XSL/Transform">http://www.w3.org/1999/XSL/Transform</A>&quot;&gt;
+ 
+ &lt;xsl:template match=&quot;/&quot;&gt;
+-	&lt;form method=&quot;post&quot; action=&quot;#&quot; freja-behaviour=&quot;form&quot;&gt;
++	&lt;form method=&quot;post&quot; action=&quot;#&quot; class=&quot;form&quot;&gt;
+ 		&lt;p&gt;email:&lt;input name=&quot;email&quot; type=&quot;text&quot; value=&quot;&quot; /&gt;&lt;/p&gt;
+ 		&lt;p&gt;first_name:&lt;input name=&quot;first_name&quot; type=&quot;text&quot; value=&quot;&quot; /&gt;&lt;/p&gt;
+ 		&lt;p&gt;surname:&lt;input name=&quot;surname&quot; type=&quot;text&quot; value=&quot;&quot; /&gt;&lt;/p&gt;
+
+Modified: trunk/examples/contacts/views/index.xsl
+===================================================================
+--- trunk/examples/contacts/views/index.xsl	2006-08-10 20:30:50 UTC (rev 67)
++++ trunk/examples/contacts/views/index.xsl	2006-10-20 21:26:04 UTC (rev 68)
+@@ -18,7 +18,7 @@
+ 	&lt;/tr&gt;
+ &lt;/xsl:for-each&gt; 
+ 	&lt;tr&gt;
+-		&lt;td align=&quot;right&quot; colspan=&quot;2&quot;&gt;&lt;input type=&quot;button&quot; value=&quot;create&quot; freja-behaviour=&quot;create&quot; /&gt;&lt;/td&gt;
++		&lt;td align=&quot;right&quot; colspan=&quot;2&quot;&gt;&lt;input type=&quot;button&quot; value=&quot;create&quot; class=&quot;create&quot; /&gt;&lt;/td&gt;
+ 	&lt;/tr&gt;
+ &lt;/table&gt;
+ &lt;/xsl:template&gt;
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	
+	
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#65">[ date ]</a>
+              <a href="thread.html#65">[ thread ]</a>
+              <a href="subject.html#65">[ subject ]</a>
+              <a href="author.html#65">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/freja-svn">More information about the Freja-svn
+mailing list</a><br>
+</body></html>

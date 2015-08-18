@@ -1,0 +1,344 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Freja-svn] r83 - in branch/2.0.1/examples/basecamp_api: . css views
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/freja-svn/2007-March/index.html" >
+   <LINK REL="made" HREF="mailto:freja-svn%40lists.berlios.de?Subject=Re%3A%20%5BFreja-svn%5D%20r83%20-%20in%20branch/2.0.1/examples/basecamp_api%3A%20.%20css%20views&In-Reply-To=%3C200703192239.l2JMdioi026661%40sheep.berlios.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000080.html">
+   <LINK REL="Next"  HREF="000082.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Freja-svn] r83 - in branch/2.0.1/examples/basecamp_api: . css views</H1>
+    <B>cedsav at mail.berlios.de</B> 
+    <A HREF="mailto:freja-svn%40lists.berlios.de?Subject=Re%3A%20%5BFreja-svn%5D%20r83%20-%20in%20branch/2.0.1/examples/basecamp_api%3A%20.%20css%20views&In-Reply-To=%3C200703192239.l2JMdioi026661%40sheep.berlios.de%3E"
+       TITLE="[Freja-svn] r83 - in branch/2.0.1/examples/basecamp_api: . css views">cedsav at mail.berlios.de
+       </A><BR>
+    <I>Mon Mar 19 23:39:44 CET 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000080.html">[Freja-svn] r82 - in branch/2.0.1: .	examples/contacts/models/php_inc lib src src/auxiliary tests
+</A></li>
+        <LI>Next message: <A HREF="000082.html">[Freja-svn] r84 - branch/2.0.1/examples/contacts/views
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#81">[ date ]</a>
+              <a href="thread.html#81">[ thread ]</a>
+              <a href="subject.html#81">[ subject ]</a>
+              <a href="author.html#81">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Author: cedsav
+Date: 2007-03-19 23:39:29 +0100 (Mon, 19 Mar 2007)
+New Revision: 83
+
+Modified:
+   branch/2.0.1/examples/basecamp_api/basecamp.js
+   branch/2.0.1/examples/basecamp_api/css/main.css
+   branch/2.0.1/examples/basecamp_api/index.html
+   branch/2.0.1/examples/basecamp_api/views/category_list.xsl
+   branch/2.0.1/examples/basecamp_api/views/comment.xsl
+   branch/2.0.1/examples/basecamp_api/views/message.xsl
+   branch/2.0.1/examples/basecamp_api/views/message_list.xsl
+   branch/2.0.1/examples/basecamp_api/views/milestone_list.xsl
+   branch/2.0.1/examples/basecamp_api/views/project.xsl
+   branch/2.0.1/examples/basecamp_api/views/project_selector.xsl
+   branch/2.0.1/examples/basecamp_api/views/projects.xsl
+   branch/2.0.1/examples/basecamp_api/views/todo_list.xsl
+Log:
+Made the example compatible with 2.0.1.
+
+Modified: branch/2.0.1/examples/basecamp_api/basecamp.js
+===================================================================
+--- branch/2.0.1/examples/basecamp_api/basecamp.js	2007-03-19 22:07:30 UTC (rev 82)
++++ branch/2.0.1/examples/basecamp_api/basecamp.js	2007-03-19 22:39:29 UTC (rev 83)
+@@ -6,6 +6,7 @@
+ 	
+ 	// Constants
+ 	var BASECAMP_URL = &quot;<A HREF="http://freja.projectpath.com">http://freja.projectpath.com</A>&quot;;	
++	Freja.AssetManager.HTTP_METHOD_TUNNEL = null;
+ 
+ 	// 3rd party libraries.
+ 	var helpers = new wHELPERS();	// misc. javascript functions
+@@ -42,11 +43,19 @@
+ 			currentProjectId = projects.get(&quot;//project[status='active']/id&quot;);				
+ 		else 
+ 			currentProjectId = projectId;
+-			
+-		todos      = getModel(&quot;models/todos.xml&quot;); 		// Snapshot. Live data: getModel(addProxyToUrl(&quot;/projects/&quot;+currentProjectId+&quot;/todos/lists&quot;));									
+-		messages   = getModel(&quot;models/posts.xml&quot;);  // getModel(addProxyToUrl(&quot;/projects/&quot;+currentProjectId+&quot;/msg/archive&quot;));	 // 		// Snapshot.
+-		milestones = getModel(&quot;models/milestones.xml&quot;); // Snapshot. Live data: getModel(addProxyToUrl(&quot;/projects/&quot;+currentProjectId+&quot;/milestones/list&quot;));
+-		categories = getModel(&quot;models/categories.xml&quot;); // Snapshot. Live data: getModel(addProxyToUrl(&quot;/projects/&quot;+currentProjectId+&quot;/post_categories&quot;));
++
++		// snapshots (used for development only)	
++	//	todos      = getModel(&quot;models/todos.xml&quot;); 		
++	//	messages   = getModel(&quot;models/posts.xml&quot;);  
++	//	milestones = getModel(&quot;models/milestones.xml&quot;);
++	//	categories = getModel(&quot;models/categories.xml&quot;);
++
++		// Live data
++		todos      = getModel(addProxyToUrl(&quot;/projects/&quot;+currentProjectId+&quot;/todos/lists&quot;));									
++		messages   = getModel(addProxyToUrl(&quot;/projects/&quot;+currentProjectId+&quot;/msg/archive&quot;));	 // 		
++		milestones = getModel(addProxyToUrl(&quot;/projects/&quot;+currentProjectId+&quot;/milestones/list&quot;));
++		categories = getModel(addProxyToUrl(&quot;/projects/&quot;+currentProjectId+&quot;/post_categories&quot;));
++		
+ 		requestTemplate = getModel(&quot;models/new_request.xml&quot;);   // xml wrapper for posted data
+ 		messageTemplate = getModel(&quot;models/new_post.xml&quot;);      // skeleton for new data
+ 		commentTemplate = getModel(&quot;models/new_comment.xml&quot;);   // skeleton for new data
+
+Modified: branch/2.0.1/examples/basecamp_api/css/main.css
+===================================================================
+--- branch/2.0.1/examples/basecamp_api/css/main.css	2007-03-19 22:07:30 UTC (rev 82)
++++ branch/2.0.1/examples/basecamp_api/css/main.css	2007-03-19 22:39:29 UTC (rev 83)
+@@ -19,6 +19,11 @@
+ 	padding: 5px 15px;
+ 	font-size: medium;
+ }
++h4 {
++	margin: 0;
++	font-size: small;
++	padding: 5px;
++}
+ form {
+ 	padding: 5px 15px;
+ }
+@@ -57,11 +62,14 @@
+ }
+ .frame .frameContent {
+ 	background-image: url(../images/frame-bg.png);
+-	background-repeat: no-repeat;
++	background-repeat: repeat-y;
+ }
+ .frame .top {
+ 	background-image: url(../images/frame-top-bg.png);
+ 	background-repeat: no-repeat;
++	font-size: small;
++	text-transform: uppercase;
++	padding: 2px 6px;
+ }
+ .frame .bottom {
+ 	background-image: url(../images/frame-bottom-bg.png);
+@@ -94,9 +102,9 @@
+ }
+ 
+ /* ------------------------------------------------------------------ */
+-.messageList ul {
++ul {
+ 	margin: 0;
+-	padding: 0;
++	padding: 5px;
+ }
+ .messageList ul li {
+ 	list-style-type: none;
+
+Modified: branch/2.0.1/examples/basecamp_api/index.html
+===================================================================
+--- branch/2.0.1/examples/basecamp_api/index.html	2007-03-19 22:07:30 UTC (rev 82)
++++ branch/2.0.1/examples/basecamp_api/index.html	2007-03-19 22:39:29 UTC (rev 83)
+@@ -10,7 +10,7 @@
+ &lt;script type=&quot;text/javascript&quot; src=&quot;lib/helpers.js&quot;&gt;&lt;/script&gt;
+ 
+ &lt;!-- Freja Framework Script --&gt;
+-&lt;script type=&quot;text/javascript&quot; src=&quot;../lib/Freja.js&quot;&gt;&lt;/script&gt;
++&lt;script type=&quot;text/javascript&quot; src=&quot;../../lib/Freja.js&quot;&gt;&lt;/script&gt;
+ 
+ &lt;!-- Controller Code --&gt;
+ &lt;script type=&quot;text/javascript&quot; src=&quot;basecamp.js&quot;&gt;&lt;/script&gt;
+@@ -25,6 +25,7 @@
+ 		&lt;/div&gt;
+ 		&lt;div id=&quot;content&quot;&gt;			
+ 
++
+ 			&lt;div class=&quot;frame&quot;&gt;
+ 				&lt;div class=&quot;top&quot;&gt;TO-DOS&lt;/div&gt;
+ 				&lt;div id=&quot;placeholder_todos&quot; class=&quot;frameContent&quot;&gt;&lt;/div&gt;
+@@ -36,6 +37,11 @@
+ 				&lt;div id=&quot;placeholder_milestones&quot; class=&quot;frameContent&quot;&gt;&lt;/div&gt;
+ 				&lt;div class=&quot;bottom&quot;&gt;&nbsp;&lt;/div&gt;
+ 			&lt;/div&gt;
++			&lt;div class=&quot;frame&quot;&gt;
++				&lt;div class=&quot;top&quot;&gt;Misc.&lt;/div&gt;
++				&lt;div id=&quot;placeholder_categories&quot; class=&quot;frameContent&quot;&gt;&lt;/div&gt;
++				&lt;div class=&quot;bottom&quot;&gt;&nbsp;&lt;/div&gt;
++			&lt;/div&gt;
+ 
+ 			
+ 			&lt;div class=&quot;messages&quot;&gt;
+@@ -43,14 +49,6 @@
+ 				&lt;div id=&quot;placeholder_messages&quot; class=&quot;frameContent&quot;&gt;&lt;/div&gt;
+ 				&lt;div class=&quot;bottom&quot;&gt;&lt;img src=&quot;images/messages-footer.png&quot; alt=&quot;*&quot; /&gt;&lt;/div&gt;
+ 			&lt;/div&gt;
+-			
+-			&lt;div class=&quot;frame&quot;&gt;
+-				&lt;div class=&quot;top&quot;&gt;Misc.&lt;/div&gt;
+-				&lt;div id=&quot;placeholder_categories&quot; class=&quot;frameContent&quot;&gt;&lt;/div&gt;
+-				&lt;div class=&quot;bottom&quot;&gt;&nbsp;&lt;/div&gt;
+-			&lt;/div&gt;
+-			
+-			
+ 			&lt;div id=&quot;placeholder_debug&quot;&gt;&lt;/div&gt;
+ 			&lt;div id=&quot;placeholder_debug2&quot;&gt;&lt;/div&gt;
+ 		&lt;/div&gt;
+
+Modified: branch/2.0.1/examples/basecamp_api/views/category_list.xsl
+===================================================================
+--- branch/2.0.1/examples/basecamp_api/views/category_list.xsl	2007-03-19 22:07:30 UTC (rev 82)
++++ branch/2.0.1/examples/basecamp_api/views/category_list.xsl	2007-03-19 22:39:29 UTC (rev 83)
+@@ -1,9 +1,9 @@
+ &lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+ &lt;xsl:stylesheet version=&quot;1.0&quot;
+ 	xmlns:xsl=&quot;<A HREF="http://www.w3.org/1999/XSL/Transform">http://www.w3.org/1999/XSL/Transform</A>&quot;&gt;
+-
++&lt;xsl:output method=&quot;html&quot; indent=&quot;yes&quot; encoding=&quot;UTF-8&quot;/&gt;
+ &lt;xsl:template match=&quot;/post-categories&quot;&gt;	
+-	&lt;h3&gt;Message Categories&lt;/h3&gt;
++	&lt;h4&gt;Message Categories&lt;/h4&gt;
+ 	&lt;ul&gt;
+ 		&lt;xsl:apply-templates /&gt;
+ 	&lt;/ul&gt;
+
+Modified: branch/2.0.1/examples/basecamp_api/views/comment.xsl
+===================================================================
+--- branch/2.0.1/examples/basecamp_api/views/comment.xsl	2007-03-19 22:07:30 UTC (rev 82)
++++ branch/2.0.1/examples/basecamp_api/views/comment.xsl	2007-03-19 22:39:29 UTC (rev 83)
+@@ -1,8 +1,10 @@
+ &lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+ &lt;xsl:stylesheet version=&quot;1.0&quot;
+ 	xmlns:xsl=&quot;<A HREF="http://www.w3.org/1999/XSL/Transform">http://www.w3.org/1999/XSL/Transform</A>&quot;&gt;
++&lt;xsl:output method=&quot;html&quot; indent=&quot;yes&quot; encoding=&quot;UTF-8&quot;/&gt;
+ &lt;xsl:param name=&quot;commentId&quot; &gt;&lt;/xsl:param&gt;
+ &lt;xsl:param name=&quot;title&quot; &gt;Edit Comment&lt;/xsl:param&gt;
++
+ &lt;xsl:template match=&quot;/&quot;&gt;
+ 	&lt;xsl:apply-templates select=&quot;//comment[id=$commentId]&quot; /&gt;
+ &lt;/xsl:template&gt;
+
+Modified: branch/2.0.1/examples/basecamp_api/views/message.xsl
+===================================================================
+--- branch/2.0.1/examples/basecamp_api/views/message.xsl	2007-03-19 22:07:30 UTC (rev 82)
++++ branch/2.0.1/examples/basecamp_api/views/message.xsl	2007-03-19 22:39:29 UTC (rev 83)
+@@ -1,6 +1,8 @@
+ &lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+ &lt;xsl:stylesheet version=&quot;1.0&quot;
+ 	xmlns:xsl=&quot;<A HREF="http://www.w3.org/1999/XSL/Transform">http://www.w3.org/1999/XSL/Transform</A>&quot;&gt;
++&lt;xsl:output method=&quot;html&quot; indent=&quot;yes&quot; encoding=&quot;UTF-8&quot;/&gt;
++
+ &lt;xsl:param name=&quot;messageId&quot; &gt;&lt;/xsl:param&gt;
+ &lt;xsl:param name=&quot;title&quot; &gt;Edit Message&lt;/xsl:param&gt;
+ &lt;xsl:template match=&quot;posts&quot;&gt;
+
+Modified: branch/2.0.1/examples/basecamp_api/views/message_list.xsl
+===================================================================
+--- branch/2.0.1/examples/basecamp_api/views/message_list.xsl	2007-03-19 22:07:30 UTC (rev 82)
++++ branch/2.0.1/examples/basecamp_api/views/message_list.xsl	2007-03-19 22:39:29 UTC (rev 83)
+@@ -1,6 +1,6 @@
+ &lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+ &lt;xsl:stylesheet version=&quot;1.0&quot; xmlns:xsl=&quot;<A HREF="http://www.w3.org/1999/XSL/Transform">http://www.w3.org/1999/XSL/Transform</A>&quot;&gt;
+-&lt;xsl:output method=&quot;xml&quot; indent=&quot;yes&quot; encoding=&quot;UTF-8&quot;/&gt;
++&lt;xsl:output method=&quot;html&quot; indent=&quot;yes&quot; encoding=&quot;UTF-8&quot;/&gt;
+ 
+ &lt;!-- ====================================================================================  
+   MESSAGE LIST (POSTS+COMMENTS)  
+
+Modified: branch/2.0.1/examples/basecamp_api/views/milestone_list.xsl
+===================================================================
+--- branch/2.0.1/examples/basecamp_api/views/milestone_list.xsl	2007-03-19 22:07:30 UTC (rev 82)
++++ branch/2.0.1/examples/basecamp_api/views/milestone_list.xsl	2007-03-19 22:39:29 UTC (rev 83)
+@@ -1,9 +1,9 @@
+ &lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+ &lt;xsl:stylesheet version=&quot;1.0&quot;
+ 	xmlns:xsl=&quot;<A HREF="http://www.w3.org/1999/XSL/Transform">http://www.w3.org/1999/XSL/Transform</A>&quot;&gt;
++&lt;xsl:output method=&quot;html&quot; indent=&quot;yes&quot; encoding=&quot;UTF-8&quot;/&gt;
+ 
+ &lt;xsl:template match=&quot;/milestones&quot;&gt;	
+-	&lt;h3&gt;Milestones&lt;/h3&gt;
+ 	&lt;ul&gt;
+ 		&lt;xsl:apply-templates /&gt;
+ 	&lt;/ul&gt;
+
+Modified: branch/2.0.1/examples/basecamp_api/views/project.xsl
+===================================================================
+--- branch/2.0.1/examples/basecamp_api/views/project.xsl	2007-03-19 22:07:30 UTC (rev 82)
++++ branch/2.0.1/examples/basecamp_api/views/project.xsl	2007-03-19 22:39:29 UTC (rev 83)
+@@ -1,6 +1,7 @@
+ &lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+ &lt;xsl:stylesheet version=&quot;1.0&quot;
+ 	xmlns:xsl=&quot;<A HREF="http://www.w3.org/1999/XSL/Transform">http://www.w3.org/1999/XSL/Transform</A>&quot;&gt;
++&lt;xsl:output method=&quot;html&quot; indent=&quot;yes&quot; encoding=&quot;UTF-8&quot;/&gt;
+ 
+ &lt;xsl:template match=&quot;projects&quot;&gt;	
+ 	&lt;xsl:apply-templates /&gt;
+
+Modified: branch/2.0.1/examples/basecamp_api/views/project_selector.xsl
+===================================================================
+--- branch/2.0.1/examples/basecamp_api/views/project_selector.xsl	2007-03-19 22:07:30 UTC (rev 82)
++++ branch/2.0.1/examples/basecamp_api/views/project_selector.xsl	2007-03-19 22:39:29 UTC (rev 83)
+@@ -1,6 +1,7 @@
+ &lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+ &lt;xsl:stylesheet version=&quot;1.0&quot;
+ 	xmlns:xsl=&quot;<A HREF="http://www.w3.org/1999/XSL/Transform">http://www.w3.org/1999/XSL/Transform</A>&quot;&gt;
++&lt;xsl:output method=&quot;html&quot; indent=&quot;yes&quot; encoding=&quot;UTF-8&quot;/&gt;
+ 
+ &lt;xsl:template match=&quot;projects&quot;&gt;	
+ 	&lt;label for=&quot;currentProjectSelector&quot; class=&quot;preField&quot; &gt;Current Project: &lt;/label&gt;
+
+Modified: branch/2.0.1/examples/basecamp_api/views/projects.xsl
+===================================================================
+--- branch/2.0.1/examples/basecamp_api/views/projects.xsl	2007-03-19 22:07:30 UTC (rev 82)
++++ branch/2.0.1/examples/basecamp_api/views/projects.xsl	2007-03-19 22:39:29 UTC (rev 83)
+@@ -1,6 +1,7 @@
+ &lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+ &lt;xsl:stylesheet version=&quot;1.0&quot;
+ 	xmlns:xsl=&quot;<A HREF="http://www.w3.org/1999/XSL/Transform">http://www.w3.org/1999/XSL/Transform</A>&quot;&gt;
++&lt;xsl:output method=&quot;html&quot; indent=&quot;yes&quot; encoding=&quot;UTF-8&quot;/&gt;
+ 
+ &lt;xsl:template match=&quot;projects&quot;&gt;	
+ 	&lt;xsl:apply-templates /&gt;
+
+Modified: branch/2.0.1/examples/basecamp_api/views/todo_list.xsl
+===================================================================
+--- branch/2.0.1/examples/basecamp_api/views/todo_list.xsl	2007-03-19 22:07:30 UTC (rev 82)
++++ branch/2.0.1/examples/basecamp_api/views/todo_list.xsl	2007-03-19 22:39:29 UTC (rev 83)
+@@ -1,9 +1,9 @@
+ &lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+ &lt;xsl:stylesheet version=&quot;1.0&quot;
+ 	xmlns:xsl=&quot;<A HREF="http://www.w3.org/1999/XSL/Transform">http://www.w3.org/1999/XSL/Transform</A>&quot;&gt;
++&lt;xsl:output method=&quot;html&quot; indent=&quot;yes&quot; encoding=&quot;UTF-8&quot;/&gt;
+ 
+ &lt;xsl:template match=&quot;/todo-lists&quot;&gt;	
+-	&lt;h3&gt;To-do lists&lt;/h3&gt;
+ 	&lt;ul&gt;
+ 		&lt;xsl:apply-templates /&gt;
+ 	&lt;/ul&gt;
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000080.html">[Freja-svn] r82 - in branch/2.0.1: .	examples/contacts/models/php_inc lib src src/auxiliary tests
+</A></li>
+	<LI>Next message: <A HREF="000082.html">[Freja-svn] r84 - branch/2.0.1/examples/contacts/views
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#81">[ date ]</a>
+              <a href="thread.html#81">[ thread ]</a>
+              <a href="subject.html#81">[ subject ]</a>
+              <a href="author.html#81">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/freja-svn">More information about the Freja-svn
+mailing list</a><br>
+</body></html>

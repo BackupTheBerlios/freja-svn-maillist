@@ -1,0 +1,238 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Freja-svn] r61 - trunk/src
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/freja-svn/2006-April/index.html" >
+   <LINK REL="made" HREF="mailto:freja-svn%40lists.berlios.de?Subject=Re%3A%20%5BFreja-svn%5D%20r61%20-%20trunk/src&In-Reply-To=%3C200604282118.k3SLIWGX016513%40sheep.berlios.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000056.html">
+   <LINK REL="Next"  HREF="000059.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Freja-svn] r61 - trunk/src</H1>
+    <B>cedsav at berlios.de</B> 
+    <A HREF="mailto:freja-svn%40lists.berlios.de?Subject=Re%3A%20%5BFreja-svn%5D%20r61%20-%20trunk/src&In-Reply-To=%3C200604282118.k3SLIWGX016513%40sheep.berlios.de%3E"
+       TITLE="[Freja-svn] r61 - trunk/src">cedsav at berlios.de
+       </A><BR>
+    <I>Fri Apr 28 23:18:32 CEST 2006</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000056.html">[Freja-svn] r60 - trunk/src
+</A></li>
+        <LI>Next message: <A HREF="000059.html">[Freja-svn] r61 - trunk/src
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#57">[ date ]</a>
+              <a href="thread.html#57">[ thread ]</a>
+              <a href="subject.html#57">[ subject ]</a>
+              <a href="author.html#57">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Author: cedsav
+Date: 2006-04-28 23:18:29 +0200 (Fri, 28 Apr 2006)
+New Revision: 61
+
+Modified:
+   trunk/src/QueryEngine.js
+Log:
+added support for /element[@attr=value]/ expression to simplepath. Fiddled with get,set and _find. Will need some more work.
+
+Modified: trunk/src/QueryEngine.js
+===================================================================
+--- trunk/src/QueryEngine.js	2006-04-26 21:35:32 UTC (rev 60)
++++ trunk/src/QueryEngine.js	2006-04-28 21:18:29 UTC (rev 61)
+@@ -13,37 +13,35 @@
+ 	}
+ };
+ Freja.QueryEngine.prototype.get = function(document, expression) {
+-	var node = this._find(document, expression);
++	try {
++		var node = this._find(document, expression);
++	} catch(x) {
++		return null;
++	}
+ 	if(node) return node.nodeValue;
+-	return null;
++	
+ };
+ Freja.QueryEngine.prototype.set = function(document, expression, value) {
+-	var node = this._find(document, expression);	
+-	if(node) {
+-		node.nodeValue = value;
+-	} else {
++	try {
++		var node = this._find(document, expression);
++		if(node)
++			node.nodeValue = value;
++	} catch(x) {
+ 		// text node not found. Might need to be created.
+ 		// try not to process field names that are not meant to be xpath expressions  
+-		if(expression.lastIndexOf('/') != -1) {		 	
++		if(expression.lastIndexOf('/') != -1) {		
+ 			var nodeName = expression.substr(expression.lastIndexOf('/')+1);
+-			
+ 			if(nodeName.charAt(0)=='@') {
+ 				// trying to set a non-existing attribute. Let's create it.
+-				var newexpression =  expression.substring(0, expression.lastIndexOf('/'));
+-				var node = document.selectSingleNode(newexpression);
+-				if(node) 
+-					node.setAttribute(nodeName.substr(1),value);
+-			} else {
+-				// this could be an empty node (&lt;tag /&gt;)
+-				// let's try to create the text node.
+-				var node = document.selectSingleNode(expression);
+-				if(node) {
+-					var n = document.createTextNode(value);
+-					node.appendChild(n);							
+-				} else {
+-					// the element does not exist.
++				var parentExpression =  expression.substring(0, expression.lastIndexOf('/'));
++				var pNode = this._find(document, parentExpression);
++				if(pNode) {
++					// this._find returns a text node
++					pNode = pNode.parentNode;
++					pNode.setAttribute(nodeName.substr(1),value);
+ 				}
+ 			}
++			// else parent element does not exist.. can't do anything
+ 		}
+ 	}
+ };
+@@ -56,53 +54,87 @@
+ 	var node = document.selectSingleNode(expression);
+ 	if (node &amp;&amp; node.nodeType == 2) {
+ 		return node;
+-	} else if (node &amp;&amp; node.firstChild &amp;&amp; node.firstChild.nodeType == 3) {
++	} 
++	if (node &amp;&amp; node.firstChild &amp;&amp; node.firstChild.nodeType == 3) {
+ 		return node.firstChild;
+-	} else if (node &amp;&amp; node.firstChild &amp;&amp; node.firstChild.nodeType == 4) {
++	} 
++	if (node &amp;&amp; node.firstChild &amp;&amp; node.firstChild.nodeType == 4) {
+ 		return node.firstChild;
+ 	} 
+-//	throw new Error(&quot;Can't evaluate expression &quot; + expression);
++	if (node &amp;&amp; node.nodeType==1 &amp;&amp; !node.firstChild) {
++		// empty element (&lt;tag/&gt;). Let's create and return a blank text node
++		return node.appendChild(document.createTextNode(''));			  
++	}
++	
++	throw new Error(&quot;Can't evaluate expression &quot; + expression);
+ 	return null;
+-};
++}; 
+ /**
+   * SimplePath
+   */
+ Freja.QueryEngine.SimplePath = function() {};
+ Freja.Class.extend(Freja.QueryEngine.SimplePath, Freja.QueryEngine);
+ Freja.QueryEngine.SimplePath.prototype._find = function(document, expression) {
+-	if (!expression.match(/^[\d\w\/@\[\]]*$/)) {
++	if (!expression.match(/^[\d\w\/@\[\]=_\-']*$/)) {
+ 		throw new Error(&quot;Can't evaluate expression &quot; + expression);
+ 	}
+ 	var parts = expression.split(/\//);
+ 	var node = document;
+ 	var regAttr = new RegExp(&quot;^@([\\d\\w]*)&quot;);
+ 	var regOffset = new RegExp(&quot;^([@\\d\\w]*)\\[([\\d]*)\\]$&quot;);
++	var regFilter = new RegExp(&quot;^([\\d\\w]+)\\[@([@\\d\\w]+)=['\&quot;]{1}(.*)['\&quot;]{1}\\]$&quot;);
+ 	var attr = null;
+ 	var offset = 0;
+ 	for (var i = 0; i &lt; parts.length; ++i) {
+ 		var part = parts[i];
+-		offset = regOffset.exec(part);
+-		if (offset) {
+-			part = offset[1];
+-			offset = offset[2] - 1;
+-		} else {
+-			offset = 0;
++		var filter = regFilter.exec(part);
++		if(filter) {
++			// filter[1] element name, filter[2] attribute name, filter[3] attribute value
++			if(i&gt;0 &amp;&amp; parts[i-1]=='') {
++				// expression was of type //element[...] 
++				var cn = node.getElementsByTagName(filter[1]);
++			} else {
++				var cn = node.childNodes;
++			}
++			for(var j=0, l=cn.length; j&lt;l ; j++) {
++				if(cn[j].nodeType==1 &amp;&amp; cn[j].tagName==filter[1] &amp;&amp; cn[j].getAttribute(filter[2])== filter[3]) {
++					node = cn[j];
++					break;
++				}
++			}
++			if (j==l)
++				throw new Error(&quot;Can't evaluate expression &quot; + part);
+ 		}
+-		if (part != &quot;&quot;) {
+-			attr = regAttr.exec(part);
+-			if (attr) {
+-				node = node.getAttributeNode(attr[1]);
++		else {		
++			offset = regOffset.exec(part);
++			if (offset) {
++				part = offset[1];
++				offset = offset[2] - 1;
+ 			} else {
+-				node = node.getElementsByTagName(part).item(offset);
++				offset = 0;
+ 			}
++			if (part != &quot;&quot;) {
++				attr = regAttr.exec(part);
++				if (attr) {
++					node = node.getAttributeNode(attr[1]);
++				} else {
++					node = node.getElementsByTagName(part).item(offset);
++				}
++			}
+ 		}
+ 	}
+ 	if (node &amp;&amp; node.firstChild &amp;&amp; node.firstChild.nodeType == 3) {
+ 		return node.firstChild;
+-	} else if (node &amp;&amp; node.firstChild &amp;&amp; node.firstChild.nodeType == 4) {
++	} 
++	if (node &amp;&amp; node.firstChild &amp;&amp; node.firstChild.nodeType == 4) {
+ 		return node.firstChild;
+ 	}
+-	if (!node) {
++	if (node &amp;&amp; node.nodeType==1 &amp;&amp; !node.firstChild) {
++		// empty element (&lt;tag/&gt;). Let's create and return a blank text node
++		return node.appendChild(document.createTextNode(''));			  
++	}
++	
++	if (!node) {		
+ 		throw new Error(&quot;Can't evaluate expression &quot; + expression);
+ 	}
+ 	return node;
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000056.html">[Freja-svn] r60 - trunk/src
+</A></li>
+	<LI>Next message: <A HREF="000059.html">[Freja-svn] r61 - trunk/src
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#57">[ date ]</a>
+              <a href="thread.html#57">[ thread ]</a>
+              <a href="subject.html#57">[ subject ]</a>
+              <a href="author.html#57">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/freja-svn">More information about the Freja-svn
+mailing list</a><br>
+</body></html>

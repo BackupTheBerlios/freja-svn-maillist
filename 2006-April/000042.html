@@ -1,0 +1,139 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Freja-svn] r46 - in trunk: examples external src src/auxiliary
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/freja-svn/2006-April/index.html" >
+   <LINK REL="made" HREF="mailto:freja-svn%40lists.berlios.de?Subject=Re%3A%20%5BFreja-svn%5D%20r46%20-%20in%20trunk%3A%20examples%20external%20src%20src/auxiliary&In-Reply-To=%3C200604171914.k3HJEGLo006664%40sheep.berlios.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000041.html">
+   <LINK REL="Next"  HREF="000043.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Freja-svn] r46 - in trunk: examples external src src/auxiliary</H1>
+    <B>cedsav at berlios.de</B> 
+    <A HREF="mailto:freja-svn%40lists.berlios.de?Subject=Re%3A%20%5BFreja-svn%5D%20r46%20-%20in%20trunk%3A%20examples%20external%20src%20src/auxiliary&In-Reply-To=%3C200604171914.k3HJEGLo006664%40sheep.berlios.de%3E"
+       TITLE="[Freja-svn] r46 - in trunk: examples external src src/auxiliary">cedsav at berlios.de
+       </A><BR>
+    <I>Mon Apr 17 21:14:16 CEST 2006</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000041.html">[Freja-svn] r45 - trunk/src/auxiliary
+</A></li>
+        <LI>Next message: <A HREF="000043.html">[Freja-svn] r47 - trunk/src/auxiliary
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#42">[ date ]</a>
+              <a href="thread.html#42">[ thread ]</a>
+              <a href="subject.html#42">[ subject ]</a>
+              <a href="author.html#42">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Author: cedsav
+Date: 2006-04-17 21:14:08 +0200 (Mon, 17 Apr 2006)
+New Revision: 46
+
+Modified:
+   trunk/examples/
+   trunk/external/srvc-xslt.php
+   trunk/src/AssetManager.js
+   trunk/src/auxiliary/minimal.js
+Log:
+See bug #7142 
+
+<A HREF="https://developer.berlios.de/bugs/?func=detailbug&amp;bug_id=7142&amp;group_id=6277">https://developer.berlios.de/bugs/?func=detailbug&amp;bug_id=7142&amp;group_id=6277</A>
+
+Also, change _aux.formContents to return an empty value for unchecked checkbox &amp; radio.. might need more tests though.
+
+
+Property changes on: trunk/examples
+___________________________________________________________________
+Name: svn:ignore
+   + formbuilder
+
+
+Modified: trunk/external/srvc-xslt.php
+===================================================================
+--- trunk/external/srvc-xslt.php	2006-04-14 02:10:14 UTC (rev 45)
++++ trunk/external/srvc-xslt.php	2006-04-17 19:14:08 UTC (rev 46)
+@@ -9,8 +9,9 @@
+ 		}
+ 		error_log($errstr.&quot;\n&quot;, 3, $filename);
+ 		header(&quot;HTTP/1.0 500 Internal Error&quot;);
+-		header('Content-Type: text/xml');
+-		echo &quot;&lt;?xml version='1.0' ?&gt;&lt;error&gt;&quot;.$errstr.&quot;&lt;/error&gt;&quot;;
++		//header('Content-Type: text/xml');
++		/*echo &quot;&lt;?xml version='1.0' ?&gt;&lt;error&gt;&quot;.$errstr.&quot;&lt;/error&gt;&quot;;*/
++		echo &quot;Error: &quot;.$errstr;
+ 		exit;
+ 	}
+ 	function exception_handler($ex) {
+
+Modified: trunk/src/AssetManager.js
+===================================================================
+--- trunk/src/AssetManager.js	2006-04-14 02:10:14 UTC (rev 45)
++++ trunk/src/AssetManager.js	2006-04-17 19:14:08 UTC (rev 46)
+@@ -141,13 +141,15 @@
+ 		d.callback(document);
+ 	};
+ 	try {
+-		if (preventCaching &amp;&amp; Freja.AssetManager.HTTP_METHOD_TUNNEL) {
++		/* Why using HTTP_METHOD_TUNNEL for a GET? 
++		  if (preventCaching &amp;&amp; Freja.AssetManager.HTTP_METHOD_TUNNEL) {
+ 			var req = Freja._aux.openXMLHttpRequest(&quot;POST&quot;, url, Freja.AssetManager.HTTP_REQUEST_TYPE == &quot;async&quot;, Freja.AssetManager._username, Freja.AssetManager._password);
+ 			req.setRequestHeader(Freja.AssetManager.HTTP_METHOD_TUNNEL, &quot;GET&quot;);
+ 			req.setRequestHeader(&quot;Content-Type&quot;, &quot;application/x-www-form-urlencoded&quot;);
+ 		} else {
++		*/
+ 			var req = Freja._aux.openXMLHttpRequest(&quot;GET&quot;, url, Freja.AssetManager.HTTP_REQUEST_TYPE == &quot;async&quot;, Freja.AssetManager._username, Freja.AssetManager._password);
+-		}
++		/*}*/
+ 
+ 		// This shouldn't be nescesary, but alas it is - firefox chokes
+ 		// It's probably due to an error in MochiKit, so the problem
+
+Modified: trunk/src/auxiliary/minimal.js
+===================================================================
+--- trunk/src/auxiliary/minimal.js	2006-04-14 02:10:14 UTC (rev 45)
++++ trunk/src/auxiliary/minimal.js	2006-04-17 19:14:08 UTC (rev 46)
+@@ -44,6 +44,9 @@
+ 				if (input.checked) {
+ 					names.push(input.name);
+ 					values.push(input.value);
++				} else {
++					names.push(input.name);
++					values.push(&quot;&quot;);
+ 				}
+ 			} else {
+ 				names.push(input.name);
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000041.html">[Freja-svn] r45 - trunk/src/auxiliary
+</A></li>
+	<LI>Next message: <A HREF="000043.html">[Freja-svn] r47 - trunk/src/auxiliary
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#42">[ date ]</a>
+              <a href="thread.html#42">[ thread ]</a>
+              <a href="subject.html#42">[ subject ]</a>
+              <a href="author.html#42">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/freja-svn">More information about the Freja-svn
+mailing list</a><br>
+</body></html>

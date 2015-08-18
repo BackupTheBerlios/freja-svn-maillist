@@ -1,0 +1,403 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Freja-svn] r52 - in trunk: examples/contacts examples/contacts/views examples/tutorial examples/tutorial/views src src/auxiliary
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/freja-svn/2006-April/index.html" >
+   <LINK REL="made" HREF="mailto:freja-svn%40lists.berlios.de?Subject=Re%3A%20%5BFreja-svn%5D%20r52%20-%20in%20trunk%3A%20examples/contacts%20examples/contacts/views%20examples/tutorial%20examples/tutorial/views%20src%20src/auxiliary&In-Reply-To=%3C200604201849.k3KIndrd023148%40sheep.berlios.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000047.html">
+   <LINK REL="Next"  HREF="000049.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Freja-svn] r52 - in trunk: examples/contacts examples/contacts/views examples/tutorial examples/tutorial/views src src/auxiliary</H1>
+    <B>cedsav at berlios.de</B> 
+    <A HREF="mailto:freja-svn%40lists.berlios.de?Subject=Re%3A%20%5BFreja-svn%5D%20r52%20-%20in%20trunk%3A%20examples/contacts%20examples/contacts/views%20examples/tutorial%20examples/tutorial/views%20src%20src/auxiliary&In-Reply-To=%3C200604201849.k3KIndrd023148%40sheep.berlios.de%3E"
+       TITLE="[Freja-svn] r52 - in trunk: examples/contacts examples/contacts/views examples/tutorial examples/tutorial/views src src/auxiliary">cedsav at berlios.de
+       </A><BR>
+    <I>Thu Apr 20 20:49:39 CEST 2006</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000047.html">[Freja-svn] r51 - in trunk/examples/basecamp_api: . css models proxy/php views
+</A></li>
+        <LI>Next message: <A HREF="000049.html">[Freja-svn] r53 - trunk/examples
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#48">[ date ]</a>
+              <a href="thread.html#48">[ thread ]</a>
+              <a href="subject.html#48">[ subject ]</a>
+              <a href="author.html#48">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Author: cedsav
+Date: 2006-04-20 20:49:15 +0200 (Thu, 20 Apr 2006)
+New Revision: 52
+
+Modified:
+   trunk/examples/contacts/client.js
+   trunk/examples/contacts/views/create.xsl
+   trunk/examples/contacts/views/edit.xsl
+   trunk/examples/contacts/views/index.xsl
+   trunk/examples/tutorial/example.js
+   trunk/examples/tutorial/example2.js
+   trunk/examples/tutorial/views/display.xsl
+   trunk/examples/tutorial/views/edit.xsl
+   trunk/src/AssetManager.js
+   trunk/src/View.js
+   trunk/src/auxiliary/minimal.js
+Log:
+behavior handler now work on the class attribute
+
+Modified: trunk/examples/contacts/client.js
+===================================================================
+--- trunk/examples/contacts/client.js	2006-04-19 21:50:27 UTC (rev 51)
++++ trunk/examples/contacts/client.js	2006-04-20 18:49:15 UTC (rev 52)
+@@ -5,12 +5,12 @@
+ // view : index
+ var index = getView(&quot;views/index.xsl&quot;);
+ index.placeholder = &quot;content&quot;;
+-index.behaviours[&quot;edit&quot;] = {
++index.behaviors[&quot;edit&quot;] = {
+ 	onclick : function(node) {
+ 		edit.render(getModel(node.getAttribute('url')));
+ 	}
+ };
+-index.behaviours[&quot;delete&quot;] = {
++index.behaviors[&quot;delete&quot;] = {
+ 	onclick : function(node) {
+ 		if (!confirm(&quot;Really delete it?&quot;)) {
+ 			return;
+@@ -24,7 +24,7 @@
+ 		});
+ 	}
+ };
+-index.behaviours[&quot;create&quot;] = {
++index.behaviors[&quot;create&quot;] = {
+ 	onclick : function(node) {
+ 		create.render();
+ 	}
+@@ -33,7 +33,7 @@
+ // view : create
+ var create = getView(&quot;views/create.xsl&quot;);
+ create.placeholder = &quot;content&quot;;
+-create.behaviours[&quot;form&quot;] = {
++create.behaviors[&quot;form&quot;] = {
+ 	onsubmit : function(node) {
+ 		var d = contacts.create(getView(&quot;views/create.xsl&quot;).getValues());
+ 		d.addCallback(function() {
+@@ -44,7 +44,7 @@
+ 		index.render(contacts.select());
+ 	}
+ };
+-create.behaviours[&quot;cancel&quot;] = {
++create.behaviors[&quot;cancel&quot;] = {
+ 	onclick : function() {
+ 		index.render(contacts.select());
+ 	}
+@@ -53,7 +53,7 @@
+ // view : edit
+ var edit = getView(&quot;views/edit.xsl&quot;);
+ edit.placeholder = &quot;content&quot;;
+-edit.behaviours[&quot;form&quot;] = {
++edit.behaviors[&quot;form&quot;] = {
+ 	onsubmit : function(node) {
+ 		try {
+ 			var model = getModel(node.getAttribute('url'));
+@@ -70,7 +70,7 @@
+ 		}
+ 	}
+ };
+-edit.behaviours[&quot;cancel&quot;] = {
++edit.behaviors[&quot;cancel&quot;] = {
+ 	onclick : function() {
+ 		index.render(contacts.select());
+ 	}
+
+Modified: trunk/examples/contacts/views/create.xsl
+===================================================================
+--- trunk/examples/contacts/views/create.xsl	2006-04-19 21:50:27 UTC (rev 51)
++++ trunk/examples/contacts/views/create.xsl	2006-04-20 18:49:15 UTC (rev 52)
+@@ -8,7 +8,7 @@
+ 		&lt;p&gt;first_name:&lt;input name=&quot;first_name&quot; type=&quot;text&quot; value=&quot;&quot; /&gt;&lt;/p&gt;
+ 		&lt;p&gt;surname:&lt;input name=&quot;surname&quot; type=&quot;text&quot; value=&quot;&quot; /&gt;&lt;/p&gt;
+ 		&lt;p&gt;
+-			&lt;input type=&quot;button&quot; value=&quot;cancel&quot; freja-behaviour=&quot;cancel&quot; /&gt;
++			&lt;input type=&quot;button&quot; value=&quot;cancel&quot; class=&quot;cancel&quot; /&gt;
+ 			&lt;input type=&quot;submit&quot; value=&quot;ok&quot; /&gt;
+ 		&lt;/p&gt;
+ 	&lt;/form&gt;
+
+Modified: trunk/examples/contacts/views/edit.xsl
+===================================================================
+--- trunk/examples/contacts/views/edit.xsl	2006-04-19 21:50:27 UTC (rev 51)
++++ trunk/examples/contacts/views/edit.xsl	2006-04-20 18:49:15 UTC (rev 52)
+@@ -3,13 +3,13 @@
+ 	xmlns:xsl=&quot;<A HREF="http://www.w3.org/1999/XSL/Transform">http://www.w3.org/1999/XSL/Transform</A>&quot;&gt;
+ 
+ &lt;xsl:template match=&quot;record&quot;&gt;	
+-	&lt;form method=&quot;post&quot; action=&quot;#&quot; freja-behaviour=&quot;form&quot;&gt;
++	&lt;form method=&quot;post&quot; action=&quot;#&quot; class=&quot;form&quot;&gt;
+ 	&lt;xsl:attribute name=&quot;url&quot;&gt;&lt;xsl:value-of select=&quot;url&quot; /&gt;&lt;/xsl:attribute&gt;
+ 		&lt;p&gt;&lt;xsl:value-of select=&quot;email&quot; /&gt;&lt;/p&gt;
+ 		&lt;p&gt;&lt;input name=&quot;record/first_name&quot; type=&quot;text&quot; value=&quot;{first_name}&quot; /&gt;&lt;/p&gt;
+ 		&lt;p&gt;&lt;input name=&quot;record/surname&quot; type=&quot;text&quot; value=&quot;{surname}&quot; /&gt;&lt;/p&gt;
+ 		&lt;p&gt;
+-			&lt;input type=&quot;button&quot; value=&quot;cancel&quot; freja-behaviour=&quot;cancel&quot; /&gt;
++			&lt;input type=&quot;button&quot; value=&quot;cancel&quot; class=&quot;cancel&quot; /&gt;
+ 			&lt;input type=&quot;submit&quot; value=&quot;ok&quot; /&gt;
+ 		&lt;/p&gt;
+ 	&lt;/form&gt;
+
+Modified: trunk/examples/contacts/views/index.xsl
+===================================================================
+--- trunk/examples/contacts/views/index.xsl	2006-04-19 21:50:27 UTC (rev 51)
++++ trunk/examples/contacts/views/index.xsl	2006-04-20 18:49:15 UTC (rev 52)
+@@ -8,10 +8,10 @@
+ 	&lt;tr&gt;
+ 		&lt;td&gt;&lt;xsl:value-of select=&quot;email&quot; /&gt;&lt;/td&gt;
+ 		&lt;td&gt;
+-			&lt;input type=&quot;button&quot; value=&quot;edit&quot; freja-behaviour=&quot;edit&quot;&gt;
++			&lt;input type=&quot;button&quot; value=&quot;edit&quot; class=&quot;edit&quot;&gt;
+ 				&lt;xsl:attribute name=&quot;url&quot;&gt;&lt;xsl:value-of select=&quot;url&quot; /&gt;&lt;/xsl:attribute&gt;
+ 			&lt;/input&gt;
+-			&lt;input type=&quot;button&quot; value=&quot;delete&quot; freja-behaviour=&quot;delete&quot;&gt;
++			&lt;input type=&quot;button&quot; value=&quot;delete&quot; class=&quot;delete&quot;&gt;
+ 				&lt;xsl:attribute name=&quot;url&quot;&gt;&lt;xsl:value-of select=&quot;url&quot; /&gt;&lt;/xsl:attribute&gt;
+ 			&lt;/input&gt;
+ 		&lt;/td&gt;
+
+Modified: trunk/examples/tutorial/example.js
+===================================================================
+--- trunk/examples/tutorial/example.js	2006-04-19 21:50:27 UTC (rev 51)
++++ trunk/examples/tutorial/example.js	2006-04-20 18:49:15 UTC (rev 52)
+@@ -2,16 +2,16 @@
+ 
+ var display = getView(&quot;views/display.xsl&quot;);
+ display.placeholder = 'content';
+-display.behaviours[&quot;editLink&quot;] = {
++display.behaviors[&quot;editLink&quot;] = {
+ 	onclick : function() { dispatch('edit'); }
+ };
+ 
+ var edit = getView(&quot;views/edit.xsl&quot;);
+ edit.placeholder = 'content';
+-edit.behaviours[&quot;editForm&quot;] = {
++edit.behaviors[&quot;editForm&quot;] = {
+ 	onsubmit : function() { dispatch('update'); }
+ };
+-edit.behaviours[&quot;displayLink&quot;] = {
++edit.behaviors[&quot;displayLink&quot;] = {
+ 	onclick : function() { dispatch('display'); }
+ };
+ 
+
+Modified: trunk/examples/tutorial/example2.js
+===================================================================
+--- trunk/examples/tutorial/example2.js	2006-04-19 21:50:27 UTC (rev 51)
++++ trunk/examples/tutorial/example2.js	2006-04-20 18:49:15 UTC (rev 52)
+@@ -2,7 +2,7 @@
+ 
+ var display = getView(&quot;views/display.xsl&quot;);
+ display.placeholder = &quot;content&quot;;
+-display.behaviours[&quot;editLink&quot;] = {
++display.behaviors[&quot;editLink&quot;] = {
+ 	onclick : function() {
+ 		edit.render(data);
+ 	}
+@@ -10,7 +10,7 @@
+ 
+ var edit = getView(&quot;views/edit.xsl&quot;);
+ edit.placeholder = &quot;content&quot;;
+-edit.behaviours[&quot;editForm&quot;] = {
++edit.behaviors[&quot;editForm&quot;] = {
+ 	onsubmit : function() {
+ 		try {
+ 			data.updateFrom(edit);
+@@ -20,7 +20,7 @@
+ 		}
+ 	}
+ };
+-edit.behaviours[&quot;displayLink&quot;] = {
++edit.behaviors[&quot;displayLink&quot;] = {
+ 	onclick : function() {
+ 		display.render(data);
+ 	}
+
+Modified: trunk/examples/tutorial/views/display.xsl
+===================================================================
+--- trunk/examples/tutorial/views/display.xsl	2006-04-19 21:50:27 UTC (rev 51)
++++ trunk/examples/tutorial/views/display.xsl	2006-04-20 18:49:15 UTC (rev 52)
+@@ -7,7 +7,7 @@
+ 	&lt;h3&gt;&lt;xsl:value-of select=&quot;name&quot; /&gt;&lt;/h3&gt;
+ 	&lt;p&gt;&lt;xsl:value-of select=&quot;description&quot; /&gt;&lt;/p&gt;
+ 	&lt;p&gt;&lt;em&gt;Price: &lt;xsl:value-of select=&quot;price&quot; /&gt;&lt;/em&gt;&lt;/p&gt;
+-	&lt;p&gt;&lt;a href=&quot;#&quot; freja-behaviour=&quot;editLink&quot;&gt;edit&lt;/a&gt;&lt;/p&gt;
++	&lt;p&gt;&lt;a href=&quot;#&quot; class=&quot;editLink&quot;&gt;edit&lt;/a&gt;&lt;/p&gt;
+ &lt;/div&gt;
+ &lt;/xsl:template&gt;
+ 
+
+Modified: trunk/examples/tutorial/views/edit.xsl
+===================================================================
+--- trunk/examples/tutorial/views/edit.xsl	2006-04-19 21:50:27 UTC (rev 51)
++++ trunk/examples/tutorial/views/edit.xsl	2006-04-20 18:49:15 UTC (rev 52)
+@@ -8,7 +8,7 @@
+ 		&lt;p&gt;&lt;textarea name=&quot;item/description&quot;&gt;&lt;xsl:value-of select=&quot;description&quot; /&gt;&lt;/textarea&gt;&lt;/p&gt;
+ 		&lt;p&gt;&lt;input name=&quot;item/price&quot; type=&quot;text&quot; value=&quot;{price}&quot; /&gt;&lt;/p&gt;
+ 		&lt;p&gt;
+-			&lt;a href=&quot;#&quot; freja-behaviour=&quot;displayLink&quot;&gt;display&lt;/a&gt;
++			&lt;a href=&quot;#&quot; class=&quot;displayLink&quot;&gt;display&lt;/a&gt;
+ 			&lt;input type=&quot;submit&quot; value=&quot;ok&quot; /&gt;
+ 		&lt;/p&gt;
+ 	&lt;/form&gt;
+
+Modified: trunk/src/AssetManager.js
+===================================================================
+--- trunk/src/AssetManager.js	2006-04-19 21:50:27 UTC (rev 51)
++++ trunk/src/AssetManager.js	2006-04-20 18:49:15 UTC (rev 52)
+@@ -177,7 +177,14 @@
+   * It ought to be replaced completely with Deferred
+   */
+ Freja.AssetManager.onerror = function(ex) {
+-	alert(&quot;Freja.AssetManager.onerror\n&quot; + ex.message);
++	if(ex.message) {
++		alert(&quot;Freja.AssetManager.onerror\n&quot; + ex.message);
++	} 
++	// @note: on asynchronous calls, ex refers to the xmlhttpobject
++	// see Bug #7189 (<A HREF="http://developer.berlios.de/bugs/?func=detailbug&amp;group_id=6277&amp;bug_id=7189">http://developer.berlios.de/bugs/?func=detailbug&amp;group_id=6277&amp;bug_id=7189</A>)
++	else if(ex.status){
++		alert('error '+ ex.status + ' ' +  ex.responseText);
++	}
+ };
+ /**
+   * Global exports
+
+Modified: trunk/src/View.js
+===================================================================
+--- trunk/src/View.js	2006-04-19 21:50:27 UTC (rev 51)
++++ trunk/src/View.js	2006-04-20 18:49:15 UTC (rev 52)
+@@ -7,10 +7,10 @@
+ 	this.document = null;
+ 	this._renderer = renderer;
+ 	this._destination = null;
+-	this.behaviours = [];
++	this.behaviors = [];
+ 	this.placeholder = null;
+ 	Freja._aux.registerSignals(this, [&quot;onload&quot;,&quot;onrendercomplete&quot;]);
+-	Freja._aux.connect(this, &quot;onrendercomplete&quot;, Freja._aux.bind(this._connectBehaviour, this));
++	Freja._aux.connect(this, &quot;onrendercomplete&quot;, Freja._aux.bind(this._connectBehavior, this));
+ };
+ /**
+   * @param    model            Freja.Model
+@@ -78,11 +78,11 @@
+ 	return d;
+ };
+ /**
+-  * Decorates the output of the primary renderer, to inject behaviour.
++  * Decorates the output of the primary renderer, to inject behavior.
+   * @note Maybe we could use cssQuery (<A HREF="http://dean.edwards.name/my/cssQuery/">http://dean.edwards.name/my/cssQuery/</A>)
+-  *       to identify targets for behaviour
++  *       to identify targets for behavior
+   */
+-Freja.View.prototype._connectBehaviour = function(destination) {
++Freja.View.prototype._connectBehavior = function(destination) {
+ 	try {
+ 		var connectCallback = function(node, eventType, callback) {
+ 
+@@ -101,34 +101,35 @@
+ 				}, node)
+ 			);
+ 		};
+-		var applyHandlers = function(node, behaviours) {
+-
++		var applyHandlers = function(node, behaviors) {
+ 			for (var i = 0, c = node.childNodes, l = c.length; i &lt; l; ++i) {
+ 				var child = c[i];
+ 				if (child.nodeType == 1) {
+-					var id = child.getAttribute(&quot;freja-behaviour&quot;);
+-					if (id != &quot;&quot;) {
+-						var handler = behaviours[id];
+-						if (handler) {
+-							for (var eventType in handler) {
+-								if (eventType == &quot;init&quot;) {
+-									handler.init(child);
+-								} else {
+-									connectCallback(child, eventType, handler[eventType]);
++					if(child.className) {
++						var classNames = child.className.split(' ');						
++						for (var j=0;j&lt;classNames.length;j++) {											
++							var handler = behaviors[classNames[j]];
++							if (handler) {
++								for (var eventType in handler) {
++									if (eventType == &quot;init&quot;) {
++										handler.init(child);
++									} else {
++										connectCallback(child, eventType, handler[eventType]);
++									}
+ 								}
+ 							}
+ 						}
+ 					}
+-					applyHandlers(child, behaviours);
++					applyHandlers(child, behaviors);
+ 				}
+ 			}
+ 		};
+ 
+ 		// Avoid traversing the DOM tree if there's no handler to process.
+-		// @note: is there a better way? this.behaviours.length is always 0.
+-		// @note  This is fine. behaviours is a hashmap, not an array.
+-		for (var ids in this.behaviours) {
+-			applyHandlers(destination, this.behaviours);
++		// @note: is there a better way? this.behaviors.length is always 0.
++		// @note  This is fine. behaviors is a hashmap, not an array.
++		for (var ids in this.behaviors) {
++			applyHandlers(destination, this.behaviors);
+ 			break;
+ 		}
+ 
+
+Modified: trunk/src/auxiliary/minimal.js
+===================================================================
+--- trunk/src/auxiliary/minimal.js	2006-04-19 21:50:27 UTC (rev 51)
++++ trunk/src/auxiliary/minimal.js	2006-04-20 18:49:15 UTC (rev 52)
+@@ -402,7 +402,7 @@
+ }
+ 
+ if(typeof XSLTProcessor == 'undefined' &amp;&amp; typeof ActiveXObject  != 'undefined') {
+-alert('ok');
++
+     _SARISSA_DOM_PROGID = Freja._aux.pickRecentProgID([&quot;Msxml2.DOMDocument.5.0&quot;, &quot;Msxml2.DOMDocument.4.0&quot;, &quot;Msxml2.DOMDocument.3.0&quot;, &quot;MSXML2.DOMDocument&quot;, &quot;MSXML.DOMDocument&quot;, &quot;Microsoft.XMLDOM&quot;]);
+     _SARISSA_XMLHTTP_PROGID = Freja._aux.pickRecentProgID([&quot;Msxml2.XMLHTTP.5.0&quot;, &quot;Msxml2.XMLHTTP.4.0&quot;, &quot;MSXML2.XMLHTTP.3.0&quot;, &quot;MSXML2.XMLHTTP&quot;, &quot;Microsoft.XMLHTTP&quot;]);
+     _SARISSA_THREADEDDOM_PROGID = Freja._aux.pickRecentProgID([&quot;Msxml2.FreeThreadedDOMDocument.5.0&quot;, &quot;MSXML2.FreeThreadedDOMDocument.4.0&quot;, &quot;MSXML2.FreeThreadedDOMDocument.3.0&quot;]);
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000047.html">[Freja-svn] r51 - in trunk/examples/basecamp_api: . css models proxy/php views
+</A></li>
+	<LI>Next message: <A HREF="000049.html">[Freja-svn] r53 - trunk/examples
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#48">[ date ]</a>
+              <a href="thread.html#48">[ thread ]</a>
+              <a href="subject.html#48">[ subject ]</a>
+              <a href="author.html#48">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/freja-svn">More information about the Freja-svn
+mailing list</a><br>
+</body></html>

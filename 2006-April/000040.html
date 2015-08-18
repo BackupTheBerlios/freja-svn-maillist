@@ -1,0 +1,101 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Freja-svn] r44 - trunk/src/auxiliary
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/freja-svn/2006-April/index.html" >
+   <LINK REL="made" HREF="mailto:freja-svn%40lists.berlios.de?Subject=Re%3A%20%5BFreja-svn%5D%20r44%20-%20trunk/src/auxiliary&In-Reply-To=%3C200604122110.k3CLAc8J009433%40sheep.berlios.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000039.html">
+   <LINK REL="Next"  HREF="000041.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Freja-svn] r44 - trunk/src/auxiliary</H1>
+    <B>cedsav at berlios.de</B> 
+    <A HREF="mailto:freja-svn%40lists.berlios.de?Subject=Re%3A%20%5BFreja-svn%5D%20r44%20-%20trunk/src/auxiliary&In-Reply-To=%3C200604122110.k3CLAc8J009433%40sheep.berlios.de%3E"
+       TITLE="[Freja-svn] r44 - trunk/src/auxiliary">cedsav at berlios.de
+       </A><BR>
+    <I>Wed Apr 12 23:10:38 CEST 2006</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000039.html">[Freja-svn] r43 - trunk/src/auxiliary
+</A></li>
+        <LI>Next message: <A HREF="000041.html">[Freja-svn] r45 - trunk/src/auxiliary
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#40">[ date ]</a>
+              <a href="thread.html#40">[ thread ]</a>
+              <a href="subject.html#40">[ subject ]</a>
+              <a href="author.html#40">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Author: cedsav
+Date: 2006-04-12 23:10:35 +0200 (Wed, 12 Apr 2006)
+New Revision: 44
+
+Modified:
+   trunk/src/auxiliary/minimal.js
+Log:
+Bug fix for xslparameters in IE.
+
+Modified: trunk/src/auxiliary/minimal.js
+===================================================================
+--- trunk/src/auxiliary/minimal.js	2006-04-11 21:34:07 UTC (rev 43)
++++ trunk/src/auxiliary/minimal.js	2006-04-12 21:10:35 UTC (rev 44)
+@@ -223,15 +223,12 @@
+ 	if (typeof(xml.transformNode) != &quot;undefined&quot;) {	
+ 		// set the parameters		
+ 		for (var paramName in xslParameters) {
+-			try {
+ 			xsl.setProperty (&quot;SelectionNamespaces&quot;, &quot;xmlns:xsl='<A HREF="http://www.w3.org/1999/XSL/Transform">http://www.w3.org/1999/XSL/Transform</A>'&quot;);			
+ 			var paramNode = xsl.selectSingleNode(&quot;//xsl:param[@name='&quot;+ paramName +&quot;']&quot;);					
+ 			paramNode.appendChild(xsl.createTextNode(xslParameters[paramName]));
+-			} catch(x) {
+-				throw(x.message);
+-			}			
++			// @TODO: check if we have the 'select' attribute and remove it.
+ 		}		
+-		return xml.transformNode(xsl);
++		var result = xml.transformNode(xsl);
+ 
+ 		// clean the stylesheet.
+ 		for (var paramName in xslParameters) {
+@@ -240,6 +237,7 @@
+ 				paramNode.removeChild(paramNode.firstChild);
+ 			}
+ 		}
++		return result;
+ 	};
+ 
+ 	var processor = new XSLTProcessor();
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000039.html">[Freja-svn] r43 - trunk/src/auxiliary
+</A></li>
+	<LI>Next message: <A HREF="000041.html">[Freja-svn] r45 - trunk/src/auxiliary
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#40">[ date ]</a>
+              <a href="thread.html#40">[ thread ]</a>
+              <a href="subject.html#40">[ subject ]</a>
+              <a href="author.html#40">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/freja-svn">More information about the Freja-svn
+mailing list</a><br>
+</body></html>

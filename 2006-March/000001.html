@@ -1,0 +1,1319 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Freja-svn] r5 - in trunk: examples/contacts/models/php_inc lib
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/freja-svn/2006-March/index.html" >
+   <LINK REL="made" HREF="mailto:freja-svn%40lists.berlios.de?Subject=Re%3A%20%5BFreja-svn%5D%20r5%20-%20in%20trunk%3A%20examples/contacts/models/php_inc%20lib&In-Reply-To=%3C200603092026.k29KQbtw010039%40sheep.berlios.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000000.html">
+   <LINK REL="Next"  HREF="000002.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Freja-svn] r5 - in trunk: examples/contacts/models/php_inc lib</H1>
+    <B>troelskn at BerliOS</B> 
+    <A HREF="mailto:freja-svn%40lists.berlios.de?Subject=Re%3A%20%5BFreja-svn%5D%20r5%20-%20in%20trunk%3A%20examples/contacts/models/php_inc%20lib&In-Reply-To=%3C200603092026.k29KQbtw010039%40sheep.berlios.de%3E"
+       TITLE="[Freja-svn] r5 - in trunk: examples/contacts/models/php_inc lib">troelskn at berlios.de
+       </A><BR>
+    <I>Thu Mar  9 21:26:37 CET 2006</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000000.html">[Freja-svn] r4 - in trunk: examples/contacts lib
+</A></li>
+        <LI>Next message: <A HREF="000002.html">[Freja-svn] r6 - trunk/lib
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1">[ date ]</a>
+              <a href="thread.html#1">[ thread ]</a>
+              <a href="subject.html#1">[ subject ]</a>
+              <a href="author.html#1">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Author: troelskn
+Date: 2006-03-09 21:26:36 +0100 (Thu, 09 Mar 2006)
+New Revision: 5
+
+Modified:
+   trunk/examples/contacts/models/php_inc/inc.resource.php
+   trunk/lib/Freja.js
+   trunk/lib/MochiKit.js
+Log:
+Changed http request methods to tunnel through POST.
+
+Modified: trunk/examples/contacts/models/php_inc/inc.resource.php
+===================================================================
+--- trunk/examples/contacts/models/php_inc/inc.resource.php	2006-03-09 17:56:02 UTC (rev 4)
++++ trunk/examples/contacts/models/php_inc/inc.resource.php	2006-03-09 20:26:36 UTC (rev 5)
+@@ -1,11 +1,20 @@
+ &lt;?php
+-if ($_SERVER['REQUEST_METHOD'] == &quot;PUT&quot; || $_SERVER['REQUEST_METHOD'] == &quot;POST&quot;) {
++$request_headers = apache_request_headers();
++if (isset($request_headers['Http-Method-Equivalent'])) {
++	$REQUEST_METHOD = $request_headers['Http-Method-Equivalent'];
++} else {
++	$REQUEST_METHOD = $_SERVER['REQUEST_METHOD'];
++}
++
++if ($REQUEST_METHOD == &quot;PUT&quot; || $REQUEST_METHOD == &quot;POST&quot;) {
+ 	$RAW = file_get_contents('<A HREF="php://input">php://input</A>');
+ 	$parser = new XML_Unserializer();
+ 	$PAYLOAD = $parser-&gt;unserialize($RAW);
+ }
+ 
+-switch ($_SERVER['REQUEST_METHOD']) {
++//error_log($REQUEST_METHOD.&quot;\n&quot;, 3, dirname(__FILE__).&quot;/access.log&quot;);
++
++switch ($REQUEST_METHOD) {
+ 	case 'GET':
+ 		$row = $model-&gt;fetchByPK(@$_GET[$model-&gt;pkey]);
+ 		if (is_null($row)) {
+@@ -58,7 +67,7 @@
+ 		echo xml_serialize('result', Array('status' =&gt; &quot;ok&quot;));
+ 	exit;
+ 	default:
+-			trigger_error(&quot;Unrecognized request-method: &quot; . $_SERVER['REQUEST_METHOD']);
++			trigger_error(&quot;Unrecognized request-method: &quot; . $REQUEST_METHOD);
+ 	exit;
+ }
+ ?&gt;
+\ No newline at end of file
+
+Modified: trunk/lib/Freja.js
+===================================================================
+--- trunk/lib/Freja.js	2006-03-09 17:56:02 UTC (rev 4)
++++ trunk/lib/Freja.js	2006-03-09 20:26:36 UTC (rev 5)
+@@ -193,11 +193,7 @@
+ 		url = match[1] + url; // local
+ 	}
+ 	var req = new XMLHttpRequest();
+-	if (Freja.AssetManager.HTTP_REQUEST_TYPE == &quot;sync&quot;) {
+-		req.open(&quot;POST&quot;, url, false);
+-	} else {
+-		req.open(&quot;POST&quot;, url);
+-	}
++	req.open(&quot;POST&quot;, url, Freja.AssetManager.HTTP_REQUEST_TYPE == &quot;async&quot;);
+ 	try {
+ 		// for some obscure reason exceptions aren't thrown back if I call the
+ 		// shorthand version of sendXMLHttpRequest in IE6.
+@@ -221,10 +217,12 @@
+ 		url = match[1] + url; // local
+ 	}
+ 	var req = new XMLHttpRequest();
+-	if (Freja.AssetManager.HTTP_REQUEST_TYPE == &quot;sync&quot;) {
+-		req.open(&quot;DELETE&quot;, url, false);
++	if (Freja.AssetManager.HTTP_METHOD_TUNNEL) {
++		req.open(&quot;POST&quot;, url, Freja.AssetManager.HTTP_REQUEST_TYPE == &quot;async&quot;);
++		req.setRequestHeader(Freja.AssetManager.HTTP_METHOD_TUNNEL, &quot;DELETE&quot;);
++		req.setRequestHeader(&quot;Content-Type&quot;, &quot;application/x-www-form-urlencoded&quot;);
+ 	} else {
+-		req.open(&quot;DELETE&quot;, url);
++		req.open(&quot;DELETE&quot;, url, Freja.AssetManager.HTTP_REQUEST_TYPE == &quot;async&quot;);
+ 	}
+ 	return MochiKit.Async.sendXMLHttpRequest(req);
+ }
+@@ -272,10 +270,12 @@
+ 		url = match[1] + url; // local
+ 	}
+ 	var req = new XMLHttpRequest();
+-	if (Freja.AssetManager.HTTP_REQUEST_TYPE == &quot;sync&quot;) {
+-		req.open(&quot;PUT&quot;, url, false);
++	if (Freja.AssetManager.HTTP_METHOD_TUNNEL) {
++		req.open(&quot;POST&quot;, url, Freja.AssetManager.HTTP_REQUEST_TYPE == &quot;async&quot;);
++		req.setRequestHeader(Freja.AssetManager.HTTP_METHOD_TUNNEL, &quot;PUT&quot;);
++		req.setRequestHeader(&quot;Content-Type&quot;, &quot;application/x-www-form-urlencoded&quot;);
+ 	} else {
+-		req.open(&quot;PUT&quot;, url);
++		req.open(&quot;PUT&quot;, url, Freja.AssetManager.HTTP_REQUEST_TYPE == &quot;async&quot;);
+ 	}
+ 
+ 	var payload = {};
+@@ -304,7 +304,6 @@
+   * @param    model            Freja.Model
+   * @param    placeholder      string    If supplied, this will be used instead of the
+   *                                      default placeholder.
+-  * @returns MochiKit.Async.Deferred
+   */
+ Freja.View.prototype.render = function(model, placeholder /* optional */ ) {
+ 	try {
+@@ -447,7 +446,7 @@
+ 		}
+ 	}
+ 	req.open(&quot;POST&quot;, Freja.AssetManager.XSLT_SERVICE_URL, true);
+-	req.setRequestHeader('Content-Type','application/x-www-form-urlencoded');
++	req.setRequestHeader(&quot;Content-Type&quot;, &quot;application/x-www-form-urlencoded&quot;);
+ 	req.send(postedData);
+ 
+ 	return d;
+@@ -466,6 +465,11 @@
+   */
+ Freja.AssetManager.HTTP_REQUEST_TYPE = &quot;async&quot;;
+ /**
++  * Experimental
++  */
++// Freja.AssetManager.HTTP_METHOD_TUNNEL = null;
++Freja.AssetManager.HTTP_METHOD_TUNNEL = &quot;Http-Method-Equivalent&quot;;
++/**
+   * url of the service to do the work.
+   */
+ Freja.AssetManager.XSLT_SERVICE_URL = &quot;srvc-xslt.php&quot;;
+@@ -573,7 +577,14 @@
+ 	}
+ 	try {
+ 		var req = new XMLHttpRequest();
+-		req.open(&quot;GET&quot;, url, this.HTTP_REQUEST_TYPE == &quot;async&quot;);
++		if (Freja.AssetManager.HTTP_METHOD_TUNNEL) {
++			req.open(&quot;POST&quot;, url, Freja.AssetManager.HTTP_REQUEST_TYPE == &quot;async&quot;);
++			req.setRequestHeader(Freja.AssetManager.HTTP_METHOD_TUNNEL, &quot;GET&quot;);
++			req.setRequestHeader(&quot;Content-Type&quot;, &quot;application/x-www-form-urlencoded&quot;);
++		} else {
++			req.open(&quot;GET&quot;, url, Freja.AssetManager.HTTP_REQUEST_TYPE == &quot;async&quot;);
++		}
++//		req.open(&quot;GET&quot;, url, this.HTTP_REQUEST_TYPE == &quot;async&quot;);
+ 		var d = MochiKit.Async.sendXMLHttpRequest(req).addCallbacks(callback, onerror);
+ 		return d;
+ 	} catch (ex) {
+@@ -584,7 +595,8 @@
+ 	}
+ }
+ Freja.AssetManager.onerror = function(ex) {
+-	alert(ex.message);
++	throw ex;
++	alert(&quot;Freja.AssetManager.onerror\n&quot; + ex.message);
+ }
+ /**
+   * Global exports
+
+Modified: trunk/lib/MochiKit.js
+===================================================================
+--- trunk/lib/MochiKit.js	2006-03-09 17:56:02 UTC (rev 4)
++++ trunk/lib/MochiKit.js	2006-03-09 20:26:36 UTC (rev 5)
+@@ -28,7 +28,7 @@
+         Mutate an object by replacing its key:value pairs with those
+         from other object(s).  Key:value pairs from later objects will
+         overwrite those from earlier objects.
+-        
++
+         If null is given as the initial object, a new one will be created.
+ 
+         This mutates *and returns* the given object, be warned.
+@@ -68,7 +68,7 @@
+             return n++;
+         };
+     },
+-        
++
+     clone: function (obj) {
+         var me = arguments.callee;
+         if (arguments.length == 1) {
+@@ -76,7 +76,7 @@
+             return new me();
+         }
+     },
+-            
++
+     extend: function (self, obj, /* optional */skip) {
+         /***
+ 
+@@ -87,7 +87,7 @@
+             This mutates *and returns* the given array, be warned.
+ 
+         ***/
+-        
++
+         // Extend an array with an array-like object starting
+         // from the skip index
+         if (!skip) {
+@@ -145,7 +145,7 @@
+             Mutate an object by replacing its key:value pairs with those
+             from other object(s) IF they are not already set on the initial
+             object.
+-            
++
+             If null is given as the initial object, a new one will be created.
+ 
+             This mutates *and returns* the given object, be warned.
+@@ -178,7 +178,7 @@
+         }
+         return rval;
+     },
+-        
++
+     items: function (obj) {
+         /***
+ 
+@@ -215,7 +215,7 @@
+         ***/
+ 
+         // unary logic operators
+-        truth: function (a) { return !!a; }, 
++        truth: function (a) { return !!a; },
+         lognot: function (a) { return !a; },
+         identity: function (a) { return a; },
+ 
+@@ -290,13 +290,13 @@
+         objects are members of that set.
+ 
+         ***/
+-        
++
+         var types = {};
+         for (var i = 0; i &lt; arguments.length; i++) {
+             var typ = arguments[i];
+             types[typ] = typ;
+         }
+-        return function () { 
++        return function () {
+             for (var i = 0; i &lt; arguments.length; i++) {
+                 if (!(typeof(arguments[i]) in types)) {
+                     return false;
+@@ -390,7 +390,7 @@
+ 
+     xmap: function (fn/*, obj... */) {
+         /***
+-        
++
+             Return an array composed of fn(obj) for every obj given as an
+             argument.
+ 
+@@ -415,7 +415,7 @@
+ 
+             If fn is null, and only one sequence argument is given the identity
+             function is used.
+-            
++
+                 map(null, lst) -&gt; lst.slice();
+ 
+             If fn is null, and more than one sequence is given as arguments,
+@@ -556,7 +556,7 @@
+             return eval(&quot;(func(&quot; + args.join(&quot;,&quot;) + &quot;))&quot;);
+         };
+     },
+-            
++
+     bind: function (func, self/* args... */) {
+         if (typeof(func) == &quot;string&quot;) {
+             func = self[func];
+@@ -649,7 +649,7 @@
+         /***
+ 
+             Compare two objects in a sensible manner.  Currently this is:
+-            
++
+                 1. undefined and null compare equal to each other
+                 2. undefined and null are less than anything else
+                 3. comparators registered with registerComparator are
+@@ -664,7 +664,7 @@
+             returns:
+ 
+                  0 when a == b
+-                 1 when a &gt; b 
++                 1 when a &gt; b
+                 -1 when a &lt; b
+ 
+         ***/
+@@ -786,7 +786,7 @@
+         return &quot;[&quot; + m.map(m.repr, o).join(&quot;, &quot;) + &quot;]&quot;;
+     },
+ 
+-    reprString: function (o) { 
++    reprString: function (o) {
+         return ('&quot;' + o.replace(/([&quot;\\])/g, '\\$1') + '&quot;'
+             ).replace(/[\f]/g, &quot;\\f&quot;
+             ).replace(/[\b]/g, &quot;\\b&quot;
+@@ -802,7 +802,7 @@
+     registerJSON: function (name, check, wrap, /* optional */override) {
+         /***
+ 
+-            Register a JSON serialization function.  JSON serialization 
++            Register a JSON serialization function.  JSON serialization
+             functions should take one argument and return an object
+             suitable for JSON serialization:
+ 
+@@ -815,7 +815,7 @@
+                 - Array-like (length property that is a number)
+                 - Objects with a &quot;json&quot; method will have this method called
+                 - Any other object will be used as {key:value, ...} pairs
+-            
++
+             If override is given, it is used as the highest priority
+             JSON serialization, otherwise it will be used as the lowest.
+ 
+@@ -912,11 +912,11 @@
+         }
+         return &quot;{&quot; + res.join(&quot;, &quot;) + &quot;}&quot;;
+     },
+-            
+ 
++
+     objEqual: function (a, b) {
+         /***
+-            
++
+             Compare the equality of two objects.
+ 
+         ***/
+@@ -1007,7 +1007,7 @@
+         var m = MochiKit.Base;
+         return m.bind.apply(this, m.extend([func, undefined], arguments, 1));
+     },
+-     
++
+     listMinMax: function (which, lst) {
+         /***
+ 
+@@ -1021,7 +1021,7 @@
+             If which == 1 then it will return the largest
+             element of the array-like lst.  This is also available
+             as:
+-                
++
+                 listMax(list)
+ 
+         ***/
+@@ -1041,13 +1041,13 @@
+ 
+     objMax: function (/* obj... */) {
+         /***
+-        
++
+             Return the maximum object out of the given arguments
+ 
+         ***/
+         return MochiKit.Base.listMinMax(1, arguments);
+     },
+-            
++
+     objMin: function (/* obj... */) {
+         /***
+ 
+@@ -1081,7 +1081,7 @@
+         }
+         return -1;
+     },
+-    
++
+     nodeWalk: function (node, visitor) {
+         /***
+ 
+@@ -1105,7 +1105,7 @@
+         }
+     },
+ 
+-       
++
+     nameFunctions: function (namespace) {
+         var base = namespace.NAME;
+         if (typeof(base) == 'undefined') {
+@@ -1192,14 +1192,14 @@
+         return o;
+     }
+ });
+-    
++
+ MochiKit.Base.AdapterRegistry = function () {
+     /***
+ 
+         A registry to facilitate adaptation.
+ 
+         Pairs is an array of [name, check, wrap] triples
+-        
++
+         All check/wrap functions in this registry should be of the same arity.
+ 
+     ***/
+@@ -1209,7 +1209,7 @@
+ MochiKit.Base.AdapterRegistry.prototype = {
+     register: function (name, check, wrap, /* optional */ override) {
+         /***
+-            
++
+             The check function should return true if the given arguments are
+             appropriate for the wrap function.
+ 
+@@ -1230,7 +1230,7 @@
+         /***
+ 
+             Find an adapter for the given arguments.
+-            
++
+             If no suitable adapter is found, throws NotFound.
+ 
+         ***/
+@@ -1435,7 +1435,7 @@
+ 
+ if (typeof(JSAN) != 'undefined') {
+     JSAN.use(&quot;MochiKit.Base&quot;, []);
+-}   
++}
+ 
+ try {
+     if (typeof(MochiKit.Base) == 'undefined') {
+@@ -1443,12 +1443,12 @@
+     }
+ } catch (e) {
+     throw &quot;MochiKit.Iter depends on MochiKit.Base!&quot;;
+-}  
+-            
++}
++
+ if (typeof(MochiKit.Iter) == 'undefined') {
+     MochiKit.Iter = {};
+-}           
+-        
++}
++
+ MochiKit.Iter.NAME = &quot;MochiKit.Iter&quot;;
+ MochiKit.Iter.VERSION = &quot;1.3&quot;;
+ MochiKit.Base.update(MochiKit.Iter, {
+@@ -1486,12 +1486,12 @@
+ 
+             Convert the given argument to an iterator (object implementing
+             &quot;next&quot;).
+-            
++
+             1. If iterable is an iterator (implements &quot;next&quot;), then it will be
+                returned as-is.
+             2. If iterable is an iterator factory (implements &quot;iter&quot;), then the
+                result of iterable.iter() will be returned.
+-            3. Otherwise, the iterator factory registry is used to find a 
++            3. Otherwise, the iterator factory registry is used to find a
+                match.
+             4. If no factory is found, it will throw TypeError
+ 
+@@ -1510,7 +1510,7 @@
+                 }
+ 
+         ***/
+-        
++
+         var self = MochiKit.Iter;
+         if (arguments.length == 2) {
+             return self.takewhile(
+@@ -1592,7 +1592,7 @@
+ 
+     repeat: function (elem, /* optional */n) {
+         /***
+-        
++
+             repeat(elem, [,n]) --&gt; elem, elem, elem, ... endlessly or up to n
+                 times
+ 
+@@ -1623,7 +1623,7 @@
+             }
+         };
+     },
+-            
++
+     next: function (iterator) {
+         /***
+ 
+@@ -1703,11 +1703,11 @@
+             }
+         }
+     },
+-     
++
+     islice: function (seq/*, [start,] stop[, step] */) {
+         /***
+ 
+-            islice(seq, [start,] stop[, step])  --&gt; elements from 
++            islice(seq, [start,] stop[, step])  --&gt; elements from
+                 seq[start:stop:step] (in Python slice syntax)
+ 
+         ***/
+@@ -1767,7 +1767,7 @@
+             }
+         };
+     },
+-        
++
+     applymap: function (fun, seq, self) {
+         /***
+ 
+@@ -1962,22 +1962,22 @@
+         return undefined;
+     },
+ 
+-        
++
+     reduce: function (fn, iterable, /* optional */initial) {
+         /***
+-        
++
+             Apply a fn = function (a, b) cumulatively to the items of an
+             iterable from left to right, so as to reduce the iterable
+             to a single value.
+ 
+             For example::
+-            
++
+                 reduce(function (a, b) { return x + y; }, [1, 2, 3, 4, 5])
+ 
+             calculates::
+ 
+                 ((((1 + 2) + 3) + 4) + 5).
+-            
++
+             If initial is given, it is placed before the items of the sequence
+             in the calculation, and serves as a default when the sequence is
+             empty.
+@@ -2062,7 +2062,7 @@
+             toString: MochiKit.Base.forward(&quot;repr&quot;)
+         };
+     },
+-            
++
+     sum: function (iterable, start/* = 0 */) {
+         /***
+ 
+@@ -2089,7 +2089,7 @@
+         }
+         return x;
+     },
+-            
++
+     exhaust: function (iterable) {
+         /***
+ 
+@@ -2113,7 +2113,7 @@
+ 
+     forEach: function (iterable, func, /* optional */self) {
+         /***
+-        
++
+             Call func for each item in iterable.
+ 
+         ***/
+@@ -2201,11 +2201,11 @@
+ 
+     iextend: function (lst, iterable) {
+         /***
+-            
++
+             Just like list(iterable), except it pushes results on lst
+-        
++
+         ***/
+-        
++
+         if (MochiKit.Base.isArrayLike(iterable)) {
+             // fast-path for array-like
+             for (var i = 0; i &lt; iterable.length; i++) {
+@@ -2421,7 +2421,7 @@
+     };
+ 
+     m.nameFunctions(this);
+-        
++
+ };
+ 
+ MochiKit.Iter.__new__();
+@@ -2505,7 +2505,7 @@
+ MochiKit.Logging.LogMessage.prototype = {
+     repr: function () {
+         var m = MochiKit.Base;
+-        return 'LogMessage(' + 
++        return 'LogMessage(' +
+             m.map(
+                 m.repr,
+                 [this.num, this.level, this.info]
+@@ -2583,7 +2583,7 @@
+             logger.warning  -&gt; logWarning
+             logger.error    -&gt; logError
+             logger.fatal    -&gt; logFatal
+-        
++
+     ***/
+     this.counter = 0;
+     if (typeof(maxSize) == 'undefined' || maxSize == null) {
+@@ -2623,10 +2623,10 @@
+         /***
+ 
+             Add a listener for log messages.
+-            
++
+             ident is a unique identifier that may be used to remove the listener
+             later on.
+-            
++
+             filter can be one of the following:
+                 null:
+                     listener(msg) will be called for every log message
+@@ -2649,13 +2649,13 @@
+                 level:
+                     A string or number representing the log level.  If string, you
+                     may want to use LogLevel[level] for comparison.
+-                
++
+                 info:
+                     A list of objects passed as arguments to the log function.
+ 
+         ***/
+-                
+-                
++
++
+         if (typeof(filter) == 'string') {
+             filter = MochiKit.Logging.logLevelAtLeast(filter);
+         }
+@@ -2692,7 +2692,7 @@
+             see the Logger constructor documentation for more info.
+ 
+         ***/
+-                
++
+         var msg = new MochiKit.Logging.LogMessage(
+             this.counter,
+             level,
+@@ -2742,7 +2742,7 @@
+         var messages = this.getMessages(howMany);
+         if (messages.length) {
+             var lst = map(function (m) {
+-                return '\n  [' + m.num + '] ' + m.level + ': ' + m.info.join(' '); 
++                return '\n  [' + m.num + '] ' + m.level + ': ' + m.info.join(' ');
+             }, messages);
+             lst.unshift('LAST ' + messages.length + ' MESSAGES:');
+             return lst.join('');
+@@ -2832,7 +2832,7 @@
+ if (typeof(MochiKit) == 'undefined') {
+     MochiKit = {};
+ }
+-       
++
+ if (typeof(MochiKit.DateTime) == 'undefined') {
+     MochiKit.DateTime = {};
+ }
+@@ -3061,7 +3061,7 @@
+             } catch (e) {
+                 // pass
+             }
+-        }   
++        }
+     }
+ };
+ 
+@@ -3075,10 +3075,10 @@
+             || (typeof(MochiKit.__compat__) == 'boolean' &amp;&amp; MochiKit.__compat__)) {
+             var all = module.EXPORT_TAGS[&quot;:all&quot;];
+             for (var i = 0; i &lt; all.length; i++) {
+-                globals[all[i]] = module[all[i]]; 
++                globals[all[i]] = module[all[i]];
+             }
+-        }   
+-    })(this, MochiKit.DateTime);  
++        }
++    })(this, MochiKit.DateTime);
+ }
+ 
+ /***
+@@ -3249,7 +3249,7 @@
+ 
+ MochiKit.Format.twoDigitFloat = function (someFloat) {
+     /***
+-    
++
+         Roughly equivalent to: sprintf(&quot;%.2f&quot;, someFloat)
+ 
+     ***/
+@@ -3388,10 +3388,10 @@
+             || (typeof(MochiKit.__compat__) == 'boolean' &amp;&amp; MochiKit.__compat__)) {
+             var all = module.EXPORT_TAGS[&quot;:all&quot;];
+             for (var i = 0; i &lt; all.length; i++) {
+-                globals[all[i]] = module[all[i]]; 
++                globals[all[i]] = module[all[i]];
+             }
+-        }   
+-    })(this, MochiKit.Format);  
++        }
++    })(this, MochiKit.Format);
+ }
+ 
+ /***
+@@ -3466,14 +3466,14 @@
+ 
+     The Deferred also keeps track of its current status (fired).
+     Its status may be one of three things:
+-    
++
+         -1: no value yet (initial condition)
+          0: success
+          1: error
+-    
++
+     A Deferred will be in the error state if one of the following
+     three conditions are met:
+-    
++
+     1. The result given to callback or errback is &quot;instanceof&quot; Error
+     2. The previous callback or errback raised an exception while executing
+     3. The previous callback or errback returned a value &quot;instanceof&quot; Error
+@@ -3498,12 +3498,12 @@
+         } else {
+             result = myCallback(result);
+         }
+-    
++
+     The result is then stored away in case another step is added to the
+     callback sequence.  Since the Deferred already has a value available,
+     any new callbacks added will be called immediately.
+ 
+-    There are two other &quot;advanced&quot; details about this implementation that are 
++    There are two other &quot;advanced&quot; details about this implementation that are
+     useful:
+ 
+     Callbacks are allowed to return Deferred instances themselves, so
+@@ -3516,10 +3516,10 @@
+     CancelledError (unless your canceller returns another kind of error),
+     so the errbacks should be prepared to handle that error for cancellable
+     Deferreds.
+-    
++
+     ***/
+ 
+-    
++
+     this.chain = [];
+     this.id = this._nextId();
+     this.fired = -1;
+@@ -3572,8 +3572,8 @@
+             this.results[0].cancel();
+         }
+     },
+-            
+ 
++
+     _pause: function () {
+         /***
+ 
+@@ -3631,7 +3631,7 @@
+         /***
+ 
+         Begin the callback sequence with a non-error value.
+-        
++
+         callback or errback should only be called once
+         on a given Deferred.
+ 
+@@ -3835,7 +3835,7 @@
+ 
+     sendXMLHttpRequest: function (req, /* optional */ sendContent) {
+         if (typeof(sendContent) == 'undefined') {
+-            sendContent = null;
++            sendContent = &quot;&quot;;
+         }
+ 
+         var canceller = function () {
+@@ -3853,7 +3853,7 @@
+ 
+         var self = MochiKit.Async;
+         var d = new self.Deferred(canceller);
+-        
++
+         var onreadystatechange = function () {
+             // MochiKit.Logging.logDebug('req.readyState', req.readyState);
+             if (req.readyState == 4) {
+@@ -3881,7 +3881,7 @@
+                 if (status == 200 || status == 304) { // OK
+                     d.callback(req);
+                 } else {
+-                    var err = new self.XMLHttpRequestError(req, &quot;Request failed&quot;);
++                    var err = new self.XMLHttpRequestError(req, &quot;Request failed:&quot; + status);
+                     if (err.number) {
+                         // XXX: This seems to happen on page change
+                         d.errback(err);
+@@ -4029,7 +4029,7 @@
+     &quot;sendXMLHttpRequest&quot;,
+     &quot;DeferredLock&quot;
+ ];
+-    
++
+ MochiKit.Async.EXPORT_OK = [
+     &quot;evalJSONRequest&quot;
+ ];
+@@ -4037,7 +4037,7 @@
+ MochiKit.Async.__new__ = function () {
+     var m = MochiKit.Base;
+     var ne = m.partial(m._newNamedError, this);
+-    ne(&quot;AlreadyCalledError&quot;, 
++    ne(&quot;AlreadyCalledError&quot;,
+         function (deferred) {
+             /***
+ 
+@@ -4074,7 +4074,7 @@
+         }
+     );
+ 
+-    ne(&quot;GenericError&quot;, 
++    ne(&quot;GenericError&quot;,
+         function (msg) {
+             this.message = msg;
+         }
+@@ -4259,19 +4259,19 @@
+     setOpacity: function(elem, o) {
+         elem = MochiKit.DOM.getElement(elem);
+         MochiKit.DOM.updateNodeAttributes(elem, {'style': {
+-                'opacity': o, 
++                'opacity': o,
+                 '-moz-opacity': o,
+                 '-khtml-opacity': o,
+                 'filter':' alpha(opacity=' + (o * 100) + ')'
+             }});
+     },
+-    
++
+     getViewportDimensions: function() {
+         var d = new MochiKit.DOM.Dimensions();
+-        
++
+         var w = MochiKit.DOM._window;
+         var b = MochiKit.DOM._document.body;
+-        
++
+         if (w.innerWidth) {
+             d.w = w.innerWidth;
+             d.h = w.innerHeight;
+@@ -4295,7 +4295,7 @@
+             return undefined;
+         }
+         if (self.computedStyle(elem, 'display') != 'none') {
+-            return new self.Dimensions(elem.offsetWidth || 0, 
++            return new self.Dimensions(elem.offsetWidth || 0,
+                 elem.offsetHeight || 0);
+         }
+         var s = elem.style;
+@@ -4312,7 +4312,7 @@
+         return new self.Dimensions(originalWidth, originalHeight);
+     },
+ 
+-    /* 
++    /*
+     elementPosition is adapted from YAHOO.util.Dom.getXY, version 0.9.0.
+     Copyright: Copyright (c) 2006, Yahoo! Inc. All rights reserved.
+     BSD License: <A HREF="http://developer.yahoo.net/yui/license.txt">http://developer.yahoo.net/yui/license.txt</A>
+@@ -4320,19 +4320,19 @@
+     elementPosition: function (elem, /* optional */relativeTo) {
+         var self = MochiKit.DOM;
+         elem = self.getElement(elem);
+-        
+-        if (!elem || 
+-            elem.parentNode === null || 
++
++        if (!elem ||
++            elem.parentNode === null ||
+             self.computedStyle(elem, 'display') == 'none') {
+             return undefined;
+         }
+-        
++
+         var c = new self.Coordinates(0, 0);
+         var box = null;
+         var parent = null;
+-        
++
+         var d = MochiKit.DOM._document;
+-        
++
+         if (typeof(relativeTo) != 'undefined') {
+             relativeTo = arguments.callee(relativeTo);
+             if (relativeTo) {
+@@ -4340,18 +4340,18 @@
+                 c.y -= (relativeTo.y || 0);
+             }
+         }
+-        
++
+         if (elem.getBoundingClientRect) { // IE shortcut
+             box = elem.getBoundingClientRect();
+-            
+-            c.x += box.left + 
+-                (d.documentElement.scrollLeft || 
++
++            c.x += box.left +
++                (d.documentElement.scrollLeft ||
+                 d.body.scrollLeft);
+-            
+-            c.y += box.top + 
+-                (d.documentElement.scrollTop || 
++
++            c.y += box.top +
++                (d.documentElement.scrollTop ||
+                 d.body.scrollTop);
+-            
++
+             return c;
+         } else if (d.getBoxObjectFor) { // Gecko shortcut
+             box = d.getBoxObjectFor(elem);
+@@ -4361,7 +4361,7 @@
+             c.x += elem.offsetLeft;
+             c.y += elem.offsetTop;
+             parent = elem.offsetParent;
+-            
++
+             if (parent != elem) {
+                 while (parent) {
+                     c.x += parent.offsetLeft;
+@@ -4372,12 +4372,12 @@
+ 
+             // opera &amp; (safari absolute) incorrectly account for body offsetTop
+             var ua = navigator.userAgent.toLowerCase();
+-            if (ua.indexOf('opera') != -1 || 
+-                (ua.indexOf('safari') != -1 &amp;&amp; 
++            if (ua.indexOf('opera') != -1 ||
++                (ua.indexOf('safari') != -1 &amp;&amp;
+                 self.computedStyle(elem, 'position') == 'absolute')) {
+-                
++
+                 c.y -= d.body.offsetTop;
+-                
++
+             }
+         } else {
+             /* it's just a MochiKit.DOM.Coordinates object */
+@@ -4385,37 +4385,37 @@
+             c.y += elem.y || 0;
+             return c;
+         }
+-        
++
+         if (elem.parentNode) {
+             parent = elem.parentNode;
+         } else {
+             parent = null;
+         }
+-        
++
+         while (parent &amp;&amp; parent.tagName != 'BODY' &amp;&amp; parent.tagName != 'HTML') {
+             c.x -= parent.scrollLeft;
+-            c.y -= parent.scrollTop;        
++            c.y -= parent.scrollTop;
+             if (parent.parentNode) {
+                 parent = parent.parentNode;
+             } else {
+                 parent = null;
+             }
+         }
+-        
++
+         return c;
+     },
+-    
++
+     setElementDimensions: function (elem, newSize/* optional */, units) {
+         elem = MochiKit.DOM.getElement(elem);
+         if (typeof(units) == 'undefined') {
+             units = 'px';
+         }
+         MochiKit.DOM.updateNodeAttributes(elem, {'style': {
+-            'width': newSize.w + units, 
++            'width': newSize.w + units,
+             'height': newSize.h + units
+         }});
+     },
+-    
++
+     setElementPosition: function (elem, newPos/* optional */, units) {
+         elem = MochiKit.DOM.getElement(elem);
+         if (typeof(units) == 'undefined') {
+@@ -4426,7 +4426,7 @@
+             'top': newPos.y + units
+         }});
+     },
+-    
++
+     currentWindow: function () {
+         return MochiKit.DOM._window;
+     },
+@@ -4596,7 +4596,7 @@
+         // mozilla warnings aren't too bright
+         return undefined;
+     },
+-        
++
+     setNodeAttribute: function (node, attr, value) {
+         var o = {};
+         o[attr] = value;
+@@ -4819,7 +4819,7 @@
+     computedStyle: function (htmlElement, cssProperty, mozillaEquivalentCSS) {
+         if (arguments.length == 2) {
+             mozillaEquivalentCSS = cssProperty;
+-        }   
++        }
+         var self = MochiKit.DOM;
+         var el = self.getElement(htmlElement);
+         var document = self._document;
+@@ -4919,7 +4919,7 @@
+         ***/
+         var self = MochiKit.DOM;
+         self.addToCallStack(self._window, &quot;onload&quot;, func, true);
+-        
++
+     },
+ 
+     focusOnLoad: function (element) {
+@@ -4931,12 +4931,12 @@
+             }
+         });
+     },
+-            
++
+     setElementClass: function (element, className) {
+         /***
+ 
+             Set the entire class attribute of an element to className.
+-        
++
+         ***/
+         var self = MochiKit.DOM;
+         var obj = self.getElement(element);
+@@ -4946,10 +4946,10 @@
+             obj.setAttribute(&quot;className&quot;, className);
+         }
+     },
+-            
++
+     toggleElementClass: function (className/*, element... */) {
+         /***
+-        
++
+             Toggle the presence of a given className in the class attribute
+             of all given elements.
+ 
+@@ -5044,7 +5044,7 @@
+ 
+     hasElementClass: function (element, className/*...*/) {
+         /***
+-          
++
+           Return true if className is found in the element
+ 
+         ***/
+@@ -5175,7 +5175,7 @@
+ 
+     scrapeText: function (node, /* optional */asArray) {
+         /***
+-        
++
+             Walk a DOM tree in-order and scrape all of the text out of it as a
+             string or an Array
+ 
+@@ -5207,8 +5207,8 @@
+         this._document = document;
+         this._window = win;
+ 
+-        this.domConverters = new m.AdapterRegistry(); 
+-        
++        this.domConverters = new m.AdapterRegistry();
++
+         var __tmpElement = this._document.createElement(&quot;span&quot;);
+         var attributeArray;
+         if (__tmpElement &amp;&amp; __tmpElement.attributes &amp;&amp;
+@@ -5235,7 +5235,7 @@
+         } else {
+             attributeArray = function (node) {
+                 /***
+-                    
++
+                     Return an array of attributes for a given node,
+                     filtering out attributes that don't belong for
+                     that are inserted by &quot;Certain Browsers&quot;.
+@@ -5289,7 +5289,7 @@
+         this.hideElement = m.partial(this.setDisplayForElement, &quot;none&quot;);
+         this.showElement = m.partial(this.setDisplayForElement, &quot;block&quot;);
+         this.removeElement = this.swapDOM;
+-        
++
+         this.$ = this.getElement;
+ 
+         this.EXPORT_TAGS = {
+@@ -5404,7 +5404,7 @@
+     }
+     var doc = win.document;
+     this.doc = doc;
+-    
++
+     // Connect to the debug pane if it already exists (i.e. in a window orphaned by the page being refreshed)
+     var debugPane = doc.getElementById(uid);
+     var existing_pane = !!debugPane;
+@@ -5413,7 +5413,7 @@
+         debugPane.loggingPane.buildAndApplyFilter();
+         return debugPane.loggingPane;
+     }
+-    
++
+     if (existing_pane) {
+         // clear any existing contents
+         var child;
+@@ -5658,11 +5658,11 @@
+         &quot;:common&quot;: this.EXPORT,
+         &quot;:all&quot;: MochiKit.Base.concat(this.EXPORT, this.EXPORT_OK)
+     };
+-    
++
+     MochiKit.Base.nameFunctions(this);
+ 
+     MochiKit.LoggingPane._loggingPane = null;
+-  
++
+ };
+ 
+ MochiKit.LoggingPane.__new__();
+@@ -5801,7 +5801,7 @@
+             [b.r, b.g, b.b, b.a]
+         );
+     },
+-        
++
+     isLight: function () {
+         return this.asHSL().b &gt; 0.5;
+     },
+@@ -5817,7 +5817,7 @@
+         if (!rval) {
+             var mid = (
+                 ccc(c.h, 360).toFixed(0)
+-                + &quot;,&quot; + ccc(c.s, 100).toPrecision(4) + &quot;%&quot; 
++                + &quot;,&quot; + ccc(c.s, 100).toPrecision(4) + &quot;%&quot;
+                 + &quot;,&quot; + ccc(c.l, 100).toPrecision(4) + &quot;%&quot;
+             );
+             var a = c.a;
+@@ -5865,7 +5865,7 @@
+         var ccc = MochiKit.Color.clampColorComponent;
+         var rval = this._hexString;
+         if (!rval) {
+-            rval = (&quot;#&quot; + 
++            rval = (&quot;#&quot; +
+                 m.toColorPart(ccc(c.r, 255)) +
+                 m.toColorPart(ccc(c.g, 255)) +
+                 m.toColorPart(ccc(c.b, 255))
+@@ -5981,13 +5981,13 @@
+         var Color = MochiKit.Color.Color;
+         return Color.fromRGB.apply(Color, components);
+     },
+-        
+ 
++
+     _fromColorString: function (pre, method, scales, colorCode) {
+         // parses either HSL or RGB
+         if (colorCode.indexOf(pre) == 0) {
+             colorCode = colorCode.substring(colorCode.indexOf(&quot;(&quot;, 3) + 1, colorCode.length - 1);
+-        } 
++        }
+         var colorChunks = colorCode.split(/\s*,\s*/);
+         var colorFloats = [];
+         for (var i = 0; i &lt; colorChunks.length; i++) {
+@@ -6007,7 +6007,7 @@
+         }
+         return this[method].apply(this, colorFloats);
+     },
+-    
++
+     fromComputedStyle: function (elem, style, mozillaEquivalentCSS) {
+         var d = MochiKit.DOM;
+         var cls = MochiKit.Color.Color;
+@@ -6075,7 +6075,7 @@
+         }
+         return val;
+     },
+-        
++
+     hsvToRGB: function (hue, saturation, value, alpha) {
+         if (arguments.length == 1) {
+             var hsv = hue;
+@@ -6194,7 +6194,7 @@
+             a: alpha
+         };
+     },
+-            
++
+     rgbToHSL: function (red, green, blue, alpha) {
+         if (arguments.length == 1) {
+             var rgb = red;
+@@ -6232,7 +6232,7 @@
+             if (hue &gt; 1) {
+                 hue -= 1;
+             }
+-            
++
+         }
+         return {
+             h: hue,
+@@ -6260,7 +6260,7 @@
+             this.Color._fromColorString, this.Color, &quot;hsl&quot;, &quot;fromHSL&quot;,
+             [1.0/360.0, 0.01, 0.01, 1]
+         );
+-        
++
+         var third = 1.0 / 3.0;
+         var colors = {
+             // NSColor colors plus transparent
+@@ -6312,7 +6312,7 @@
+         m.nameFunctions(this);
+ 
+         m.registerComparator(this.Color.NAME, isColor, compareColor);
+-            
++
+         this.EXPORT_TAGS = {
+             &quot;:common&quot;: this.EXPORT,
+             &quot;:all&quot;: m.concat(this.EXPORT, this.EXPORT_OK)
+@@ -6780,7 +6780,7 @@
+         this.type().indexOf('click') != -1 ||
+         this.type() == 'contextmenu')) {
+ 
+-        str += ', mouse(): {page: ' + repr(this.mouse().page) + 
++        str += ', mouse(): {page: ' + repr(this.mouse().page) +
+             ', client: ' + repr(this.mouse().client);
+ 
+         if (this.type() != 'mousemove') {
+@@ -6876,18 +6876,18 @@
+                 } else {
+                     src.__signals[sig] = undefined;
+                 }
+-                
++
+                 src.__listeners[sig] = undefined;
+-                
++
+                 // delete removes object properties, not variables
+                 delete(src.__listeners);
+                 delete(src.__signals);
+-                
++
+             } catch(e) {
+                 // clean IE garbage
+             }
+         }
+-        
++
+         MochiKit.Signal._observers = undefined;
+ 
+         try {
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000000.html">[Freja-svn] r4 - in trunk: examples/contacts lib
+</A></li>
+	<LI>Next message: <A HREF="000002.html">[Freja-svn] r6 - trunk/lib
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#1">[ date ]</a>
+              <a href="thread.html#1">[ thread ]</a>
+              <a href="subject.html#1">[ subject ]</a>
+              <a href="author.html#1">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/freja-svn">More information about the Freja-svn
+mailing list</a><br>
+</body></html>

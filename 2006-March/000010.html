@@ -1,0 +1,266 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Freja-svn] r14 - trunk/lib
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/freja-svn/2006-March/index.html" >
+   <LINK REL="made" HREF="mailto:freja-svn%40lists.berlios.de?Subject=Re%3A%20%5BFreja-svn%5D%20r14%20-%20trunk/lib&In-Reply-To=%3C200603222045.k2MKjgTH004118%40sheep.berlios.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000009.html">
+   <LINK REL="Next"  HREF="000011.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Freja-svn] r14 - trunk/lib</H1>
+    <B>troelskn at BerliOS</B> 
+    <A HREF="mailto:freja-svn%40lists.berlios.de?Subject=Re%3A%20%5BFreja-svn%5D%20r14%20-%20trunk/lib&In-Reply-To=%3C200603222045.k2MKjgTH004118%40sheep.berlios.de%3E"
+       TITLE="[Freja-svn] r14 - trunk/lib">troelskn at berlios.de
+       </A><BR>
+    <I>Wed Mar 22 21:45:42 CET 2006</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000009.html">[Freja-svn] r13 - trunk/lib
+</A></li>
+        <LI>Next message: <A HREF="000011.html">[Freja-svn] r15 - trunk/lib
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#10">[ date ]</a>
+              <a href="thread.html#10">[ thread ]</a>
+              <a href="subject.html#10">[ subject ]</a>
+              <a href="author.html#10">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Author: troelskn
+Date: 2006-03-22 21:45:39 +0100 (Wed, 22 Mar 2006)
+New Revision: 14
+
+Modified:
+   trunk/lib/Freja.js
+Log:
+Cleaned up http-requests
+
+Modified: trunk/lib/Freja.js
+===================================================================
+--- trunk/lib/Freja.js	2006-03-21 15:45:22 UTC (rev 13)
++++ trunk/lib/Freja.js	2006-03-22 20:45:39 UTC (rev 14)
+@@ -71,43 +71,6 @@
+ 	subClass.prototype.supertype = superstructor.prototype;
+ }
+ /**
+-  * This code was written by Tyler Akins and has been placed in the
+-  * public domain.  It would be nice if you left this header intact.
+-  * Base64 code from Tyler Akins -- <A HREF="http://rumkin.com">http://rumkin.com</A>
+-  */
+-Freja.Base64 = {};
+-Freja.Base64.keyStr = &quot;ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=&quot;;
+-Freja.Base64.encode = function(input) {
+-	var output = &quot;&quot;;
+-	var chr1, chr2, chr3;
+-	var enc1, enc2, enc3, enc4;
+-	var i = 0;
+-	var keyStr = this.keyStr;
+-
+-	do {
+-		chr1 = input.charCodeAt(i++);
+-		chr2 = input.charCodeAt(i++);
+-		chr3 = input.charCodeAt(i++);
+-
+-		enc1 = chr1 &gt;&gt; 2;
+-		enc2 = ((chr1 &amp; 3) &lt;&lt; 4) | (chr2 &gt;&gt; 4);
+-		enc3 = ((chr2 &amp; 15) &lt;&lt; 2) | (chr3 &gt;&gt; 6);
+-		enc4 = chr3 &amp; 63;
+-
+-		if (isNaN(chr2)) {
+-			enc3 = enc4 = 64;
+-		} else if (isNaN(chr3)) {
+-			enc4 = 64;
+-		}
+-
+-		output = output + keyStr.charAt(enc1) + keyStr.charAt(enc2) +
+-		keyStr.charAt(enc3) + keyStr.charAt(enc4);
+-	} while (i &lt; input.length);
+-
+-	return output;
+-}
+-
+-/**
+   * The baseclass for queryengines
+   * @abstract
+   */
+@@ -246,13 +209,7 @@
+ 	// since the serialization may fail, we create a deferred for the
+ 	// purpose, rather than just returning the sendXMLHttpRequest directly.
+ 	var d = new MochiKit.Async.Deferred();
+-
+-	var req = new XMLHttpRequest();
+-	req.open(&quot;POST&quot;, url, Freja.AssetManager.HTTP_REQUEST_TYPE == &quot;async&quot;);
+-	if (Freja.AssetManager.USERNAME &amp;&amp; Freja.AssetManager.PASSWORD) {
+-		var auth = &quot;Basic &quot; + Freja.Base64.encode(Freja.AssetManager.USERNAME + &quot;:&quot; + Freja.AssetManager.PASSWORD);
+-		req.setRequestHeader(&quot;Authorization&quot;, auth);
+-	}
++	var req = Freja.AssetManager.openXMLHttpRequest(&quot;POST&quot;, url);
+ 	try {
+ 		// for some obscure reason exceptions aren't thrown back if I call the
+ 		// shorthand version of sendXMLHttpRequest in IE6.
+@@ -272,18 +229,7 @@
+ 	if (match) {
+ 		url = match[1] + url; // local
+ 	}
+-	var req = new XMLHttpRequest();
+-	if (Freja.AssetManager.HTTP_METHOD_TUNNEL) {
+-		req.open(&quot;POST&quot;, url, Freja.AssetManager.HTTP_REQUEST_TYPE == &quot;async&quot;);
+-		req.setRequestHeader(Freja.AssetManager.HTTP_METHOD_TUNNEL, &quot;DELETE&quot;);
+-		req.setRequestHeader(&quot;Content-Type&quot;, &quot;application/x-www-form-urlencoded&quot;);
+-	} else {
+-		req.open(&quot;DELETE&quot;, url, Freja.AssetManager.HTTP_REQUEST_TYPE == &quot;async&quot;);
+-	}
+-	if (Freja.AssetManager.USERNAME &amp;&amp; Freja.AssetManager.PASSWORD) {
+-		var auth = &quot;Basic &quot; + Freja.Base64.encode(Freja.AssetManager.USERNAME + &quot;:&quot; + Freja.AssetManager.PASSWORD);
+-		req.setRequestHeader(&quot;Authorization&quot;, auth);
+-	}
++	var req = Freja.AssetManager.openXMLHttpRequest(&quot;DELETE&quot;, url);
+ 	return MochiKit.Async.sendXMLHttpRequest(req);
+ }
+ /**
+@@ -324,19 +270,7 @@
+ 	if (match) {
+ 		url = match[1] + url; // local
+ 	}
+-	var req = new XMLHttpRequest();
+-	if (Freja.AssetManager.HTTP_METHOD_TUNNEL) {
+-		req.open(&quot;POST&quot;, url, Freja.AssetManager.HTTP_REQUEST_TYPE == &quot;async&quot;);
+-		req.setRequestHeader(Freja.AssetManager.HTTP_METHOD_TUNNEL, &quot;PUT&quot;);
+-		req.setRequestHeader(&quot;Content-Type&quot;, &quot;application/x-www-form-urlencoded&quot;);
+-	} else {
+-		req.open(&quot;PUT&quot;, url, Freja.AssetManager.HTTP_REQUEST_TYPE == &quot;async&quot;);
+-	}
+-	if (Freja.AssetManager.USERNAME &amp;&amp; Freja.AssetManager.PASSWORD) {
+-		var auth = &quot;Basic &quot; + Freja.Base64.encode(Freja.AssetManager.USERNAME + &quot;:&quot; + Freja.AssetManager.PASSWORD);
+-		req.setRequestHeader(&quot;Authorization&quot;, auth);
+-	}
+-
++	var req = Freja.AssetManager.openXMLHttpRequest(&quot;PUT&quot;, url);
+ 	var payload = {};
+ 	for (var i = 0, len = values[0].length; i &lt; len; ++i) {
+ 		payload[values[0][i]] = values[1][i];
+@@ -525,7 +459,7 @@
+ //	if (xslParams)
+ //		postedData  = postedData + &quot;&amp;xslParam=&quot; + encodeURIComponent(xslParams.toString());
+ 	// send request to the server-side XSL transformation service
+-	var req = new XMLHttpRequest();
++	var req = Freja.AssetManager.openXMLHttpRequest(&quot;POST&quot;, Freja.AssetManager.XSLT_SERVICE_URL);
+ 	req.onreadystatechange = function() {
+ 		if (req.readyState == 4) {
+ 			if (req.status == 200) {
+@@ -535,13 +469,6 @@
+ 			}
+ 		}
+ 	}
+-	var async = Freja.AssetManager.HTTP_REQUEST_TYPE == &quot;async&quot;;
+-	req.open(&quot;POST&quot;, Freja.AssetManager.XSLT_SERVICE_URL, async);
+-	req.setRequestHeader(&quot;Content-Type&quot;, &quot;application/x-www-form-urlencoded&quot;);
+-	if (Freja.AssetManager.USERNAME &amp;&amp; Freja.AssetManager.PASSWORD) {
+-		var auth = &quot;Basic &quot; + Freja.Base64.encode(Freja.AssetManager.USERNAME + &quot;:&quot; + Freja.AssetManager.PASSWORD);
+-		req.setRequestHeader(&quot;Authorization&quot;, auth);
+-	}
+ 	req.send(postedData);
+ 	return d;
+ }
+@@ -651,6 +578,30 @@
+ 	return v;
+ }
+ /**
++  * Creates and opens a http-request, tunneling exotic methods if needed.
++  */
++Freja.AssetManager.openXMLHttpRequest = function(method, url) {
++	var req = new XMLHttpRequest();
++	var async = Freja.AssetManager.HTTP_REQUEST_TYPE == &quot;async&quot;;
++	var tunnel = null;
++	if (Freja.AssetManager.HTTP_METHOD_TUNNEL &amp;&amp; method != &quot;GET&quot; &amp;&amp; method != &quot;POST&quot;) {
++		tunnel = method;
++		method = &quot;POST&quot;;
++	}
++	if (Freja.AssetManager.USERNAME &amp;&amp; Freja.AssetManager.PASSWORD) {
++		req.open(method, url, async, Freja.AssetManager.USERNAME, Freja.AssetManager.PASSWORD);
++	} else {
++		req.open(method, url, async);
++	}
++	if (tunnel) {
++		req.setRequestHeader(Freja.AssetManager.HTTP_METHOD_TUNNEL, tunnel);
++	}
++	if (method == &quot;POST&quot; || method == &quot;PUT&quot;) {
++		req.setRequestHeader(&quot;Content-Type&quot;, &quot;application/x-www-form-urlencoded&quot;);
++	}
++	return req;
++}
++/**
+   * @returns MochiKit.Async.Deferred
+   */
+ Freja.AssetManager.loadAsset = function(url, preventCaching) {
+@@ -680,16 +631,21 @@
+ 		var req = new XMLHttpRequest();
+ 		var async = Freja.AssetManager.HTTP_REQUEST_TYPE == &quot;async&quot;;
+ 		if (preventCaching &amp;&amp; Freja.AssetManager.HTTP_METHOD_TUNNEL) {
+-			req.open(&quot;POST&quot;, url, async);
++			if (Freja.AssetManager.USERNAME &amp;&amp; Freja.AssetManager.PASSWORD) {
++				req.open(&quot;POST&quot;, url, async, Freja.AssetManager.USERNAME, Freja.AssetManager.PASSWORD);
++			} else {
++				req.open(&quot;POST&quot;, url, async);
++			}
+ 			req.setRequestHeader(Freja.AssetManager.HTTP_METHOD_TUNNEL, &quot;GET&quot;);
+ 			req.setRequestHeader(&quot;Content-Type&quot;, &quot;application/x-www-form-urlencoded&quot;);
+ 		} else {
+-			req.open(&quot;GET&quot;, url, async);
++			if (Freja.AssetManager.USERNAME &amp;&amp; Freja.AssetManager.PASSWORD) {
++				req.open(&quot;GET&quot;, url, async, Freja.AssetManager.USERNAME, Freja.AssetManager.PASSWORD);
++			} else {
++				req.open(&quot;GET&quot;, url, async);
++			}
+ 		}
+-		if (Freja.AssetManager.USERNAME &amp;&amp; Freja.AssetManager.PASSWORD) {
+-			var auth = &quot;Basic &quot; + Freja.Base64.encode(Freja.AssetManager.USERNAME + &quot;:&quot; + Freja.AssetManager.PASSWORD);
+-			req.setRequestHeader(&quot;Authorization&quot;, auth);
+-		}
++
+ 		// This shouldn't be nescesary, but alas it is - firefox chokes
+ 		// It's probably due to an error in MochiKit, so the problem
+ 		// should be fixed there.
+@@ -697,7 +653,7 @@
+ 		if (async) {
+ 			comm.addCallbacks(handler, bind(d.errback, d));
+ 		} else {
+-			if (req.status == 200 || req.status == 304) {
++			if (req.status == 0 || req.status == 200 || req.status == 304) {
+ 				handler(req);
+ 			} else {
+ 				d.errback(new Error(&quot;Request failed:&quot; + req.status));
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000009.html">[Freja-svn] r13 - trunk/lib
+</A></li>
+	<LI>Next message: <A HREF="000011.html">[Freja-svn] r15 - trunk/lib
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#10">[ date ]</a>
+              <a href="thread.html#10">[ thread ]</a>
+              <a href="subject.html#10">[ subject ]</a>
+              <a href="author.html#10">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/freja-svn">More information about the Freja-svn
+mailing list</a><br>
+</body></html>

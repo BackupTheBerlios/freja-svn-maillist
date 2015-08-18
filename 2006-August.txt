@@ -1,0 +1,52 @@
+From cedsav at mail.berlios.de  Thu Aug 10 22:30:53 2006
+From: cedsav at mail.berlios.de (cedsav at mail.berlios.de)
+Date: Thu, 10 Aug 2006 22:30:53 +0200
+Subject: [Freja-svn] r67 - in trunk/tests: . data
+Message-ID: <200608102030.k7AKUraF015982@sheep.berlios.de>
+
+Author: cedsav
+Date: 2006-08-10 22:30:50 +0200 (Thu, 10 Aug 2006)
+New Revision: 67
+
+Added:
+   trunk/tests/data/model3.xml
+Modified:
+   trunk/tests/test_Model.js
+Log:
+
+
+Added: trunk/tests/data/model3.xml
+===================================================================
+--- trunk/tests/data/model3.xml	2006-07-29 12:18:58 UTC (rev 66)
++++ trunk/tests/data/model3.xml	2006-08-10 20:30:50 UTC (rev 67)
+@@ -0,0 +1,7 @@
++<?xml version="1.0" encoding="utf-8"?>
++<item>
++	<name>Black Bean and Smoked Tomato</name>
++	<description>with Goat Cheese, a touch of Cumin and Cayenne</description>		
++	<price> </price>
++	<quantity/>	
++</item>
+\ No newline at end of file
+
+Modified: trunk/tests/test_Model.js
+===================================================================
+--- trunk/tests/test_Model.js	2006-07-29 12:18:58 UTC (rev 66)
++++ trunk/tests/test_Model.js	2006-08-10 20:30:50 UTC (rev 67)
+@@ -44,4 +44,12 @@
+ 	t.is(model.get("item/@price"), "$3.80");
+ 	t.is(model.get("item/description"), "with Goat Cheese, a touch of Cumin and Cayenne");
+ 
++
++	var model3 = Freja.AssetManager.getModel("data/model3.xml");
++	model3.set("item/price","$5.40");
++	t.is(model3.get("item/price"), "$5.40");
++	model3.set("item/quantity","10");
++	t.is(model3.get("item/quantity"), "10");
++
++
+ };
+\ No newline at end of file
+
+
+

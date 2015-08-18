@@ -1,0 +1,2656 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Freja-svn] r73 - in branch/2.0.1: examples/tutorial	examples/tutorial/views lib src src/auxiliary tests
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/freja-svn/2007-January/index.html" >
+   <LINK REL="made" HREF="mailto:freja-svn%40lists.berlios.de?Subject=Re%3A%20%5BFreja-svn%5D%20r73%20-%20in%20branch/2.0.1%3A%20examples/tutorial%0A%09examples/tutorial/views%20lib%20src%20src/auxiliary%20tests&In-Reply-To=%3C200701252210.l0PMA9TG014479%40sheep.berlios.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000070.html">
+   <LINK REL="Next"  HREF="000072.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Freja-svn] r73 - in branch/2.0.1: examples/tutorial	examples/tutorial/views lib src src/auxiliary tests</H1>
+    <B>cedsav at mail.berlios.de</B> 
+    <A HREF="mailto:freja-svn%40lists.berlios.de?Subject=Re%3A%20%5BFreja-svn%5D%20r73%20-%20in%20branch/2.0.1%3A%20examples/tutorial%0A%09examples/tutorial/views%20lib%20src%20src/auxiliary%20tests&In-Reply-To=%3C200701252210.l0PMA9TG014479%40sheep.berlios.de%3E"
+       TITLE="[Freja-svn] r73 - in branch/2.0.1: examples/tutorial	examples/tutorial/views lib src src/auxiliary tests">cedsav at mail.berlios.de
+       </A><BR>
+    <I>Thu Jan 25 23:10:09 CET 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000070.html">[Freja-svn] r72 - in branch/2.0.1/src: . auxiliary
+</A></li>
+        <LI>Next message: <A HREF="000072.html">[Freja-svn] r74 - in branch/2.0.1: lib src src/auxiliary
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#71">[ date ]</a>
+              <a href="thread.html#71">[ thread ]</a>
+              <a href="subject.html#71">[ subject ]</a>
+              <a href="author.html#71">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Author: cedsav
+Date: 2007-01-25 23:09:26 +0100 (Thu, 25 Jan 2007)
+New Revision: 73
+
+Removed:
+   branch/2.0.1/examples/tutorial/example2.html
+   branch/2.0.1/examples/tutorial/example2.js
+Modified:
+   branch/2.0.1/examples/tutorial/example.js
+   branch/2.0.1/examples/tutorial/views/edit.xsl
+   branch/2.0.1/lib/Freja.js
+   branch/2.0.1/lib/Sarissa.js
+   branch/2.0.1/src/Model.js
+   branch/2.0.1/src/QueryEngine.js
+   branch/2.0.1/src/View.js
+   branch/2.0.1/src/auxiliary/minimal.js
+   branch/2.0.1/src/auxiliary/mochi+sarissa.js
+   branch/2.0.1/tests/test_Model.js
+Log:
+Upgraded to Sarissa 0.9.7.6. (minimal build not yet working)
+Fixed bugs #008331 and #008915
+Fixed bug with undoHistory in Opera
+Fixed tutorial example
+
+Modified: branch/2.0.1/examples/tutorial/example.js
+===================================================================
+--- branch/2.0.1/examples/tutorial/example.js	2007-01-25 05:44:24 UTC (rev 72)
++++ branch/2.0.1/examples/tutorial/example.js	2007-01-25 22:09:26 UTC (rev 73)
+@@ -3,34 +3,23 @@
+ var display = getView(&quot;views/display.xsl&quot;);
+ display.placeholder = 'content';
+ display.behaviors[&quot;editLink&quot;] = {
+-	onclick : function() { dispatch('edit'); }
++	onclick : function() { edit.render(data); }
+ };
+ 
+ var edit = getView(&quot;views/edit.xsl&quot;);
+ edit.placeholder = 'content';
+ edit.behaviors[&quot;editForm&quot;] = {
+-	onsubmit : function() { dispatch('update'); }
++	onsubmit : function() { 
++		data.updateFrom(edit);
++		display.render(data);
++		return false;
++	}
+ };
+ edit.behaviors[&quot;displayLink&quot;] = {
+-	onclick : function() { dispatch('display'); }
++	onclick : function() { display.render(data); }
+ };
+ 
+-dispatch = function(action) {
+-	switch (action) {
+-		default:
+-			// fall through to case 'display'
+-		case 'display':
+-			display.render(data)
+-			break;
+-		case 'edit':
+-			edit.render(data);
+-			break;
+-		case 'update':
+-			data.updateFrom(edit);
+-			dispatch('display');
+-		break;
+-	}
+-}
++
+ connect(window, &quot;onload&quot;, function() {
+-	dispatch(&quot;display&quot;);
++	display.render(data);
+ });
+\ No newline at end of file
+
+Deleted: branch/2.0.1/examples/tutorial/example2.html
+===================================================================
+--- branch/2.0.1/examples/tutorial/example2.html	2007-01-25 05:44:24 UTC (rev 72)
++++ branch/2.0.1/examples/tutorial/example2.html	2007-01-25 22:09:26 UTC (rev 73)
+@@ -1,19 +0,0 @@
+-&lt;!DOCTYPE html PUBLIC &quot;-//W3C//DTD XHTML 1.0 Transitional//EN&quot; &quot;<A HREF="http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd</A>&quot;&gt;
+-&lt;html xmlns=&quot;<A HREF="http://www.w3.org/1999/xhtml">http://www.w3.org/1999/xhtml</A>&quot;&gt;
+-&lt;head&gt;
+-&lt;meta http-equiv=&quot;Content-Type&quot; content=&quot;text/html; charset=utf-8&quot; /&gt;
+-&lt;title&gt;Freja Example 2&lt;/title&gt;
+-
+-&lt;!-- Freja Framework Script --&gt;
+-&lt;script type=&quot;text/javascript&quot; src=&quot;../../lib/MochiKit.js&quot;&gt;&lt;/script&gt;
+-&lt;script type=&quot;text/javascript&quot; src=&quot;../../lib/Sarissa.js&quot;&gt;&lt;/script&gt;
+-&lt;script type=&quot;text/javascript&quot; src=&quot;../../lib/Freja.js&quot;&gt;&lt;/script&gt;
+-
+-&lt;!-- Controller Code --&gt;
+-&lt;script type=&quot;text/javascript&quot; src=&quot;example2.js&quot;&gt;&lt;/script&gt;
+-&lt;/head&gt;
+-
+-&lt;body&gt;
+-&lt;div id=&quot;content&quot;&gt;&lt;span style=&quot;color:white;background:firebrick&quot;&gt;Loading ...&lt;/span&gt;&lt;/div&gt;
+-&lt;/body&gt;
+-&lt;/html&gt;
+
+Deleted: branch/2.0.1/examples/tutorial/example2.js
+===================================================================
+--- branch/2.0.1/examples/tutorial/example2.js	2007-01-25 05:44:24 UTC (rev 72)
++++ branch/2.0.1/examples/tutorial/example2.js	2007-01-25 22:09:26 UTC (rev 73)
+@@ -1,31 +0,0 @@
+-var data = getModel(&quot;models/data.xml&quot;);
+-
+-var display = getView(&quot;views/display.xsl&quot;);
+-display.placeholder = &quot;content&quot;;
+-display.behaviors[&quot;editLink&quot;] = {
+-	onclick : function() {
+-		edit.render(data);
+-	}
+-};
+-
+-var edit = getView(&quot;views/edit.xsl&quot;);
+-edit.placeholder = &quot;content&quot;;
+-edit.behaviors[&quot;editForm&quot;] = {
+-	onsubmit : function() {
+-		try {
+-			data.updateFrom(edit);
+-			display.render(data);
+-		} catch (ex) {
+-			alert(ex.message);
+-		}
+-	}
+-};
+-edit.behaviors[&quot;displayLink&quot;] = {
+-	onclick : function() {
+-		display.render(data);
+-	}
+-};
+-
+-connect(window, &quot;onload&quot;, function() {
+-	display.render(data);
+-});
+\ No newline at end of file
+
+Modified: branch/2.0.1/examples/tutorial/views/edit.xsl
+===================================================================
+--- branch/2.0.1/examples/tutorial/views/edit.xsl	2007-01-25 05:44:24 UTC (rev 72)
++++ branch/2.0.1/examples/tutorial/views/edit.xsl	2007-01-25 22:09:26 UTC (rev 73)
+@@ -3,7 +3,7 @@
+ 	xmlns:xsl=&quot;<A HREF="http://www.w3.org/1999/XSL/Transform">http://www.w3.org/1999/XSL/Transform</A>&quot;&gt;
+ 
+ &lt;xsl:template match=&quot;item&quot;&gt;	
+-	&lt;form method=&quot;post&quot; action=&quot;#&quot; freja-behaviour=&quot;editForm&quot;&gt;
++	&lt;form method=&quot;post&quot; action=&quot;#&quot; class=&quot;editForm&quot;&gt;
+ 		&lt;h3&gt;&lt;input name=&quot;item/name&quot; type=&quot;text&quot; value=&quot;{name}&quot; /&gt;&lt;/h3&gt;
+ 		&lt;p&gt;&lt;textarea name=&quot;item/description&quot;&gt;&lt;xsl:value-of select=&quot;description&quot; /&gt;&lt;/textarea&gt;&lt;/p&gt;
+ 		&lt;p&gt;&lt;input name=&quot;item/price&quot; type=&quot;text&quot; value=&quot;{price}&quot; /&gt;&lt;/p&gt;
+
+Modified: branch/2.0.1/lib/Freja.js
+===================================================================
+--- branch/2.0.1/lib/Freja.js	2007-01-25 05:44:24 UTC (rev 72)
++++ branch/2.0.1/lib/Freja.js	2007-01-25 22:09:26 UTC (rev 73)
+@@ -1,10 +1,10 @@
+ /***
+ 
+-    Freja 2.0.alpha
++    Freja 2.0
+ 
+-    Build $Fri, 28 Jul 2006 13:38:48 UTC$
++    Build $Thu, 25 Jan 2007 22:01:11 UTC$
+ 
+-    Target: minimal
++    Target: mochi+sarissa
+ 
+     THIS FILE IS AUTOMATICALLY GENERATED.  If creating patches, please
+     diff against the source tree, not this file.
+@@ -21,7 +21,7 @@
+ 	Freja = {};
+ }
+ Freja.NAME = &quot;Freja&quot;;
+-Freja.VERSION = &quot;2.0.alpha&quot;;
++Freja.VERSION = &quot;2.0&quot;;
+ Freja.__repr__ = function () {
+ 	return &quot;[&quot; + this.NAME + &quot; &quot; + this.VERSION + &quot;]&quot;;
+ };
+@@ -51,154 +51,62 @@
+   * Freja._aux
+   * wrapper for external dependencies (frameworks).
+   *
+-  * This is the minimal auxiliary adapter. It contains self-sufficient
+-  * implementations of all dependencies.
++  * This is the default auxiliary adapter. It bridges Freja to MochiKit + Sarissa
+   *
++  * You shouldn't rely on this functionality - it's merely a hook for Freja towards
++  * external dependencies. This is the only part of the application you'll need to
++  * adjust, to make Freja play ball with your favourite framework.
+   */
++if (typeof(dojo) != &quot;undefined&quot;) {
++	dojo.require(&quot;MochiKit.Base&quot;);
++	dojo.require(&quot;MochiKit.Signal&quot;);
++	dojo.require(&quot;MochiKit.Async&quot;);
++	dojo.require(&quot;Sarissa&quot;);
++}
++if (typeof(JSAN) != &quot;undefined&quot;) {
++	JSAN.use(&quot;MochiKit.Base&quot;, []);
++	JSAN.use(&quot;MochiKit.Signal&quot;, []);
++	JSAN.use(&quot;MochiKit.Async&quot;, []);
++	JSAN.use(&quot;Sarissa&quot;, []);
++}
++try {
++	if (typeof(MochiKit.Base) == &quot;undefined&quot;) {
++		throw &quot;&quot;;
++	}
++	if (typeof(MochiKit.Signal) == &quot;undefined&quot;) {
++		throw &quot;&quot;;
++	}
++	if (typeof(MochiKit.Async) == &quot;undefined&quot;) {
++		throw &quot;&quot;;
++	}
++	if (typeof(Sarissa) == &quot;undefined&quot;) {
++		throw &quot;&quot;;
++	}
++} catch (e) {
++	throw new Error(&quot;Freja depends on MochiKit.Base, MochiKit.Signal, MochiKit.Async and Sarissa!&quot;);
++}
+ if (typeof(Freja) == &quot;undefined&quot;) {
+ 	Freja = {};
+ }
+ Freja._aux = {};
+ /** bind(func, self) : function */
+-// from <A HREF="http://blog.ianbicking.org/prototype-and-object-prototype.html">http://blog.ianbicking.org/prototype-and-object-prototype.html</A>
+-Freja._aux.bind = function(func, self) {
+-	if(typeof (func)==&quot;string&quot;){
+-		func=self[func];
+-	}
+-
+-	var im_func = null;
+-    if (typeof(func.im_func) == 'function') {
+-        im_func = func.im_func;
+-    } else {
+-        im_func = func;
+-    }
+-    func = function () {
+-        return func.im_func.apply(func.im_self, arguments);
+-    }
+-    func.im_func = im_func;
+-    func.im_self = self;
+-	return func;
+-
+-};
++Freja._aux.bind = MochiKit.Base.bind;
+ /** formContents(elem) : Array */
+-Freja._aux.formContents = function(elem) {
+-	if (!elem) v = document;
+-	var names = [];
+-	var values = [];
+-	var inputs = elem.getElementsByTagName(&quot;INPUT&quot;);
+-	for (var i = 0; i &lt; inputs.length; ++i) {
+-		var input = inputs[i];
+-		if (input.name) {
+-			if (input.type == &quot;radio&quot; || input.type == &quot;checkbox&quot;) {
+-				if (input.checked) {
+-					names.push(input.name);
+-					values.push(input.value);
+-				} else {
+-					names.push(input.name);
+-					values.push(&quot;&quot;);
+-				}
+-			} else {
+-				names.push(input.name);
+-				values.push(input.value);
+-			}
+-		}
+-	}
+-	var textareas = elem.getElementsByTagName(&quot;TEXTAREA&quot;);
+-	for (var i = 0; i &lt; textareas.length; ++i) {
+-		var input = textareas[i];
+-		if (input.name) {
+-			names.push(input.name);
+-			values.push(input.value);
+-		}
+-	}
+-	var selects = elem.getElementsByTagName(&quot;SELECT&quot;);
+-	for (var i = 0; i &lt; selects.length; ++i) {
+-		var input = selects[i];
+-		if (input.name) {
+-			if (input.selectedIndex &gt;= 0) {
+-				var opt = input.options[input.selectedIndex];
+-				names.push(input.name);
+-				values.push((opt.value) ? opt.value : &quot;&quot;);
+-			}
+-		}
+-	}
+-	return [names, values];
+-};
++Freja._aux.formContents = MochiKit.DOM.formContents;
+ /** getElement(id) : HTMLElement */
+-Freja._aux.getElement = function(id) {
+-	if (typeof(id) == &quot;object&quot;) {
+-		return id;
+-	} else {
+-		return document.getElementById(id);
+-	}
+-};
++Freja._aux.getElement = MochiKit.DOM.getElement;
+ 
+ /** connect(src, signal, fnc) : void */
+-Freja._aux.connect = function(src, signal, fnc) {
+-
+-	if(!src) return;
+-	if (src.addEventListener) {
+-		var wrapper = function(e) {
+-			var evt = {
+-				stop : function() {
+-					if (e.cancelable) {
+-						e.preventDefault();
+-					}
+-					e.stopPropagation();
+-				}
+-			}
+-			fnc(evt);
+-		}
+-		src.addEventListener(signal.replace(/^(on)/, &quot;&quot;), wrapper, false);
+-	} else if (src.attachEvent) {
+-		var wrapper = function() {
+-			var e = window.event;
+-			var evt = {
+-				stop : function() {
+-					e.cancelBubble = true;
+-					e.returnValue = false;
+-				}
+-			}
+-			fnc(evt);
+-		}
+-		src.attachEvent(signal, wrapper);
+-	}
+-	if (!src._signals) {
+-		src._signals = [];
+-	}
+-	if (!src._signals[signal]) {
+-		src._signals[signal] = [];
+-	}
+-	src._signals[signal].push(fnc);
+-};
+-/** signal(src, signal, ...) : void */
+-Freja._aux.signal = function(src, signal) {
+-
+-	try {
+-		var sigs = src._signals[signal];
+-		var args = [];
+-		for (var i=2; i &lt; arguments.length; i++) {
+-			args.push(arguments[i]);
+-		}
+-		for (var i=0; i &lt; sigs.length; i++) {
+-			try {
+-				sigs[i].apply(src, args);
+-			} catch (e) { /* squelch */ }
+-		}
+-	} catch (e) { /* squelch */ }
+-};
++Freja._aux.connect = MochiKit.Signal.connect;
++/** signal(src, signal, arg) : void */
++Freja._aux.signal = MochiKit.Signal.signal;
+ /** createDeferred() : Deferred */
+ Freja._aux.createDeferred = function() {
+-	return new Freja._aux.Deferred();
++	return new MochiKit.Async.Deferred();
+ };
+ /** openXMLHttpRequest(method, url, async, user, pass) : XMLHttpRequest */
+ Freja._aux.openXMLHttpRequest = function(method, url, async, user, pass) {
+-	var req;
+-	method = method.toUpperCase();
+-	try { req = new ActiveXObject(&quot;Msxml2.XMLHTTP&quot;); }
+-	catch (e) { try { req = new ActiveXObject(&quot;Microsoft.XMLHTTP&quot;); }
+-	catch (e) { req = new XMLHttpRequest(); }}
+-	if (!req) throw new Error(&quot;Can't create XMLHttpRequest&quot;);
++	var req = new XMLHttpRequest();
+ 	if (user &amp;&amp; pass) {
+ 		req.open(method, url, async, user, pass);
+ 	} else {
+@@ -210,94 +118,21 @@
+ 	return req;
+ };
+ /** sendXMLHttpRequest(req, sendContent) : Deferred */
+-Freja._aux.sendXMLHttpRequest = function(req, sendContent) {
+-	var d = Freja._aux.createDeferred();
+-	var bComplete = false;
+-	req.onreadystatechange = function() {
+-		if (req.readyState == 4 &amp;&amp; !bComplete) {
+-			if (req.status == 0 || req.status == 200 || req.status == 201 || req.status == 304) {
+-				d.callback(req);
+-			} else {
+-				d.errback(req);
+-			}
+-			bComplete = true;
+-		}
+-	}
+-	if (!sendContent) sendContent = &quot;&quot;;
+-	req.send(sendContent);
+-	return d;
+-};
++Freja._aux.sendXMLHttpRequest = MochiKit.Async.sendXMLHttpRequest;
+ /** xmlize(anyObject, objectName) : string */
+-Freja._aux.xmlize = function(anyObject, objectName, indentSpace) {
+-	var escape = function(sXml) {
+-		return sXml.replace(/&amp;/g, &quot;&amp;&quot;)
+-			.replace(/&lt;/g, &quot;&lt;&quot;)
+-			.replace(/&gt;/g, &quot;&gt;&quot;)
+-			.replace(/&quot;/g, &quot;&quot;&quot;)
+-			.replace(/'/g, &quot;&apos;&quot;);
+-	};
+-	indentSpace = indentSpace ? indentSpace : '';
+-	var s = indentSpace  + '&lt;' + objectName + '&gt;';
+-	var isLeaf = false;
+-	if(!(anyObject instanceof Object) || anyObject instanceof Number || anyObject instanceof String
+-	|| anyObject instanceof Boolean || anyObject instanceof Date){
+-		s += escape(&quot;&quot;+anyObject);
+-		isLeaf = true;
+-	} else {
+-		s += &quot;\n&quot;;
+-		var itemKey = '';
+-		var isArrayItem = anyObject instanceof Array;
+-		for (var name in anyObject) {
+-			s += Freja._aux.xmlize(anyObject[name], (isArrayItem ? &quot;array-item key=\&quot;&quot;+name+&quot;\&quot;&quot; : name), indentSpace + &quot;   &quot;);
+-		};
+-		s += indentSpace;
+-	};
+-	return s += (objectName.indexOf(' ') != -1 ? &quot;&lt;/array-item&gt;\n&quot;:&quot;&lt;/&quot; + objectName + &quot;&gt;\n&quot;);
+-};
++Freja._aux.xmlize = Sarissa.xmlize;
+ /** serializeXML(node) : string */
+-Freja._aux.serializeXML = function(node) {
+-	if (node.xml) return node.xml;
+-	return (new XMLSerializer()).serializeToString(node);
+-};
++Freja._aux.serializeXML = Sarissa.serialize;
+ /** loadXML(string) : XMLDocument */
+ Freja._aux.loadXML = function(text) {
+-	if (window.ActiveXObject) {
+-		var xmlDoc = new ActiveXObject(&quot;Msxml2.DOMDocument&quot;);
+-		xmlDoc.loadXML(text);
+-		xmlDoc.setProperty(&quot;SelectionLanguage&quot;, &quot;XPath&quot;);
+-		return xmlDoc;
+-	}
+ 	return (new DOMParser()).parseFromString(text, &quot;text/xml&quot;);
+ };
+ /** transformXSL(XMLDocument, XSLDocument) : string */
+-Freja._aux.transformXSL = function(xml, xsl, xslParameters) {
+-	if (typeof(xml.transformNode) != &quot;undefined&quot;) {
+-		// set the parameters
+-		for (var paramName in xslParameters) {
+-			xsl.setProperty (&quot;SelectionNamespaces&quot;, &quot;xmlns:xsl='<A HREF="http://www.w3.org/1999/XSL/Transform">http://www.w3.org/1999/XSL/Transform</A>'&quot;);
+-			var paramNode = xsl.selectSingleNode(&quot;//xsl:param[@name='&quot;+ paramName +&quot;']&quot;);
+-			paramNode.appendChild(xsl.createTextNode(xslParameters[paramName]));
+-			// @TODO: check if we have the 'select' attribute and remove it.
+-		}
+-		var result = xml.transformNode(xsl);
+-
+-		// clean the stylesheet.
+-		for (var paramName in xslParameters) {
+-			var paramNode = xsl.selectSingleNode(&quot;//xsl:param[@name='&quot;+ paramName +&quot;']&quot;);
+-			while(paramNode.firstChild) {
+-				paramNode.removeChild(paramNode.firstChild);
+-			}
+-		}
+-		return result;
+-	};
+-
++Freja._aux.transformXSL = function(xml, xsl) {
+ 	var processor = new XSLTProcessor();
+ 	processor.importStylesheet(xsl);
+-	for (var paramName in xslParameters) {
+-		processor.setParameter(null, paramName, xslParameters[paramName]);
+-	}
+-	return Freja._aux.serializeXML(processor.transformToDocument(xml));
+-
++	// return Freja._aux.serializeXML(processor.transformToDocument(xml));
++	return processor.transformToFragment(xml, window.document);
+ };
+ /** cloneXMLDocument(document) : XMLDocument */
+ Freja._aux.cloneXMLDocument = function(xmlDoc) {
+@@ -305,7 +140,7 @@
+ 	try {
+ 		clone = xmlDoc.cloneNode(true);
+ 	} catch(e) { /* squelch */ }
+-
++	
+ 	// Can't clone a DocumentNode in Safari &amp; Opera. Let's try something else.
+ 	// @note Wouldn't it be easier to serialize the document to string and the parse it to a new document ?
+ 	if (!clone) {
+@@ -315,185 +150,240 @@
+ 			var data = clone.importNode(xmlDoc.documentElement.cloneNode(true), true);
+ 			try {
+ 				clone.appendChild(data);
+-			} catch(e) {
++			} catch(e) {				
+ 				// Opera has already created a documentElement and can't append another root node
+ 				var rootNode = clone.documentElement;
+-				for (var i = data.childNodes.length; i &gt;= 0; i--) {
++			
++				for (var i = data.childNodes.length-1; i &gt;= 0; i--) {
+ 					rootNode.insertBefore(data.childNodes[i], rootNode.firstChild);
+ 				}
++				
+ 				// need to copy root node attributes
+ 				for (var i = 0; i &lt; xmlDoc.documentElement.attributes.length; i++) {
+ 					var name  = xmlDoc.documentElement.attributes.item(i).name;
+ 					var value = xmlDoc.documentElement.attributes.item(i).value;
+ 					clone.documentElement.setAttribute(name, value);
+-				}
++				}				
+ 			}
+ 		}
+ 	}
++	
+ 	return clone;
+ };
++
+ /** hasSupportForXSLT() : boolean */
+ Freja._aux.hasSupportForXSLT = function() { return (typeof(XSLTProcessor) != &quot;undefined&quot;); };
+ /** createQueryEngine() : Freja.QueryEngine */
+ Freja._aux.createQueryEngine = function() {
+-	if (window.ActiveXObject || (document.implementation &amp;&amp; document.implementation.hasFeature(&quot;XPath&quot;, &quot;3.0&quot;))) {
++	if (Sarissa.IS_ENABLED_SELECT_NODES) {
+ 		return new Freja.QueryEngine.XPath();
+ 	} else {
+ 		return new Freja.QueryEngine.SimplePath();
+ 	}
+ };
+-/** A pale replacement for MochiKit.Async.Deferred */
+-Freja._aux.Deferred = function() {
+-	this._good = [];
+-	this._bad = [];
+-	this._pending = null;
+-};
+-Freja._aux.Deferred.prototype.callback = function() {
+-	if (this._good.length == 0) {
+-		this._pending = [this.callback, arguments];
+-		return;
+-	}
+-	for (var i=0; i &lt; this._good.length; i++) {
+-		this._good[i].apply(window, arguments);
+-	}
+-	this._good = [];
+-};
+-Freja._aux.Deferred.prototype.errback = function() {
+-	if (this._bad.length == 0) {
+-		this._pending = [this.errback, arguments];
+-		return;
+-	}
+-	for (var i=0; i &lt; this._bad.length; i++) {
+-		this._bad[i].apply(window, arguments);
+-	}
+-	this._bad = [];
+-};
+-Freja._aux.Deferred.prototype.addCallbacks = function(fncOK, fncError) {
+-	if (fncOK) this._good[this._good.length] = fncOK;
+-	if (fncError) this._bad[this._bad.length] = fncError;
+-	if (this._pending) {
+-		this._pending[0].apply(this, this._pending[1]);
+-	}
+-};
+-Freja._aux.Deferred.prototype.addCallback = function(fncOK) {
+-	this.addCallbacks(fncOK);
+-};
+-Freja._aux.Deferred.prototype.addErrback = function(fncError) {
+-	this.addCallbacks(null, fncError);
+-};
+-if (document.implementation &amp;&amp; document.implementation.hasFeature(&quot;XPath&quot;, &quot;3.0&quot;)) {
+-	XMLDocument.prototype.selectNodes = function(sExpr, contextNode) {
+-		var nsDoc = this;
+-		var nsresolver = this.createNSResolver(this.documentElement);
+ 
+-		try {
+-			var oResult = this.evaluate(sExpr,
+-				(contextNode ? contextNode : this),
+-				nsresolver,
+-				XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
+-		} catch(e) {
+-			throw new Error(&quot;Can't evaluate expression &quot; + sExpr);
+-		}
+-		var nodeList = new Array(oResult.snapshotLength);
+-		nodeList.item = function(i) {
+-			return (i &lt; 0 || i &gt;= this.length) ? null : this[i];
+-		};
+-		nodeList.expr = sExpr;
+-		for (var i = 0;i &lt; nodeList.length; i++) {
+-			nodeList[i] = oResult.snapshotItem(i);
+-		};
+-		return nodeList;
+-	    };
+-	Element.prototype.selectNodes = function(sExpr) {
+-		var doc = this.ownerDocument;
+-		if (doc.selectNodes) {
+-			return doc.selectNodes(sExpr, this);
+-		} else {
+-			throw new Error(&quot;Method selectNodes is only supported by XML Elements&quot;);
+-		};
+-	};
+-	XMLDocument.prototype.selectSingleNode = function(sExpr, contextNode) {
+-		var ctx = contextNode ? contextNode : null;
+-		sExpr = &quot;(&quot;+sExpr+&quot;)[1]&quot;;
+-		var nodeList = this.selectNodes(sExpr, ctx);
+-		if (nodeList.length &gt; 0) {
+-			return nodeList.item(0);
+-		} else {
+-			return null;
+-		}
+-	};
+-	Element.prototype.selectSingleNode = function(sExpr) {
+-		var doc = this.ownerDocument;
+-		if (doc.selectSingleNode) {
+-			return doc.selectSingleNode(sExpr, this);
+-		} else {
+-			throw new Error(&quot;Method selectNodes is only supported by XML Elements&quot;);
+-		}
+-	};
+-};
+ 
+-// Adapated From Sarissa
+-// * @version 0.9.6.1
+-// * @author: Manos Batsis, mailto: mbatsis at users full stop sourceforge full stop net
+-
+-Freja._aux.pickRecentProgID = function(idList) {
+-    var bFound = false;
+-    for(var i=0; i &lt; idList.length &amp;&amp; !bFound; i++){
+-        try{
+-            var oDoc = new ActiveXObject(idList[i]);
+-            return idList[i];
+-        } catch (objException){ // trap; try next progID
++/**
++ * ====================================================================
++ * About
++ * ====================================================================
++ * Sarissa cross browser XML library - IE XPath Emulation 
++ * @version 0.9.7.6
++ * @author: Manos Batsis, mailto: mbatsis at users full stop sourceforge full stop net
++ *
++ * This script emulates Internet Explorer's selectNodes and selectSingleNode
++ * for Mozilla. Associating namespace prefixes with URIs for your XPath queries
++ * is easy with IE's setProperty. 
++ * USers may also map a namespace prefix to a default (unprefixed) namespace in the
++ * source document with Sarissa.setXpathNamespaces
++ *
++ *
++ * ====================================================================
++ * Licence
++ * ====================================================================
++ * Sarissa is free software distributed under the GNU GPL version 2 (see &lt;a href=&quot;gpl.txt&quot;&gt;gpl.txt&lt;/a&gt;) or higher, 
++ * GNU LGPL version 2.1 (see &lt;a href=&quot;lgpl.txt&quot;&gt;lgpl.txt&lt;/a&gt;) or higher and Apache Software License 2.0 or higher 
++ * (see &lt;a href=&quot;asl.txt&quot;&gt;asl.txt&lt;/a&gt;). This means you can choose one of the three and use that if you like. If 
++ * you make modifications under the ASL, i would appreciate it if you submitted those.
++ * In case your copy of Sarissa does not include the license texts, you may find
++ * them online in various formats at &lt;a href=&quot;<A HREF="http://www.gnu.org">http://www.gnu.org</A>&quot;&gt;<A HREF="http://www.gnu.org&lt;/a">http://www.gnu.org&lt;/a</A>&gt; and 
++ * &lt;a href=&quot;<A HREF="http://www.apache.org">http://www.apache.org</A>&quot;&gt;<A HREF="http://www.apache.org&lt;/a">http://www.apache.org&lt;/a</A>&gt;.
++ *
++ * THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY 
++ * KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE 
++ * WARRANTIES OF MERCHANTABILITY,FITNESS FOR A PARTICULAR PURPOSE 
++ * AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR 
++ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR 
++ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
++ * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
++ */
++if(_SARISSA_HAS_DOM_FEATURE &amp;&amp; document.implementation.hasFeature(&quot;XPath&quot;, &quot;3.0&quot;)){
++    /**
++    * &lt;p&gt;SarissaNodeList behaves as a NodeList but is only used as a result to &lt;code&gt;selectNodes&lt;/code&gt;,
++    * so it also has some properties IEs proprietery object features.&lt;/p&gt;
++    * @private
++    * @constructor
++    * @argument i the (initial) list size
++    */
++    function SarissaNodeList(i){
++        this.length = i;
++    };
++    /** &lt;p&gt;Set an Array as the prototype object&lt;/p&gt; */
++    SarissaNodeList.prototype = new Array(0);
++    /** &lt;p&gt;Inherit the Array constructor &lt;/p&gt; */
++    SarissaNodeList.prototype.constructor = Array;
++    /**
++    * &lt;p&gt;Returns the node at the specified index or null if the given index
++    * is greater than the list size or less than zero &lt;/p&gt;
++    * &lt;p&gt;&lt;b&gt;Note&lt;/b&gt; that in ECMAScript you can also use the square-bracket
++    * array notation instead of calling &lt;code&gt;item&lt;/code&gt;
++    * @argument i the index of the member to return
++    * @returns the member corresponding to the given index
++    */
++    SarissaNodeList.prototype.item = function(i) {
++        return (i &lt; 0 || i &gt;= this.length)?null:this[i];
++    };
++    /**
++    * &lt;p&gt;Emulate IE's expr property
++    * (Here the SarissaNodeList object is given as the result of selectNodes).&lt;/p&gt;
++    * @returns the XPath expression passed to selectNodes that resulted in
++    *          this SarissaNodeList
++    */
++    SarissaNodeList.prototype.expr = &quot;&quot;;
++    /** dummy, used to accept IE's stuff without throwing errors */
++    if(window.XMLDocument &amp;&amp; (!XMLDocument.prototype.setProperty)){
++        XMLDocument.prototype.setProperty  = function(x,y){};
++    };
++    /**
++    * &lt;p&gt;Programmatically control namespace URI/prefix mappings for XPath
++    * queries.&lt;/p&gt;
++    * &lt;p&gt;This method comes especially handy when used to apply XPath queries
++    * on XML documents with a default namespace, as there is no other way
++    * of mapping that to a prefix.&lt;/p&gt;
++    * &lt;p&gt;Using no namespace prefix in DOM Level 3 XPath queries, implies you
++    * are looking for elements in the null namespace. If you need to look
++    * for nodes in the default namespace, you need to map a prefix to it
++    * first like:&lt;/p&gt;
++    * &lt;pre&gt;Sarissa.setXpathNamespaces(oDoc, &quot;xmlns:myprefix=&amp;<A HREF="aposhttp://mynsURI&amp;amp;apos&amp;quot;">aposhttp://mynsURI&amp;apos&quot;</A>);&lt;/pre&gt;
++    * &lt;p&gt;&lt;b&gt;Note 1 &lt;/b&gt;: Use this method only if the source document features
++    * a default namespace (without a prefix), otherwise just use IE's setProperty
++    * (moz will rezolve non-default namespaces by itself). You will need to map that
++    * namespace to a prefix for queries to work.&lt;/p&gt;
++    * &lt;p&gt;&lt;b&gt;Note 2 &lt;/b&gt;: This method calls IE's setProperty method to set the
++    * appropriate namespace-prefix mappings, so you dont have to do that.&lt;/p&gt;
++    * @param oDoc The target XMLDocument to set the namespace mappings for.
++    * @param sNsSet A whilespace-seperated list of namespace declarations as
++    *            those would appear in an XML document. E.g.:
++    *            &lt;code&gt;&quot;xmlns:xhtml=&apos;<A HREF="http://www.w3.org/1999/xhtml&amp;apos;">http://www.w3.org/1999/xhtml&apos;</A>
++    * xmlns:&apos;<A HREF="http://www.w3.org/1999/XSL/Transform&amp;apos;&amp;quot;&lt;/code">http://www.w3.org/1999/XSL/Transform&apos;&quot;&lt;/code</A>&gt;
++    * @throws An error if the format of the given namespace declarations is bad.
++    */
++    Sarissa.setXpathNamespaces = function(oDoc, sNsSet) {
++        //oDoc._sarissa_setXpathNamespaces(sNsSet);
++        oDoc._sarissa_useCustomResolver = true;
++        var namespaces = sNsSet.indexOf(&quot; &quot;)&gt;-1?sNsSet.split(&quot; &quot;):new Array(sNsSet);
++        oDoc._sarissa_xpathNamespaces = new Array(namespaces.length);
++        for(var i=0;i &lt; namespaces.length;i++){
++            var ns = namespaces[i];
++            var colonPos = ns.indexOf(&quot;:&quot;);
++            var assignPos = ns.indexOf(&quot;=&quot;);
++            if(colonPos &gt; 0 &amp;&amp; assignPos &gt; colonPos+1){
++                var prefix = ns.substring(colonPos+1, assignPos);
++                var uri = ns.substring(assignPos+2, ns.length-1);
++                oDoc._sarissa_xpathNamespaces[prefix] = uri;
++            }else{
++                throw &quot;Bad format on namespace declaration(s) given&quot;;
++            };
+         };
+     };
+-    throw &quot;Could not retrieve a valid progID.&quot;;
+-}
++    /**
++    * @private Flag to control whether a custom namespace resolver should
++    *          be used, set to true by Sarissa.setXpathNamespaces
++    */
++    XMLDocument.prototype._sarissa_useCustomResolver = false;
++    /** @private */
++    XMLDocument.prototype._sarissa_xpathNamespaces = new Array();
++    /**
++    * &lt;p&gt;Extends the XMLDocument to emulate IE's selectNodes.&lt;/p&gt;
++    * @argument sExpr the XPath expression to use
++    * @argument contextNode this is for internal use only by the same
++    *           method when called on Elements
++    * @returns the result of the XPath search as a SarissaNodeList
++    * @throws An error if no namespace URI is found for the given prefix.
++    */
++    XMLDocument.prototype.selectNodes = function(sExpr, contextNode, returnSingle){
++        var nsDoc = this;
++        var nsresolver = this._sarissa_useCustomResolver
++        ? function(prefix){
++            var s = nsDoc._sarissa_xpathNamespaces[prefix];
++            if(s)return s;
++            else throw &quot;No namespace URI found for prefix: '&quot; + prefix+&quot;'&quot;;
++            }
++        : this.createNSResolver(this.documentElement);
++        var result = null;
++        if(!returnSingle){
++            var oResult = this.evaluate(sExpr,
++                (contextNode?contextNode:this),
++                nsresolver,
++                XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
++            var nodeList = new SarissaNodeList(oResult.snapshotLength);
++            nodeList.expr = sExpr;
++            for(var i=0;i&lt;nodeList.length;i++)
++                nodeList[i] = oResult.snapshotItem(i);
++            result = nodeList;
++        }
++        else {
++            result = oResult = this.evaluate(sExpr,
++                (contextNode?contextNode:this),
++                nsresolver,
++                XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
++        };
++        return result;      
++    };
++    /**
++    * &lt;p&gt;Extends the Element to emulate IE's selectNodes&lt;/p&gt;
++    * @argument sExpr the XPath expression to use
++    * @returns the result of the XPath search as an (Sarissa)NodeList
++    * @throws An
++    *             error if invoked on an HTML Element as this is only be
++    *             available to XML Elements.
++    */
++    Element.prototype.selectNodes = function(sExpr){
++        var doc = this.ownerDocument;
++        if(doc.selectNodes)
++            return doc.selectNodes(sExpr, this);
++        else
++            throw &quot;Method selectNodes is only supported by XML Elements&quot;;
++    };
++    /**
++    * &lt;p&gt;Extends the XMLDocument to emulate IE's selectSingleNode.&lt;/p&gt;
++    * @argument sExpr the XPath expression to use
++    * @argument contextNode this is for internal use only by the same
++    *           method when called on Elements
++    * @returns the result of the XPath search as an (Sarissa)NodeList
++    */
++    XMLDocument.prototype.selectSingleNode = function(sExpr, contextNode){
++        var ctx = contextNode?contextNode:null;
++        return this.selectNodes(sExpr, ctx, true);
++    };
++    /**
++    * &lt;p&gt;Extends the Element to emulate IE's selectSingleNode.&lt;/p&gt;
++    * @argument sExpr the XPath expression to use
++    * @returns the result of the XPath search as an (Sarissa)NodeList
++    * @throws An error if invoked on an HTML Element as this is only be
++    *             available to XML Elements.
++    */
++    Element.prototype.selectSingleNode = function(sExpr){
++        var doc = this.ownerDocument;
++        if(doc.selectSingleNode)
++            return doc.selectSingleNode(sExpr, this);
++        else
++            throw &quot;Method selectNodes is only supported by XML Elements&quot;;
++    };
++    Sarissa.IS_ENABLED_SELECT_NODES = true;
++};
+ 
+-if(typeof XSLTProcessor == 'undefined' &amp;&amp; typeof ActiveXObject  != 'undefined') {
+-
+-    _SARISSA_DOM_PROGID = Freja._aux.pickRecentProgID([&quot;Msxml2.DOMDocument.5.0&quot;, &quot;Msxml2.DOMDocument.4.0&quot;, &quot;Msxml2.DOMDocument.3.0&quot;, &quot;MSXML2.DOMDocument&quot;, &quot;MSXML.DOMDocument&quot;, &quot;Microsoft.XMLDOM&quot;]);
+-    _SARISSA_XMLHTTP_PROGID = Freja._aux.pickRecentProgID([&quot;Msxml2.XMLHTTP.5.0&quot;, &quot;Msxml2.XMLHTTP.4.0&quot;, &quot;MSXML2.XMLHTTP.3.0&quot;, &quot;MSXML2.XMLHTTP&quot;, &quot;Microsoft.XMLHTTP&quot;]);
+-    _SARISSA_THREADEDDOM_PROGID = Freja._aux.pickRecentProgID([&quot;Msxml2.FreeThreadedDOMDocument.5.0&quot;, &quot;MSXML2.FreeThreadedDOMDocument.4.0&quot;, &quot;MSXML2.FreeThreadedDOMDocument.3.0&quot;]);
+-    _SARISSA_XSLTEMPLATE_PROGID = Freja._aux.pickRecentProgID([&quot;Msxml2.XSLTemplate.5.0&quot;, &quot;Msxml2.XSLTemplate.4.0&quot;, &quot;MSXML2.XSLTemplate.3.0&quot;]);
+-
+-	XSLTProcessor = function(){
+-	    this.template = new ActiveXObject(_SARISSA_XSLTEMPLATE_PROGID);
+-	    this.processor = null;
+-	};
+-
+-	XSLTProcessor.prototype.importStylesheet = function(xslDoc){
+-	    // convert stylesheet to free threaded
+-	    var converted = new ActiveXObject(_SARISSA_THREADEDDOM_PROGID);
+-	    converted.loadXML(xslDoc.xml);
+-	    this.template.stylesheet = converted;
+-	    this.processor = this.template.createProcessor();
+-	    // (re)set default param values
+-	    this.paramsSet = new Array();
+-	};
+-
+-	XSLTProcessor.prototype.transformToDocument = function(sourceDoc){
+-	    this.processor.input = sourceDoc;
+-	    var outDoc = new ActiveXObject(_SARISSA_DOM_PROGID);
+-	    this.processor.output = outDoc;
+-	    this.processor.transform();
+-	    return outDoc;
+-	};
+-
+-	XSLTProcessor.prototype.setParameter = function(nsURI, name, value){
+-	    /* nsURI is optional but cannot be null */
+-	    if(nsURI){
+-	        this.processor.addParameter(name, value, nsURI);
+-	    }else{
+-	        this.processor.addParameter(name, value);
+-	    };
+-	    /* update updated params for getParameter */
+-	    if(!this.paramsSet[&quot;&quot;+nsURI]){
+-	        this.paramsSet[&quot;&quot;+nsURI] = new Array();
+-	    };
+-	    this.paramsSet[&quot;&quot;+nsURI][name] = value;
+-	};
+-
+-}
+-
+ 
+ /**
+   * The baseclass for queryengines
+@@ -510,57 +400,79 @@
+ 	}
+ };
+ Freja.QueryEngine.prototype.get = function(document, expression) {
+-	try {
+-		var node = this._find(document, expression);
+-	} catch(x) {
+-		return null;
+-	}
+-	if(node) return node.nodeValue;
++	
++	var node = this._find(document, expression);
+ 
++	if(!node) throw new Error(&quot;Can't evaluate expression &quot; + expression);
++
++	switch(node.nodeType) {
++		case 1: /* element */
++			// return content of text nodes
++			// @TO-DO: return more than just firstchild?
++			if(node.firstChild &amp;&amp; (node.firstChild.nodeType == 3 || node.firstChild.nodeType == 4)) {
++				return node.firstChild.nodeValue;
++			}
++			break;
++		case 2: /* Attribute */
++			return node.nodeValue;
++			break;
++		case 3: /* text node */
++			// fall through
++		case 4: /* CDATA section */
++			return node.nodeValue;
++			break;	
++	}
++	return null;
+ };
+ Freja.QueryEngine.prototype.set = function(document, expression, value) {
+-	try {
+-		var node = this._find(document, expression);
+-		if(node)
+-			node.nodeValue = value;
+-	} catch(x) {
+-		// text node not found. Might need to be created.
+-		// try not to process field names that are not meant to be xpath expressions
+-		if(expression.lastIndexOf('/') != -1) {
+-			var nodeName = expression.substr(expression.lastIndexOf('/')+1);
+-			if(nodeName.charAt(0)=='@') {
+-				// trying to set a non-existing attribute. Let's create it.
+-				var parentExpression =  expression.substring(0, expression.lastIndexOf('/'));
+-				var pNode = this._find(document, parentExpression);
+-				if(pNode) {
+-					// this._find returns a text node
+-					pNode = pNode.parentNode;
+-					pNode.setAttribute(nodeName.substr(1),value);
+-				}
++	var node = this._find(document, expression);
++	if(!node) {
++		// Could not evaluate expression.
++		// Check if we're trying to set a non-existent attribute
++		var nodeName = expression.substr(expression.lastIndexOf('/')+1);
++		if(nodeName.charAt(0)=='@') {
++			// Let's try to create the attribute.
++			var parentExpression =  expression.substring(0, expression.lastIndexOf('/'));
++			var pNode = this._find(document, parentExpression);
++			if(pNode) {				
++				pNode.setAttribute(nodeName.substr(1),value);
++				return;
+ 			}
+-			// else parent element does not exist.. can't do anything
++			// else parent node non existent either, give up.
+ 		}
++		// not an attribute, give up.
++		throw new Error(&quot;Can't evaluate expression &quot; + expression);
+ 	}
++
++	// Expression succesfully evaluated. Set content
++	switch(node.nodeType) {
++		case 1: /* element */
++			// @TO-DO: set more than just firstchild			
++			if(node.firstChild &amp;&amp; (node.firstChild.nodeType == 3 || node.firstChild.nodeType == 4)) {
++				node.firstChild.nodeValue = value;
++			} else {
++				node.appendChild(document.createTextNode(value));
++			}
++			break;
++		case 2: /* Attribute */
++			node.nodeValue = value;
++			break;
++		case 3: /* text node */
++			// fall through
++		case 4: /* CDATA section */
++			node.nodeValue = value;
++			break;	
++	}
++	return ;
+ };
+ /**
+   * XPath query engine.
+   */
+ Freja.QueryEngine.XPath = function() {};
+ Freja.Class.extend(Freja.QueryEngine.XPath, Freja.QueryEngine);
+-Freja.QueryEngine.XPath.prototype._find = function(document, expression) {
+-	var node = document.selectSingleNode(expression);
+-	if (node &amp;&amp; node.nodeType == 2) {
+-		return node;
+-	}
+-	if (node &amp;&amp; node.firstChild &amp;&amp; node.firstChild.nodeType == 3) {
+-		return node.firstChild;
+-	}
+-	if (node &amp;&amp; node.firstChild &amp;&amp; node.firstChild.nodeType == 4) {
+-		return node.firstChild;
+-	}
+-
+-	throw new Error(&quot;Can't evaluate expression &quot; + expression);
+-	return null;
++Freja.QueryEngine.XPath.prototype._find = function(document, expression) {	
++	var result = document.selectSingleNode(expression);	
++	return result;
+ };
+ /**
+   * SimplePath
+@@ -568,6 +480,7 @@
+ Freja.QueryEngine.SimplePath = function() {};
+ Freja.Class.extend(Freja.QueryEngine.SimplePath, Freja.QueryEngine);
+ Freja.QueryEngine.SimplePath.prototype._find = function(document, expression) {
++	
+ 	if (!expression.match(/^[\d\w\/@\[\]=_\-']*$/)) {
+ 		throw new Error(&quot;Can't evaluate expression &quot; + expression);
+ 	}
+@@ -670,7 +583,10 @@
+ Freja.Model.prototype.updateFrom = function(view) {
+ 	var values = view.getValues();
+ 	for (var i = 0; i &lt; values[0].length; ++i) {
+-		this.set(values[0][i], values[1][i]);
++		// try not to process field names that are not meant to be xpath expressions
++		if(values[0][i].lastIndexOf('/') != -1) {		
++			this.set(values[0][i], values[1][i]);
++		}
+ 	}
+ };
+ /**
+@@ -806,7 +722,8 @@
+ 
+ 			var trans = this.view._renderer.transform(model, this.view, this.xslParameters);
+ 			trans.addCallback(Freja._aux.bind(function(html) {
+-				this._destination.innerHTML = html;
++				this._destination.innerHTML = &quot;&quot;;
++				this._destination.appendChild(html);
+ 			}, this.view));
+ 			trans.addCallback(Freja._aux.bind(function() {
+ 				Freja._aux.signal(this, &quot;onrendercomplete&quot;, this._destination)
+@@ -913,8 +830,9 @@
+ Freja.View.Renderer.XSLTransformer.prototype.transform = function(model, view, xslParameters) {
+         var d = Freja._aux.createDeferred();
+         try {
+-		var html = Freja._aux.transformXSL(model.document, view.document, xslParameters);
+-		if (!html) {
++		// var html = Freja._aux.transformXSL(model.document, view.document, xslParameters);
++		var dom = Freja._aux.transformXSL(model.document, view.document, xslParameters);
++		if (!dom) {
+ 			d.errback(new Error(&quot;XSL Transformation error.&quot;));
+ 		} else {
+ 			// fix empty textareas
+@@ -923,8 +841,10 @@
+ 			// (cedsav) don't remember all the details but method=&quot;xml&quot; is the way to go.
+ 			// method=&quot;html&quot; would output html not xhtml, plus I think it implies that
+ 			// you want to output a valid html document (with html, head and body tags).
+-			html = html.replace(/&lt;textarea([^&gt;]*)\/&gt;/gi,&quot;&lt;textarea $1&gt;&lt;/textarea&gt;&quot;);
+-			d.callback(html);
++			
++			// html = html.replace(/&lt;textarea([^&gt;]*)\/&gt;/gi,&quot;&lt;textarea $1&gt;&lt;/textarea&gt;&quot;);
++			
++			d.callback(dom);
+ 		}
+ 	} catch (ex) {
+ 		d.errback(ex);
+
+Modified: branch/2.0.1/lib/Sarissa.js
+===================================================================
+--- branch/2.0.1/lib/Sarissa.js	2007-01-25 05:44:24 UTC (rev 72)
++++ branch/2.0.1/lib/Sarissa.js	2007-01-25 22:09:26 UTC (rev 73)
+@@ -1,75 +1,40 @@
+ /**
+-  * Package : begin
+-  */
+-if (typeof(dojo) != 'undefined') {
+-	dojo.provide(&quot;Sarissa&quot;);
+-}
+-Sarissa = {};
+-Sarissa.NAME = &quot;Sarissa&quot;;
+-Sarissa.VERSION = &quot;0.9.6.1&quot;;
+-Sarissa.__repr__ = function () {
+-	return &quot;[&quot; + this.NAME + &quot; &quot; + this.VERSION + &quot;]&quot;;
+-};
+-Sarissa.toString = function () {
+-	return this.__repr__();
+-};
+-/**
+-  * Package : end
+-  */
+-/**
+  * ====================================================================
+  * About
+  * ====================================================================
+  * Sarissa is an ECMAScript library acting as a cross-browser wrapper for native XML APIs.
+  * The library supports Gecko based browsers like Mozilla and Firefox,
+  * Internet Explorer (5.5+ with MSXML3.0+), Konqueror, Safari and a little of Opera
+- * @version 0.9.6.1
++ * @version 0.9.7.6
+  * @author: Manos Batsis, mailto: mbatsis at users full stop sourceforge full stop net
+  * ====================================================================
+  * Licence
+  * ====================================================================
+- * This program is free software; you can redistribute it and/or modify
+- * it under the terms of the GNU General Public License version 2 or
+- * the GNU Lesser General Public License version 2.1 as published by
+- * the Free Software Foundation (your choice between the two).
+- *
+- * This program is distributed in the hope that it will be useful,
+- * but WITHOUT ANY WARRANTY; without even the implied warranty of
+- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+- * GNU General Public License or GNU Lesser General Public License for more details.
+- *
+- * You should have received a copy of the GNU General Public License
+- * or GNU Lesser General Public License along with this program; if not,
+- * write to the Free Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+- * or visit <A HREF="http://www.gnu.org">http://www.gnu.org</A>
+- *
++ * Sarissa is free software distributed under the GNU GPL version 2 (see &lt;a href=&quot;gpl.txt&quot;&gt;gpl.txt&lt;/a&gt;) or higher, 
++ * GNU LGPL version 2.1 (see &lt;a href=&quot;lgpl.txt&quot;&gt;lgpl.txt&lt;/a&gt;) or higher and Apache Software License 2.0 or higher 
++ * (see &lt;a href=&quot;asl.txt&quot;&gt;asl.txt&lt;/a&gt;). This means you can choose one of the three and use that if you like. If 
++ * you make modifications under the ASL, i would appreciate it if you submitted those.
++ * In case your copy of Sarissa does not include the license texts, you may find
++ * them online in various formats at &lt;a href=&quot;<A HREF="http://www.gnu.org">http://www.gnu.org</A>&quot;&gt;<A HREF="http://www.gnu.org&lt;/a">http://www.gnu.org&lt;/a</A>&gt; and 
++ * &lt;a href=&quot;<A HREF="http://www.apache.org">http://www.apache.org</A>&quot;&gt;<A HREF="http://www.apache.org&lt;/a">http://www.apache.org&lt;/a</A>&gt;.
++ * THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY 
++ * KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE 
++ * WARRANTIES OF MERCHANTABILITY,FITNESS FOR A PARTICULAR PURPOSE 
++ * AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR 
++ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR 
++ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
++ * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+  */
+ /**
+- * &lt;p&gt;Sarissa is a utility class. Provides &quot;static&quot; methods for DOMDocument and
+- * XMLHTTP objects, DOM Node serializatrion to XML strings and other goodies.&lt;/p&gt;
++ * &lt;p&gt;Sarissa is a utility class. Provides &quot;static&quot; methods for DOMDocument, 
++ * DOM Node serialization to XML strings and other utility goodies.&lt;/p&gt;
+  * @constructor
+  */
+-//function Sarissa(){};
+-/** @private */
++function Sarissa(){};
+ Sarissa.PARSED_OK = &quot;Document contains no parsing errors&quot;;
+-/**
+- * Tells you whether transformNode and transformNodeToObject are available. This functionality
+- * is contained in sarissa_ieemu_xslt.js and is deprecated. If you want to control XSLT transformations
+- * use the XSLTProcessor
+- * @deprecated
+- * @type boolean
+- */
+-Sarissa.IS_ENABLED_TRANSFORM_NODE = false;
+-/**
+- * tells you whether XMLHttpRequest (or equivalent) is available
+- * @type boolean
+- */
+-Sarissa.IS_ENABLED_XMLHTTP = false;
+-/**
+- * tells you whether selectNodes/selectSingleNode is available
+- * @type boolean
+- */
+-Sarissa.IS_ENABLED_SELECT_NODES = false;
++Sarissa.PARSED_EMPTY = &quot;Document is empty&quot;;
++Sarissa.PARSED_UNKNOWN_ERROR = &quot;Not well-formed or other error&quot;;
+ var _sarissa_iNsCounter = 0;
+ var _SARISSA_IEPREFIX4XSLPARAM = &quot;&quot;;
+ var _SARISSA_HAS_DOM_IMPLEMENTATION = document.implementation &amp;&amp; true;
+@@ -78,10 +43,12 @@
+ var _SARISSA_IS_MOZ = _SARISSA_HAS_DOM_CREATE_DOCUMENT &amp;&amp; _SARISSA_HAS_DOM_FEATURE;
+ var _SARISSA_IS_SAFARI = (navigator.userAgent &amp;&amp; navigator.vendor &amp;&amp; (navigator.userAgent.toLowerCase().indexOf(&quot;applewebkit&quot;) != -1 || navigator.vendor.indexOf(&quot;Apple&quot;) != -1));
+ var _SARISSA_IS_IE = document.all &amp;&amp; window.ActiveXObject &amp;&amp; navigator.userAgent.toLowerCase().indexOf(&quot;msie&quot;) &gt; -1  &amp;&amp; navigator.userAgent.toLowerCase().indexOf(&quot;opera&quot;) == -1;
+-if(!window.Node || !window.Node.ELEMENT_NODE){
+-    var Node = {ELEMENT_NODE: 1, ATTRIBUTE_NODE: 2, TEXT_NODE: 3, CDATA_SECTION_NODE: 4, ENTITY_REFERENCE_NODE: 5,  ENTITY_NODE: 6, PROCESSING_INSTRUCTION_NODE: 7, COMMENT_NODE: 8, DOCUMENT_NODE: 9, DOCUMENT_TYPE_NODE: 10, DOCUMENT_FRAGMENT_NODE: 11, NOTATION_NODE: 12};
++if(!window.Node || !Node.ELEMENT_NODE){
++    Node = {ELEMENT_NODE: 1, ATTRIBUTE_NODE: 2, TEXT_NODE: 3, CDATA_SECTION_NODE: 4, ENTITY_REFERENCE_NODE: 5,  ENTITY_NODE: 6, PROCESSING_INSTRUCTION_NODE: 7, COMMENT_NODE: 8, DOCUMENT_NODE: 9, DOCUMENT_TYPE_NODE: 10, DOCUMENT_FRAGMENT_NODE: 11, NOTATION_NODE: 12};
+ };
+ 
++if(typeof XMLDocument == &quot;undefined&quot; &amp;&amp; typeof Document !=&quot;undefined&quot;){ XMLDocument = Document; } 
++
+ // IE initialization
+ if(_SARISSA_IS_IE){
+     // for XSLT parameter names, prefix needed by IE
+@@ -89,13 +56,15 @@
+     // used to store the most recent ProgID available out of the above
+     var _SARISSA_DOM_PROGID = &quot;&quot;;
+     var _SARISSA_XMLHTTP_PROGID = &quot;&quot;;
++    var _SARISSA_DOM_XMLWRITER = &quot;&quot;;
+     /**
+      * Called when the Sarissa_xx.js file is parsed, to pick most recent
+      * ProgIDs for IE, then gets destroyed.
++     * @private
+      * @param idList an array of MSXML PROGIDs from which the most recent will be picked for a given object
+      * @param enabledList an array of arrays where each array has two items; the index of the PROGID for which a certain feature is enabled
+      */
+-    pickRecentProgID = function (idList, enabledList){
++    Sarissa.pickRecentProgID = function (idList){
+         // found progID flag
+         var bFound = false;
+         for(var i=0; i &lt; idList.length &amp;&amp; !bFound; i++){
+@@ -103,60 +72,82 @@
+                 var oDoc = new ActiveXObject(idList[i]);
+                 o2Store = idList[i];
+                 bFound = true;
+-                for(var j=0;j&lt;enabledList.length;j++)
+-                    if(i &lt;= enabledList[j][1])
+-                        Sarissa[&quot;IS_ENABLED_&quot;+enabledList[j][0]] = true;
+             }catch (objException){
+                 // trap; try next progID
+             };
+         };
+-        if (!bFound)
++        if (!bFound) {
+             throw &quot;Could not retreive a valid progID of Class: &quot; + idList[idList.length-1]+&quot;. (original exception: &quot;+e+&quot;)&quot;;
++        };
+         idList = null;
+         return o2Store;
+     };
+     // pick best available MSXML progIDs
+-    _SARISSA_DOM_PROGID = pickRecentProgID([&quot;Msxml2.DOMDocument.5.0&quot;, &quot;Msxml2.DOMDocument.4.0&quot;, &quot;Msxml2.DOMDocument.3.0&quot;, &quot;MSXML2.DOMDocument&quot;, &quot;MSXML.DOMDocument&quot;, &quot;Microsoft.XMLDOM&quot;], [[&quot;SELECT_NODES&quot;, 2],[&quot;TRANSFORM_NODE&quot;, 2]]);
+-    _SARISSA_XMLHTTP_PROGID = pickRecentProgID([&quot;Msxml2.XMLHTTP.5.0&quot;, &quot;Msxml2.XMLHTTP.4.0&quot;, &quot;MSXML2.XMLHTTP.3.0&quot;, &quot;MSXML2.XMLHTTP&quot;, &quot;Microsoft.XMLHTTP&quot;], [[&quot;XMLHTTP&quot;, 4]]);
+-    _SARISSA_THREADEDDOM_PROGID = pickRecentProgID([&quot;Msxml2.FreeThreadedDOMDocument.5.0&quot;, &quot;MSXML2.FreeThreadedDOMDocument.4.0&quot;, &quot;MSXML2.FreeThreadedDOMDocument.3.0&quot;]);
+-    _SARISSA_XSLTEMPLATE_PROGID = pickRecentProgID([&quot;Msxml2.XSLTemplate.5.0&quot;, &quot;Msxml2.XSLTemplate.4.0&quot;, &quot;MSXML2.XSLTemplate.3.0&quot;], [[&quot;XSLTPROC&quot;, 2]]);
++    _SARISSA_DOM_PROGID = null;
++    _SARISSA_THREADEDDOM_PROGID = null;
++    _SARISSA_XSLTEMPLATE_PROGID = null;
++    _SARISSA_XMLHTTP_PROGID = null;
++    if(!window.XMLHttpRequest){
++        /**
++         * Emulate XMLHttpRequest
++         * @constructor
++         */
++        XMLHttpRequest = function() {
++            if(!_SARISSA_XMLHTTP_PROGID){
++                _SARISSA_XMLHTTP_PROGID = Sarissa.pickRecentProgID([&quot;Msxml2.XMLHTTP.6.0&quot;, &quot;MSXML2.XMLHTTP.3.0&quot;, &quot;MSXML2.XMLHTTP&quot;, &quot;Microsoft.XMLHTTP&quot;]);
++            };
++            return new ActiveXObject(_SARISSA_XMLHTTP_PROGID);
++        };
++    };
+     // we dont need this anymore
+-    pickRecentProgID = null;
+     //============================================
+     // Factory methods (IE)
+     //============================================
+     // see non-IE version
+     Sarissa.getDomDocument = function(sUri, sName){
++        if(!_SARISSA_DOM_PROGID){
++            _SARISSA_DOM_PROGID = Sarissa.pickRecentProgID([&quot;Msxml2.DOMDocument.6.0&quot;, &quot;Msxml2.DOMDocument.3.0&quot;, &quot;MSXML2.DOMDocument&quot;, &quot;MSXML.DOMDocument&quot;, &quot;Microsoft.XMLDOM&quot;]);
++        };
+         var oDoc = new ActiveXObject(_SARISSA_DOM_PROGID);
+-        // if a root tag name was provided, we need to load it in the DOM
+-        // object
++        // if a root tag name was provided, we need to load it in the DOM object
+         if (sName){
+-            // if needed, create an artifical namespace prefix the way Moz
+-            // does
+-            if (sUri){
+-                oDoc.loadXML(&quot;&lt;a&quot; + _sarissa_iNsCounter + &quot;:&quot; + sName + &quot; xmlns:a&quot; + _sarissa_iNsCounter + &quot;=\&quot;&quot; + sUri + &quot;\&quot; /&gt;&quot;);
+-                // don't use the same prefix again
+-                ++_sarissa_iNsCounter;
+-            }
+-            else
+-                oDoc.loadXML(&quot;&lt;&quot; + sName + &quot;/&gt;&quot;);
++            // create an artifical namespace prefix 
++            // or reuse existing prefix if applicable
++            var prefix = &quot;&quot;;
++            if(sUri){
++                if(sName.indexOf(&quot;:&quot;) &gt; 1){
++                    prefix = sName.substring(0, sName.indexOf(&quot;:&quot;));
++                    sName = sName.substring(sName.indexOf(&quot;:&quot;)+1); 
++                }else{
++                    prefix = &quot;a&quot; + (_sarissa_iNsCounter++);
++                };
++            };
++            // use namespaces if a namespace URI exists
++            if(sUri){
++                oDoc.loadXML('&lt;' + prefix+':'+sName + &quot; xmlns:&quot; + prefix + &quot;=\&quot;&quot; + sUri + &quot;\&quot;&quot; + &quot; /&gt;&quot;);
++            } else {
++                oDoc.loadXML('&lt;' + sName + &quot; /&gt;&quot;);
++            };
+         };
+         return oDoc;
+     };
+-    // see non-IE version
++    // see non-IE version   
+     Sarissa.getParseErrorText = function (oDoc) {
+         var parseErrorText = Sarissa.PARSED_OK;
+-        if(oDoc.parseError != 0){
+-            parseErrorText = &quot;XML Parsing Error: &quot; + oDoc.parseError.reason +
+-                &quot;\nLocation: &quot; + oDoc.parseError.url +
+-                &quot;\nLine Number &quot; + oDoc.parseError.line + &quot;, Column &quot; +
+-                oDoc.parseError.linepos +
++        if(oDoc.parseError.errorCode != 0){
++            parseErrorText = &quot;XML Parsing Error: &quot; + oDoc.parseError.reason + 
++                &quot;\nLocation: &quot; + oDoc.parseError.url + 
++                &quot;\nLine Number &quot; + oDoc.parseError.line + &quot;, Column &quot; + 
++                oDoc.parseError.linepos + 
+                 &quot;:\n&quot; + oDoc.parseError.srcText +
+                 &quot;\n&quot;;
+             for(var i = 0;  i &lt; oDoc.parseError.linepos;i++){
+                 parseErrorText += &quot;-&quot;;
+             };
+             parseErrorText +=  &quot;^\n&quot;;
++        }
++        else if(oDoc.documentElement == null){
++            parseErrorText = Sarissa.PARSED_EMPTY;
+         };
+         return parseErrorText;
+     };
+@@ -164,41 +155,116 @@
+     Sarissa.setXpathNamespaces = function(oDoc, sNsSet) {
+         oDoc.setProperty(&quot;SelectionLanguage&quot;, &quot;XPath&quot;);
+         oDoc.setProperty(&quot;SelectionNamespaces&quot;, sNsSet);
+-    };
++    };   
+     /**
+-     * Basic implementation of Mozilla's XSLTProcessor for IE.
++     * Basic implementation of Mozilla's XSLTProcessor for IE. 
+      * Reuses the same XSLT stylesheet for multiple transforms
+      * @constructor
+      */
+     XSLTProcessor = function(){
++        if(!_SARISSA_XSLTEMPLATE_PROGID){
++            _SARISSA_XSLTEMPLATE_PROGID = Sarissa.pickRecentProgID([&quot;Msxml2.XSLTemplate.6.0&quot;, &quot;MSXML2.XSLTemplate.3.0&quot;]);
++        };
+         this.template = new ActiveXObject(_SARISSA_XSLTEMPLATE_PROGID);
+         this.processor = null;
+     };
+     /**
+-     * Impoprts the given XSLT DOM and compiles it to a reusable transform
++     * Imports the given XSLT DOM and compiles it to a reusable transform
++     * &lt;b&gt;Note:&lt;/b&gt; If the stylesheet was loaded from a URL and contains xsl:import or xsl:include elements,it will be reloaded to resolve those
+      * @argument xslDoc The XSLT DOMDocument to import
+      */
+     XSLTProcessor.prototype.importStylesheet = function(xslDoc){
++        if(!_SARISSA_THREADEDDOM_PROGID){
++            _SARISSA_THREADEDDOM_PROGID = Sarissa.pickRecentProgID([&quot;MSXML2.FreeThreadedDOMDocument.6.0&quot;, &quot;MSXML2.FreeThreadedDOMDocument.3.0&quot;]);
++        };
++        xslDoc.setProperty(&quot;SelectionLanguage&quot;, &quot;XPath&quot;);
++        xslDoc.setProperty(&quot;SelectionNamespaces&quot;, &quot;xmlns:xsl='<A HREF="http://www.w3.org/1999/XSL/Transform">http://www.w3.org/1999/XSL/Transform</A>'&quot;);
+         // convert stylesheet to free threaded
+         var converted = new ActiveXObject(_SARISSA_THREADEDDOM_PROGID);
+-        converted.loadXML(xslDoc.xml);
++        // make included/imported stylesheets work if exist and xsl was originally loaded from url
++        if(xslDoc.url &amp;&amp; xslDoc.selectSingleNode(&quot;//xsl:*[local-name() = 'import' or local-name() = 'include']&quot;) != null){
++            converted.async = false;
++            if (_SARISSA_THREADEDDOM_PROGID == &quot;MSXML2.FreeThreadedDOMDocument.6.0&quot;) { 
++                converted.setProperty(&quot;AllowDocumentFunction&quot;, true); 
++                converted.resolveExternals = true; 
++            }
++            converted.load(xslDoc.url);
++        } else {
++            converted.loadXML(xslDoc.xml);
++        };
++        converted.setProperty(&quot;SelectionNamespaces&quot;, &quot;xmlns:xsl='<A HREF="http://www.w3.org/1999/XSL/Transform">http://www.w3.org/1999/XSL/Transform</A>'&quot;);
++        var output = converted.selectSingleNode(&quot;//xsl:output&quot;);
++        this.outputMethod = output ? output.getAttribute(&quot;method&quot;) : &quot;html&quot;;
+         this.template.stylesheet = converted;
+         this.processor = this.template.createProcessor();
+-        // (re)set default param values
++        // for getParameter and clearParameters
+         this.paramsSet = new Array();
+     };
++
+     /**
+-     * Transform the given XML DOM
++     * Transform the given XML DOM and return the transformation result as a new DOM document
+      * @argument sourceDoc The XML DOMDocument to transform
+      * @return The transformation result as a DOM Document
+      */
+     XSLTProcessor.prototype.transformToDocument = function(sourceDoc){
++        // fix for bug 1549749
++        if(_SARISSA_THREADEDDOM_PROGID){
++            this.processor.input=sourceDoc;
++            var outDoc=new ActiveXObject(_SARISSA_DOM_PROGID);
++            this.processor.output=outDoc;
++            this.processor.transform();
++            return outDoc;
++        }
++        else{
++            if(!_SARISSA_DOM_XMLWRITER){
++                _SARISSA_DOM_XMLWRITER = Sarissa.pickRecentProgID([&quot;Msxml2.MXXMLWriter.6.0&quot;, &quot;Msxml2.MXXMLWriter.3.0&quot;, &quot;MSXML2.MXXMLWriter&quot;, &quot;MSXML.MXXMLWriter&quot;, &quot;Microsoft.XMLDOM&quot;]);
++            };
++            this.processor.input = sourceDoc;
++            var outDoc = new ActiveXObject(_SARISSA_DOM_XMLWRITER);
++            this.processor.output = outDoc; 
++            this.processor.transform();
++            var oDoc = new ActiveXObject(_SARISSA_DOM_PROGID);
++            oDoc.loadXML(outDoc.output+&quot;&quot;);
++            return oDoc;
++        };
++    };
++    
++    /**
++     * Transform the given XML DOM and return the transformation result as a new DOM fragment.
++     * &lt;b&gt;Note&lt;/b&gt;: The xsl:output method must match the nature of the owner document (XML/HTML).
++     * @argument sourceDoc The XML DOMDocument to transform
++     * @argument ownerDoc The owner of the result fragment
++     * @return The transformation result as a DOM Document
++     */
++    XSLTProcessor.prototype.transformToFragment = function (sourceDoc, ownerDoc) {
+         this.processor.input = sourceDoc;
+-        var outDoc = new ActiveXObject(_SARISSA_DOM_PROGID);
+-        this.processor.output = outDoc;
+         this.processor.transform();
+-        return outDoc;
++        var s = this.processor.output;
++        var f = ownerDoc.createDocumentFragment();
++        if (this.outputMethod == 'text') {
++            f.appendChild(ownerDoc.createTextNode(s));
++        } else if (ownerDoc.body &amp;&amp; ownerDoc.body.innerHTML) {
++            var container = ownerDoc.createElement('div');
++            container.innerHTML = s;
++            while (container.hasChildNodes()) {
++                f.appendChild(container.firstChild);
++            }
++        }
++        else {
++            var oDoc = new ActiveXObject(_SARISSA_DOM_PROGID);
++            if (s.substring(0, 5) == '&lt;?xml') {
++                s = s.substring(s.indexOf('?&gt;') + 2);
++            }
++            var xml = ''.concat('&lt;my&gt;', s, '&lt;/my&gt;');
++            oDoc.loadXML(xml);
++            var container = oDoc.documentElement;
++            while (container.hasChildNodes()) {
++                f.appendChild(container.firstChild);
++            }
++        }
++        return f;
+     };
++    
+     /**
+      * Set global XSLT parameter of the imported stylesheet
+      * @argument nsURI The parameter namespace URI
+@@ -206,13 +272,13 @@
+      * @argument value The new parameter value
+      */
+     XSLTProcessor.prototype.setParameter = function(nsURI, name, value){
+-        /* nsURI is optional but cannot be null */
++        // nsURI is optional but cannot be null 
+         if(nsURI){
+             this.processor.addParameter(name, value, nsURI);
+         }else{
+             this.processor.addParameter(name, value);
+         };
+-        /* update updated params for getParameter */
++        // update updated params for getParameter 
+         if(!this.paramsSet[&quot;&quot;+nsURI]){
+             this.paramsSet[&quot;&quot;+nsURI] = new Array();
+         };
+@@ -227,14 +293,28 @@
+      */
+     XSLTProcessor.prototype.getParameter = function(nsURI, name){
+         nsURI = nsURI || &quot;&quot;;
+-        if(nsURI in this.paramsSet &amp;&amp; name in this.paramsSet[nsURI]){
++        if(this.paramsSet[nsURI] &amp;&amp; this.paramsSet[nsURI][name]){
+             return this.paramsSet[nsURI][name];
+         }else{
+             return null;
+         };
+     };
+-}
+-else{ /* end IE initialization, try to deal with real browsers now ;-) */
++    /**
++     * Clear parameters (set them to default values as defined in the stylesheet itself)
++     */
++    XSLTProcessor.prototype.clearParameters = function(){
++        for(var nsURI in this.paramsSet){
++            for(var name in this.paramsSet[nsURI]){
++                if(nsURI){
++                    this.processor.addParameter(name, null, nsURI);
++                }else{
++                    this.processor.addParameter(name, null);
++                };
++            };
++        };
++        this.paramsSet = new Array();
++    };
++}else{ /* end IE initialization, try to deal with real browsers now ;-) */
+     if(_SARISSA_HAS_DOM_CREATE_DOCUMENT){
+         /**
+          * &lt;p&gt;Ensures the document was loaded correctly, otherwise sets the
+@@ -242,8 +322,6 @@
+          * @private
+          */
+         Sarissa.__handleLoad__ = function(oDoc){
+-            if (!oDoc.documentElement || oDoc.documentElement.tagName == &quot;parsererror&quot;)
+-                oDoc.parseError = -1;
+             Sarissa.__setReadyState__(oDoc, 4);
+         };
+         /**
+@@ -263,118 +341,57 @@
+          */
+         Sarissa.__setReadyState__ = function(oDoc, iReadyState){
+             oDoc.readyState = iReadyState;
++            oDoc.readystate = iReadyState;
+             if (oDoc.onreadystatechange != null &amp;&amp; typeof oDoc.onreadystatechange == &quot;function&quot;)
+                 oDoc.onreadystatechange();
+         };
+         Sarissa.getDomDocument = function(sUri, sName){
+-            var oDoc = document.implementation.createDocument(sUri?sUri:&quot;&quot;, sName?sName:&quot;&quot;, null);
++            var oDoc = document.implementation.createDocument(sUri?sUri:null, sName?sName:null, null);
++            if(!oDoc.onreadystatechange){
++            
++                /**
++                * &lt;p&gt;Emulate IE's onreadystatechange attribute&lt;/p&gt;
++                */
++                oDoc.onreadystatechange = null;
++            };
++            if(!oDoc.readyState){
++                /**
++                * &lt;p&gt;Emulates IE's readyState property, which always gives an integer from 0 to 4:&lt;/p&gt;
++                * &lt;ul&gt;&lt;li&gt;1 == LOADING,&lt;/li&gt;
++                * &lt;li&gt;2 == LOADED,&lt;/li&gt;
++                * &lt;li&gt;3 == INTERACTIVE,&lt;/li&gt;
++                * &lt;li&gt;4 == COMPLETED&lt;/li&gt;&lt;/ul&gt;
++                */
++                oDoc.readyState = 0;
++            };
+             oDoc.addEventListener(&quot;load&quot;, _sarissa_XMLDocument_onload, false);
+             return oDoc;
+         };
+         if(window.XMLDocument){
++            // do nothing
++        }// TODO: check if the new document has content before trying to copynodes, check  for error handling in DOM 3 LS
++        else if(_SARISSA_HAS_DOM_FEATURE &amp;&amp; window.Document &amp;&amp; !Document.prototype.load &amp;&amp; document.implementation.hasFeature('LS', '3.0')){
++            //Opera 9 may get the XPath branch which gives creates XMLDocument, therefore it doesn't reach here which is good
+             /**
+-            * &lt;p&gt;Emulate IE's onreadystatechange attribute&lt;/p&gt;
+-            */
+-            XMLDocument.prototype.onreadystatechange = null;
+-            /**
+-            * &lt;p&gt;Emulates IE's readyState property, which always gives an integer from 0 to 4:&lt;/p&gt;
+-            * &lt;ul&gt;&lt;li&gt;1 == LOADING,&lt;/li&gt;
+-            * &lt;li&gt;2 == LOADED,&lt;/li&gt;
+-            * &lt;li&gt;3 == INTERACTIVE,&lt;/li&gt;
+-            * &lt;li&gt;4 == COMPLETED&lt;/li&gt;&lt;/ul&gt;
+-            */
+-            XMLDocument.prototype.readyState = 0;
+-            /**
+-            * &lt;p&gt;Emulate IE's parseError attribute&lt;/p&gt;
+-            */
+-            XMLDocument.prototype.parseError = 0;
+-
+-            // NOTE: setting async to false will only work with documents
+-            // called over HTTP (meaning a server), not the local file system,
+-            // unless you are using Moz 1.4+.
+-            // BTW the try&gt;catch block is for 1.4; I haven't found a way to check if
+-            // the property is implemented without
+-            // causing an error and I dont want to use user agent stuff for that...
+-            var _SARISSA_SYNC_NON_IMPLEMENTED = false;// (&quot;async&quot; in XMLDocument.prototype) ? false: true;
+-            /**
+-            * &lt;p&gt;Keeps a handle to the original load() method. Internal use and only
+-            * if Mozilla version is lower than 1.4&lt;/p&gt;
+-            * @private
+-            */
+-            XMLDocument.prototype._sarissa_load = XMLDocument.prototype.load;
+-
+-            /**
+-            * &lt;p&gt;Overrides the original load method to provide synchronous loading for
+-            * Mozilla versions prior to 1.4, using an XMLHttpRequest object (if
+-            * async is set to false)&lt;/p&gt;
+-            * @returns the DOM Object as it was before the load() call (may be  empty)
+-            */
+-            XMLDocument.prototype.load = function(sURI) {
+-                var oDoc = document.implementation.createDocument(&quot;&quot;, &quot;&quot;, null);
+-                Sarissa.copyChildNodes(this, oDoc);
+-                this.parseError = 0;
+-                Sarissa.__setReadyState__(this, 1);
+-                try {
+-                    if(this.async == false &amp;&amp; _SARISSA_SYNC_NON_IMPLEMENTED) {
+-                        var tmp = new XMLHttpRequest();
+-                        tmp.open(&quot;GET&quot;, sURI, false);
+-                        tmp.send(null);
+-                        Sarissa.__setReadyState__(this, 2);
+-                        Sarissa.copyChildNodes(tmp.responseXML, this);
+-                        Sarissa.__setReadyState__(this, 3);
+-                    }
+-                    else {
+-                        this._sarissa_load(sURI);
+-                    };
+-                }
+-                catch (objException) {
+-                    this.parseError = -1;
+-                }
+-                finally {
+-                    if(this.async == false){
+-                        Sarissa.__handleLoad__(this);
+-                    };
+-                };
+-                return oDoc;
+-            };
+-
+-
+-        }//if(window.XMLDocument)
+-        else if(document.implementation &amp;&amp; document.implementation.hasFeature &amp;&amp; document.implementation.hasFeature('LS', '3.0')){
+-            Document.prototype.async = true;
+-            Document.prototype.onreadystatechange = null;
+-            Document.prototype.parseError = 0;
+-            Document.prototype.load = function(sURI) {
+-                var parser = document.implementation.createLSParser(this.async ? document.implementation.MODE_ASYNCHRONOUS : document.implementation.MODE_SYNCHRONOUS, null);
+-                if(this.async){
+-                    var self = this;
+-                    parser.addEventListener(&quot;load&quot;,
+-                        function(e) {
+-                            self.readyState = 4;
+-                            Sarissa.copyChildNodes(e.newDocument, self.documentElement, false);
+-                            self.onreadystatechange.call();
+-                        },
+-                        false);
+-                };
+-                try {
+-                    var oDoc = parser.parseURI(sURI);
+-                }
+-                catch(e){
+-                    this.parseError = -1;
+-                };
+-                if(!this.async)
+-                   Sarissa.copyChildNodes(oDoc, this.documentElement, false);
+-                return oDoc;
+-            };
+-            /**
+             * &lt;p&gt;Factory method to obtain a new DOM Document object&lt;/p&gt;
+             * @argument sUri the namespace of the root node (if any)
+             * @argument sUri the local name of the root node (if any)
+             * @returns a new DOM Document
+             */
+             Sarissa.getDomDocument = function(sUri, sName){
+-                return document.implementation.createDocument(sUri?sUri:&quot;&quot;, sName?sName:&quot;&quot;, null);
++                var oDoc = document.implementation.createDocument(sUri?sUri:null, sName?sName:null, null);
++                return oDoc;
+             };
++        }
++        else {
++            Sarissa.getDomDocument = function(sUri, sName){
++                var oDoc = document.implementation.createDocument(sUri?sUri:null, sName?sName:null, null);
++                // looks like safari does not create the root element for some unknown reason
++                if(oDoc &amp;&amp; (sUri || sName) &amp;&amp; !oDoc.documentElement){
++                    oDoc.appendChild(oDoc.createElementNS(sUri, sName));
++                };
++                return oDoc;
++            };
+         };
+     };//if(_SARISSA_HAS_DOM_CREATE_DOCUMENT)
+ };
+@@ -382,29 +399,26 @@
+ // Common stuff
+ //==========================================
+ if(!window.DOMParser){
+-    /*
+-    * DOMParser is a utility class, used to construct DOMDocuments from XML strings
+-    * @constructor
+-    */
+-    DOMParser = function() {
+-    };
+     if(_SARISSA_IS_SAFARI){
+-        /**
++        /*
++         * DOMParser is a utility class, used to construct DOMDocuments from XML strings
++         * @constructor
++         */
++        DOMParser = function() { };
++        /** 
+         * Construct a new DOM Document from the given XMLstring
+         * @param sXml the given XML string
+-        * @param contentType the content type of the document the given string represents (one of text/xml, application/xml, application/xhtml+xml).
++        * @param contentType the content type of the document the given string represents (one of text/xml, application/xml, application/xhtml+xml). 
+         * @return a new DOM Document from the given XML string
+         */
+         DOMParser.prototype.parseFromString = function(sXml, contentType){
+-            if(contentType.toLowerCase() != &quot;application/xml&quot;){
+-                throw &quot;Cannot handle content type: \&quot;&quot; + contentType + &quot;\&quot;&quot;;
+-            };
+             var xmlhttp = new XMLHttpRequest();
+-            xmlhttp.open(&quot;GET&quot;, &quot;data:text/xml;charset=utf-8,&quot; + encodeURIComponent(str), false);
++            xmlhttp.open(&quot;GET&quot;, &quot;data:text/xml;charset=utf-8,&quot; + encodeURIComponent(sXml), false);
+             xmlhttp.send(null);
+             return xmlhttp.responseXML;
+         };
+-    }else if(Sarissa.getDomDocument &amp;&amp; Sarissa.getDomDocument() &amp;&amp; &quot;loadXML&quot; in Sarissa.getDomDocument()){
++    }else if(Sarissa.getDomDocument &amp;&amp; Sarissa.getDomDocument() &amp;&amp; Sarissa.getDomDocument(null, &quot;bar&quot;).xml){
++        DOMParser = function() { };
+         DOMParser.prototype.parseFromString = function(sXml, contentType){
+             var doc = Sarissa.getDomDocument();
+             doc.loadXML(sXml);
+@@ -413,40 +427,36 @@
+     };
+ };
+ 
+-if(window.XMLHttpRequest){
+-    Sarissa.IS_ENABLED_XMLHTTP = true;
+-}
+-else if(_SARISSA_IS_IE){
+-    /**
+-     * Emulate XMLHttpRequest
+-     * @constructor
+-     */
+-    XMLHttpRequest = function() {
+-        return new ActiveXObject(_SARISSA_XMLHTTP_PROGID);
+-    };
+-    Sarissa.IS_ENABLED_XMLHTTP = true;
+-};
+-
+-if(!window.document.importNode &amp;&amp; _SARISSA_IS_IE){
++if((typeof(document.importNode) == &quot;undefined&quot;) &amp;&amp; _SARISSA_IS_IE){
+     try{
+         /**
+-        * Implements importNode for the current window document in IE using innerHTML.
+-        * Testing showed that DOM was multiple times slower than innerHTML for this,
+-        * sorry folks. If you encounter trouble (who knows what IE does behind innerHTML)
+-        * please gimme a call.
++        * Implementation of importNode for the context window document in IE
+         * @param oNode the Node to import
+         * @param bChildren whether to include the children of oNode
+         * @returns the imported node for further use
+         */
+-        window.document.importNode = function(oNode, bChildren){
+-            var importNode = document.createElement(&quot;div&quot;);
+-            if(bChildren)
+-                importNode.innerHTML = Sarissa.serialize(oNode);
+-            else
+-                importNode.innerHTML = Sarissa.serialize(oNode.cloneNode(false));
+-            return importNode.firstChild;
++        document.importNode = function(oNode, bChildren){
++            var tmp;
++            if(oNode.nodeName == &quot;tbody&quot; || oNode.nodeName == &quot;tr&quot;){
++                tmp = document.createElement(&quot;table&quot;);
++            }
++            else if(oNode.nodeName == &quot;td&quot;){
++                tmp = document.createElement(&quot;tr&quot;);
++            }
++            else if(oNode.nodeName == &quot;option&quot;){
++                tmp = document.createElement(&quot;select&quot;);
++            }
++            else{
++                tmp = document.createElement(&quot;div&quot;);
++            };
++            if(bChildren){
++                tmp.innerHTML = oNode.xml ? oNode.xml : oNode.outerHTML;
++            }else{
++                tmp.innerHTML = oNode.xml ? oNode.cloneNode(false).xml : oNode.cloneNode(false).outerHTML;
++            };
++            return tmp.getElementsByTagName(&quot;*&quot;)[0];
+         };
+-        }catch(e){};
++    }catch(e){ };
+ };
+ if(!Sarissa.getParseErrorText){
+     /**
+@@ -460,17 +470,16 @@
+      */
+     Sarissa.getParseErrorText = function (oDoc){
+         var parseErrorText = Sarissa.PARSED_OK;
+-        if(oDoc &amp;&amp; oDoc.parseError &amp;&amp; oDoc.parseError != 0){
+-            /*moz*/
+-            if(oDoc.documentElement.tagName == &quot;parsererror&quot;){
+-                parseErrorText = oDoc.documentElement.firstChild.data;
+-                parseErrorText += &quot;\n&quot; +  oDoc.documentElement.firstChild.nextSibling.firstChild.data;
+-            }/*konq*/
+-            else{
+-                parseErrorText = Sarissa.getText(oDoc.documentElement);/*.getElementsByTagName(&quot;h1&quot;)[0], false) + &quot;\n&quot;;
+-                parseErrorText += Sarissa.getText(oDoc.documentElement.getElementsByTagName(&quot;body&quot;)[0], false) + &quot;\n&quot;;
+-                parseErrorText += Sarissa.getText(oDoc.documentElement.getElementsByTagName(&quot;pre&quot;)[0], false);*/
+-            };
++        if(!oDoc.documentElement){
++            parseErrorText = Sarissa.PARSED_EMPTY;
++        } else if(oDoc.documentElement.tagName == &quot;parsererror&quot;){
++            parseErrorText = oDoc.documentElement.firstChild.data;
++            parseErrorText += &quot;\n&quot; +  oDoc.documentElement.firstChild.nextSibling.firstChild.data;
++        } else if(oDoc.getElementsByTagName(&quot;parsererror&quot;).length &gt; 0){
++            var parsererror = oDoc.getElementsByTagName(&quot;parsererror&quot;)[0];
++            parseErrorText = Sarissa.getText(parsererror, true)+&quot;\n&quot;;
++        } else if(oDoc.parseError &amp;&amp; oDoc.parseError.errorCode != 0){
++            parseErrorText = Sarissa.PARSED_UNKNOWN_ERROR;
+         };
+         return parseErrorText;
+     };
+@@ -483,7 +492,7 @@
+         var nodeType = node.nodeType;
+         if(nodeType == Node.TEXT_NODE || nodeType == Node.CDATA_SECTION_NODE){
+             s += node.data;
+-        }else if(deep == true
++        } else if(deep == true
+                     &amp;&amp; (nodeType == Node.ELEMENT_NODE
+                         || nodeType == Node.DOCUMENT_NODE
+                         || nodeType == Node.DOCUMENT_FRAGMENT_NODE)){
+@@ -492,41 +501,21 @@
+     };
+     return s;
+ };
+-if(window.XMLSerializer){
++if(!window.XMLSerializer 
++    &amp;&amp; Sarissa.getDomDocument 
++    &amp;&amp; Sarissa.getDomDocument(&quot;&quot;,&quot;foo&quot;, null).xml){
+     /**
+-     * &lt;p&gt;Factory method to obtain the serialization of a DOM Node&lt;/p&gt;
+-     * @returns the serialized Node as an XML string
++     * Utility class to serialize DOM Node objects to XML strings
++     * @constructor
+      */
+-    Sarissa.serialize = function(oDoc){
+-        var s = null;
+-        if(oDoc){
+-            s = oDoc.innerHTML?oDoc.innerHTML:(new XMLSerializer()).serializeToString(oDoc);
+-        };
+-        return s;
++    XMLSerializer = function(){};
++    /**
++     * Serialize the given DOM Node to an XML string
++     * @param oNode the DOM Node to serialize
++     */
++    XMLSerializer.prototype.serializeToString = function(oNode) {
++        return oNode.xml;
+     };
+-}else{
+-    if(Sarissa.getDomDocument &amp;&amp; (Sarissa.getDomDocument(&quot;&quot;,&quot;foo&quot;, null)).xml){
+-        // see non-IE version
+-        Sarissa.serialize = function(oDoc) {
+-            var s = null;
+-            if(oDoc){
+-                s = oDoc.innerHTML?oDoc.innerHTML:oDoc.xml;
+-            };
+-            return s;
+-        };
+-        /**
+-         * Utility class to serialize DOM Node objects to XML strings
+-         * @constructor
+-         */
+-        XMLSerializer = function(){};
+-        /**
+-         * Serialize the given DOM Node to an XML string
+-         * @param oNode the DOM Node to serialize
+-         */
+-        XMLSerializer.prototype.serializeToString = function(oNode) {
+-            return oNode.xml;
+-        };
+-    };
+ };
+ 
+ /**
+@@ -541,13 +530,13 @@
+  */
+ Sarissa.clearChildNodes = function(oNode) {
+     // need to check for firstChild due to opera 8 bug with hasChildNodes
+-    while(oNode.firstChild){
++    while(oNode.firstChild) {
+         oNode.removeChild(oNode.firstChild);
+     };
+ };
+ /**
+  * &lt;p&gt; Copies the childNodes of nodeFrom to nodeTo&lt;/p&gt;
+- * &lt;p&gt; &lt;b&gt;Note:&lt;/b&gt; The second object's original content is deleted before
++ * &lt;p&gt; &lt;b&gt;Note:&lt;/b&gt; The second object's original content is deleted before 
+  * the copy operation, unless you supply a true third parameter&lt;/p&gt;
+  * @argument nodeFrom the Node to copy the childNodes from
+  * @argument nodeTo the Node to copy the childNodes to
+@@ -562,12 +551,11 @@
+     };
+     var ownerDoc = nodeTo.nodeType == Node.DOCUMENT_NODE ? nodeTo : nodeTo.ownerDocument;
+     var nodes = nodeFrom.childNodes;
+-    if(ownerDoc.importNode &amp;&amp; (!_SARISSA_IS_IE)) {
++    if(typeof(ownerDoc.importNode) != &quot;undefined&quot;)  {
+         for(var i=0;i &lt; nodes.length;i++) {
+             nodeTo.appendChild(ownerDoc.importNode(nodes[i], true));
+         };
+-    }
+-    else{
++    } else {
+         for(var i=0;i &lt; nodes.length;i++) {
+             nodeTo.appendChild(nodes[i].cloneNode(true));
+         };
+@@ -576,12 +564,12 @@
+ 
+ /**
+  * &lt;p&gt; Moves the childNodes of nodeFrom to nodeTo&lt;/p&gt;
+- * &lt;p&gt; &lt;b&gt;Note:&lt;/b&gt; The second object's original content is deleted before
++ * &lt;p&gt; &lt;b&gt;Note:&lt;/b&gt; The second object's original content is deleted before 
+  * the move operation, unless you supply a true third parameter&lt;/p&gt;
+  * @argument nodeFrom the Node to copy the childNodes from
+  * @argument nodeTo the Node to copy the childNodes to
+  * @argument bPreserveExisting whether to preserve the original content of nodeTo, default is
+- */
++ */ 
+ Sarissa.moveChildNodes = function(nodeFrom, nodeTo, bPreserveExisting) {
+     if((!nodeFrom) || (!nodeTo)){
+         throw &quot;Both source and destination nodes must be provided&quot;;
+@@ -595,9 +583,9 @@
+         while(nodeFrom.firstChild){
+             nodeTo.appendChild(nodeFrom.firstChild);
+         };
+-    }else{
++    } else {
+         var ownerDoc = nodeTo.nodeType == Node.DOCUMENT_NODE ? nodeTo : nodeTo.ownerDocument;
+-        if(ownerDoc.importNode &amp;&amp; (!_SARISSA_IS_IE)) {
++        if(typeof(ownerDoc.importNode) != &quot;undefined&quot;) {
+            for(var i=0;i &lt; nodes.length;i++) {
+                nodeTo.appendChild(ownerDoc.importNode(nodes[i], true));
+            };
+@@ -610,9 +598,9 @@
+     };
+ };
+ 
+-/**
++/** 
+  * &lt;p&gt;Serialize any object to an XML string. All properties are serialized using the property name
+- * as the XML element name. Array elements are rendered as &lt;code&gt;array-item&lt;/code&gt; elements,
++ * as the XML element name. Array elements are rendered as &lt;code&gt;array-item&lt;/code&gt; elements, 
+  * using their index/key as the value of the &lt;code&gt;key&lt;/code&gt; attribute.&lt;/p&gt;
+  * @argument anyObject the object to serialize
+  * @argument objectName a name for that object
+@@ -622,7 +610,7 @@
+     indentSpace = indentSpace?indentSpace:'';
+     var s = indentSpace  + '&lt;' + objectName + '&gt;';
+     var isLeaf = false;
+-    if(!(anyObject instanceof Object) || anyObject instanceof Number || anyObject instanceof String
++    if(!(anyObject instanceof Object) || anyObject instanceof Number || anyObject instanceof String 
+         || anyObject instanceof Boolean || anyObject instanceof Date){
+         s += Sarissa.escape(&quot;&quot;+anyObject);
+         isLeaf = true;
+@@ -638,7 +626,7 @@
+     return s += (objectName.indexOf(' ')!=-1?&quot;&lt;/array-item&gt;\n&quot;:&quot;&lt;/&quot; + objectName + &quot;&gt;\n&quot;);
+ };
+ 
+-/**
++/** 
+  * Escape the given string chacters that correspond to the five predefined XML entities
+  * @param sXml the string to escape
+  */
+@@ -650,8 +638,8 @@
+         .replace(/'/g, &quot;&apos;&quot;);
+ };
+ 
+-/**
+- * Unescape the given string. This turns the occurences of the predefined XML
++/** 
++ * Unescape the given string. This turns the occurences of the predefined XML 
+  * entities to become the characters they represent correspond to the five predefined XML entities
+  * @param sXml the string to unescape
+  */
+@@ -662,197 +650,4 @@
+         .replace(/&lt;/g,&quot;&lt;&quot;)
+         .replace(/&amp;/g,&quot;&amp;&quot;);
+ };
+-// EOF
+-/**
+- * ====================================================================
+- * About
+- * ====================================================================
+- * Sarissa cross browser XML library - IE XPath Emulation
+- * @version 0.9.6.1
+- * @author: Manos Batsis, mailto: mbatsis at users full stop sourceforge full stop net
+- *
+- * This script emulates Internet Explorer's selectNodes and selectSingleNode
+- * for Mozilla. Associating namespace prefixes with URIs for your XPath queries
+- * is easy with IE's setProperty.
+- * USers may also map a namespace prefix to a default (unprefixed) namespace in the
+- * source document with Sarissa.setXpathNamespaces
+- *
+- *
+- * ====================================================================
+- * Licence
+- * ====================================================================
+- * This program is free software; you can redistribute it and/or modify
+- * it under the terms of the GNU General Public License version 2 or
+- * the GNU Lesser General Public License version 2.1 as published by
+- * the Free Software Foundation (your choice between the two).
+- *
+- * This program is distributed in the hope that it will be useful,
+- * but WITHOUT ANY WARRANTY; without even the implied warranty of
+- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+- * GNU General Public License or GNU Lesser General Public License for more details.
+- *
+- * You should have received a copy of the GNU General Public License
+- * or GNU Lesser General Public License along with this program; if not,
+- * write to the Free Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+- * or visit <A HREF="http://www.gnu.org">http://www.gnu.org</A>
+- *
+- */
+-if(_SARISSA_HAS_DOM_FEATURE &amp;&amp; document.implementation.hasFeature(&quot;XPath&quot;, &quot;3.0&quot;)){
+-    /**
+-    * &lt;p&gt;SarissaNodeList behaves as a NodeList but is only used as a result to &lt;code&gt;selectNodes&lt;/code&gt;,
+-    * so it also has some properties IEs proprietery object features.&lt;/p&gt;
+-    * @private
+-    * @constructor
+-    * @argument i the (initial) list size
+-    */
+-    function SarissaNodeList(i){
+-        this.length = i;
+-    };
+-    /** &lt;p&gt;Set an Array as the prototype object&lt;/p&gt; */
+-    SarissaNodeList.prototype = new Array(0);
+-    /** &lt;p&gt;Inherit the Array constructor &lt;/p&gt; */
+-    SarissaNodeList.prototype.constructor = Array;
+-    /**
+-    * &lt;p&gt;Returns the node at the specified index or null if the given index
+-    * is greater than the list size or less than zero &lt;/p&gt;
+-    * &lt;p&gt;&lt;b&gt;Note&lt;/b&gt; that in ECMAScript you can also use the square-bracket
+-    * array notation instead of calling &lt;code&gt;item&lt;/code&gt;
+-    * @argument i the index of the member to return
+-    * @returns the member corresponding to the given index
+-    */
+-    SarissaNodeList.prototype.item = function(i) {
+-        return (i &lt; 0 || i &gt;= this.length)?null:this[i];
+-    };
+-    /**
+-    * &lt;p&gt;Emulate IE's expr property
+-    * (Here the SarissaNodeList object is given as the result of selectNodes).&lt;/p&gt;
+-    * @returns the XPath expression passed to selectNodes that resulted in
+-    *          this SarissaNodeList
+-    */
+-    SarissaNodeList.prototype.expr = &quot;&quot;;
+-    /** dummy, used to accept IE's stuff without throwing errors */
+-    XMLDocument.prototype.setProperty  = function(x,y){};
+-    /**
+-    * &lt;p&gt;Programmatically control namespace URI/prefix mappings for XPath
+-    * queries.&lt;/p&gt;
+-    * &lt;p&gt;This method comes especially handy when used to apply XPath queries
+-    * on XML documents with a default namespace, as there is no other way
+-    * of mapping that to a prefix.&lt;/p&gt;
+-    * &lt;p&gt;Using no namespace prefix in DOM Level 3 XPath queries, implies you
+-    * are looking for elements in the null namespace. If you need to look
+-    * for nodes in the default namespace, you need to map a prefix to it
+-    * first like:&lt;/p&gt;
+-    * &lt;pre&gt;Sarissa.setXpathNamespaces(oDoc, &quot;xmlns:myprefix=&amp;<A HREF="aposhttp://mynsURI&amp;amp;apos&amp;quot;">aposhttp://mynsURI&amp;apos&quot;</A>);&lt;/pre&gt;
+-    * &lt;p&gt;&lt;b&gt;Note 1 &lt;/b&gt;: Use this method only if the source document features
+-    * a default namespace (without a prefix), otherwise just use IE's setProperty
+-    * (moz will rezolve non-default namespaces by itself). You will need to map that
+-    * namespace to a prefix for queries to work.&lt;/p&gt;
+-    * &lt;p&gt;&lt;b&gt;Note 2 &lt;/b&gt;: This method calls IE's setProperty method to set the
+-    * appropriate namespace-prefix mappings, so you dont have to do that.&lt;/p&gt;
+-    * @param oDoc The target XMLDocument to set the namespace mappings for.
+-    * @param sNsSet A whilespace-seperated list of namespace declarations as
+-    *            those would appear in an XML document. E.g.:
+-    *            &lt;code&gt;&quot;xmlns:xhtml=&apos;<A HREF="http://www.w3.org/1999/xhtml&amp;apos;">http://www.w3.org/1999/xhtml&apos;</A>
+-    * xmlns:&apos;<A HREF="http://www.w3.org/1999/XSL/Transform&amp;apos;&amp;quot;&lt;/code">http://www.w3.org/1999/XSL/Transform&apos;&quot;&lt;/code</A>&gt;
+-    * @throws An error if the format of the given namespace declarations is bad.
+-    */
+-    Sarissa.setXpathNamespaces = function(oDoc, sNsSet) {
+-        //oDoc._sarissa_setXpathNamespaces(sNsSet);
+-        oDoc._sarissa_useCustomResolver = true;
+-        var namespaces = sNsSet.indexOf(&quot; &quot;)&gt;-1?sNsSet.split(&quot; &quot;):new Array(sNsSet);
+-        oDoc._sarissa_xpathNamespaces = new Array(namespaces.length);
+-        for(var i=0;i &lt; namespaces.length;i++){
+-            var ns = namespaces[i];
+-            var colonPos = ns.indexOf(&quot;:&quot;);
+-            var assignPos = ns.indexOf(&quot;=&quot;);
+-            if(colonPos == 5 &amp;&amp; assignPos &gt; colonPos+2){
+-                var prefix = ns.substring(colonPos+1, assignPos);
+-                var uri = ns.substring(assignPos+2, ns.length-1);
+-                oDoc._sarissa_xpathNamespaces[prefix] = uri;
+-            }else{
+-                throw &quot;Bad format on namespace declaration(s) given&quot;;
+-            };
+-        };
+-    };
+-    /**
+-    * @private Flag to control whether a custom namespace resolver should
+-    *          be used, set to true by Sarissa.setXpathNamespaces
+-    */
+-    XMLDocument.prototype._sarissa_useCustomResolver = false;
+-    /** @private */
+-    XMLDocument.prototype._sarissa_xpathNamespaces = new Array();
+-    /**
+-    * &lt;p&gt;Extends the XMLDocument to emulate IE's selectNodes.&lt;/p&gt;
+-    * @argument sExpr the XPath expression to use
+-    * @argument contextNode this is for internal use only by the same
+-    *           method when called on Elements
+-    * @returns the result of the XPath search as a SarissaNodeList
+-    * @throws An error if no namespace URI is found for the given prefix.
+-    */
+-    XMLDocument.prototype.selectNodes = function(sExpr, contextNode){
+-        var nsDoc = this;
+-        var nsresolver = this._sarissa_useCustomResolver
+-        ? function(prefix){
+-            var s = nsDoc._sarissa_xpathNamespaces[prefix];
+-            if(s)return s;
+-            else throw &quot;No namespace URI found for prefix: '&quot; + prefix+&quot;'&quot;;
+-            }
+-        : this.createNSResolver(this.documentElement);
+-            var oResult = this.evaluate(sExpr,
+-                    (contextNode?contextNode:this),
+-                    nsresolver,
+-                    XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
+-        var nodeList = new SarissaNodeList(oResult.snapshotLength);
+-        nodeList.expr = sExpr;
+-        for(var i=0;i&lt;nodeList.length;i++)
+-            nodeList[i] = oResult.snapshotItem(i);
+-        return nodeList;
+-    };
+-    /**
+-    * &lt;p&gt;Extends the Element to emulate IE's selectNodes&lt;/p&gt;
+-    * @argument sExpr the XPath expression to use
+-    * @returns the result of the XPath search as an (Sarissa)NodeList
+-    * @throws An
+-    *             error if invoked on an HTML Element as this is only be
+-    *             available to XML Elements.
+-    */
+-    Element.prototype.selectNodes = function(sExpr){
+-        var doc = this.ownerDocument;
+-        if(doc.selectNodes)
+-            return doc.selectNodes(sExpr, this);
+-        else
+-            throw &quot;Method selectNodes is only supported by XML Elements&quot;;
+-    };
+-    /**
+-    * &lt;p&gt;Extends the XMLDocument to emulate IE's selectSingleNodes.&lt;/p&gt;
+-    * @argument sExpr the XPath expression to use
+-    * @argument contextNode this is for internal use only by the same
+-    *           method when called on Elements
+-    * @returns the result of the XPath search as an (Sarissa)NodeList
+-    */
+-    XMLDocument.prototype.selectSingleNode = function(sExpr, contextNode){
+-        var ctx = contextNode?contextNode:null;
+-        sExpr = &quot;(&quot;+sExpr+&quot;)[1]&quot;;
+-        var nodeList = this.selectNodes(sExpr, ctx);
+-        if(nodeList.length &gt; 0)
+-            return nodeList.item(0);
+-        else
+-            return null;
+-    };
+-    /**
+-    * &lt;p&gt;Extends the Element to emulate IE's selectNodes.&lt;/p&gt;
+-    * @argument sExpr the XPath expression to use
+-    * @returns the result of the XPath search as an (Sarissa)NodeList
+-    * @throws An error if invoked on an HTML Element as this is only be
+-    *             available to XML Elements.
+-    */
+-    Element.prototype.selectSingleNode = function(sExpr){
+-        var doc = this.ownerDocument;
+-        if(doc.selectSingleNode)
+-            return doc.selectSingleNode(sExpr, this);
+-        else
+-            throw &quot;Method selectNodes is only supported by XML Elements&quot;;
+-    };
+-    Sarissa.IS_ENABLED_SELECT_NODES = true;
+-};
+-// EOF
+\ No newline at end of file
++//   EOF
+
+Modified: branch/2.0.1/src/Model.js
+===================================================================
+--- branch/2.0.1/src/Model.js	2007-01-25 05:44:24 UTC (rev 72)
++++ branch/2.0.1/src/Model.js	2007-01-25 22:09:26 UTC (rev 73)
+@@ -40,7 +40,10 @@
+ Freja.Model.prototype.updateFrom = function(view) {
+ 	var values = view.getValues();
+ 	for (var i = 0; i &lt; values[0].length; ++i) {
+-		this.set(values[0][i], values[1][i]);
++		// try not to process field names that are not meant to be xpath expressions
++		if(values[0][i].lastIndexOf('/') != -1) {		
++			this.set(values[0][i], values[1][i]);
++		}
+ 	}
+ };
+ /**
+
+Modified: branch/2.0.1/src/QueryEngine.js
+===================================================================
+--- branch/2.0.1/src/QueryEngine.js	2007-01-25 05:44:24 UTC (rev 72)
++++ branch/2.0.1/src/QueryEngine.js	2007-01-25 22:09:26 UTC (rev 73)
+@@ -13,57 +13,79 @@
+ 	}
+ };
+ Freja.QueryEngine.prototype.get = function(document, expression) {
+-	try {
+-		var node = this._find(document, expression);
+-	} catch(x) {
+-		return null;
++	
++	var node = this._find(document, expression);
++
++	if(!node) throw new Error(&quot;Can't evaluate expression &quot; + expression);
++
++	switch(node.nodeType) {
++		case 1: /* element */
++			// return content of text nodes
++			// @TO-DO: return more than just firstchild?
++			if(node.firstChild &amp;&amp; (node.firstChild.nodeType == 3 || node.firstChild.nodeType == 4)) {
++				return node.firstChild.nodeValue;
++			}
++			break;
++		case 2: /* Attribute */
++			return node.nodeValue;
++			break;
++		case 3: /* text node */
++			// fall through
++		case 4: /* CDATA section */
++			return node.nodeValue;
++			break;	
+ 	}
+-	if(node) return node.nodeValue;
+-
++	return null;
+ };
+ Freja.QueryEngine.prototype.set = function(document, expression, value) {
+-	try {
+-		var node = this._find(document, expression);
+-		if(node)
+-			node.nodeValue = value;
+-	} catch(x) {
+-		// text node not found. Might need to be created.
+-		// try not to process field names that are not meant to be xpath expressions
+-		if(expression.lastIndexOf('/') != -1) {
+-			var nodeName = expression.substr(expression.lastIndexOf('/')+1);
+-			if(nodeName.charAt(0)=='@') {
+-				// trying to set a non-existing attribute. Let's create it.
+-				var parentExpression =  expression.substring(0, expression.lastIndexOf('/'));
+-				var pNode = this._find(document, parentExpression);
+-				if(pNode) {
+-					// this._find returns a text node
+-					pNode = pNode.parentNode;
+-					pNode.setAttribute(nodeName.substr(1),value);
+-				}
++	var node = this._find(document, expression);
++	if(!node) {
++		// Could not evaluate expression.
++		// Check if we're trying to set a non-existent attribute
++		var nodeName = expression.substr(expression.lastIndexOf('/')+1);
++		if(nodeName.charAt(0)=='@') {
++			// Let's try to create the attribute.
++			var parentExpression =  expression.substring(0, expression.lastIndexOf('/'));
++			var pNode = this._find(document, parentExpression);
++			if(pNode) {				
++				pNode.setAttribute(nodeName.substr(1),value);
++				return;
+ 			}
+-			// else parent element does not exist.. can't do anything
++			// else parent node non existent either, give up.
+ 		}
++		// not an attribute, give up.
++		throw new Error(&quot;Can't evaluate expression &quot; + expression);
+ 	}
++
++	// Expression succesfully evaluated. Set content
++	switch(node.nodeType) {
++		case 1: /* element */
++			// @TO-DO: set more than just firstchild			
++			if(node.firstChild &amp;&amp; (node.firstChild.nodeType == 3 || node.firstChild.nodeType == 4)) {
++				node.firstChild.nodeValue = value;
++			} else {
++				node.appendChild(document.createTextNode(value));
++			}
++			break;
++		case 2: /* Attribute */
++			node.nodeValue = value;
++			break;
++		case 3: /* text node */
++			// fall through
++		case 4: /* CDATA section */
++			node.nodeValue = value;
++			break;	
++	}
++	return ;
+ };
+ /**
+   * XPath query engine.
+   */
+ Freja.QueryEngine.XPath = function() {};
+ Freja.Class.extend(Freja.QueryEngine.XPath, Freja.QueryEngine);
+-Freja.QueryEngine.XPath.prototype._find = function(document, expression) {
+-	var node = document.selectSingleNode(expression);
+-	if (node &amp;&amp; node.nodeType == 2) {
+-		return node;
+-	}
+-	if (node &amp;&amp; node.firstChild &amp;&amp; node.firstChild.nodeType == 3) {
+-		return node.firstChild;
+-	}
+-	if (node &amp;&amp; node.firstChild &amp;&amp; node.firstChild.nodeType == 4) {
+-		return node.firstChild;
+-	}
+-
+-	throw new Error(&quot;Can't evaluate expression &quot; + expression);
+-	return null;
++Freja.QueryEngine.XPath.prototype._find = function(document, expression) {	
++	var result = document.selectSingleNode(expression);	
++	return result;
+ };
+ /**
+   * SimplePath
+@@ -71,6 +93,7 @@
+ Freja.QueryEngine.SimplePath = function() {};
+ Freja.Class.extend(Freja.QueryEngine.SimplePath, Freja.QueryEngine);
+ Freja.QueryEngine.SimplePath.prototype._find = function(document, expression) {
++	
+ 	if (!expression.match(/^[\d\w\/@\[\]=_\-']*$/)) {
+ 		throw new Error(&quot;Can't evaluate expression &quot; + expression);
+ 	}
+
+Modified: branch/2.0.1/src/View.js
+===================================================================
+--- branch/2.0.1/src/View.js	2007-01-25 05:44:24 UTC (rev 72)
++++ branch/2.0.1/src/View.js	2007-01-25 22:09:26 UTC (rev 73)
+@@ -50,7 +50,6 @@
+ 
+ 			var trans = this.view._renderer.transform(model, this.view, this.xslParameters);
+ 			trans.addCallback(Freja._aux.bind(function(html) {
+-				// this._destination.innerHTML = html;
+ 				this._destination.innerHTML = &quot;&quot;;
+ 				this._destination.appendChild(html);
+ 			}, this.view));
+
+Modified: branch/2.0.1/src/auxiliary/minimal.js
+===================================================================
+--- branch/2.0.1/src/auxiliary/minimal.js	2007-01-25 05:44:24 UTC (rev 72)
++++ branch/2.0.1/src/auxiliary/minimal.js	2007-01-25 22:09:26 UTC (rev 73)
+@@ -334,6 +334,11 @@
+ 	this.addCallbacks(null, fncError);
+ };
+ if (document.implementation &amp;&amp; document.implementation.hasFeature(&quot;XPath&quot;, &quot;3.0&quot;)) {
++	// Opera 9 XMLDocument Fix. Thanks to Chris D.
++	if(!XMLDocument) {
++	   var XMLDocument = Document;
++	}	
++
+ 	XMLDocument.prototype.selectNodes = function(sExpr, contextNode) {
+ 		var nsDoc = this;
+ 		var nsresolver = this.createNSResolver(this.documentElement);
+@@ -383,10 +388,7 @@
+ 		}
+ 	};
+ };
+-// Opera 9 XMLDocument Fix. Thanks to Chris D.
+-if(!XMLDocument) {
+-   var XMLDocument = Document;
+-}
++
+ // Adapated From Sarissa
+ // * @version 0.9.6.1
+ // * @author: Manos Batsis, mailto: mbatsis at users full stop sourceforge full stop net
+
+Modified: branch/2.0.1/src/auxiliary/mochi+sarissa.js
+===================================================================
+--- branch/2.0.1/src/auxiliary/mochi+sarissa.js	2007-01-25 05:44:24 UTC (rev 72)
++++ branch/2.0.1/src/auxiliary/mochi+sarissa.js	2007-01-25 22:09:26 UTC (rev 73)
+@@ -83,7 +83,7 @@
+ 	var processor = new XSLTProcessor();
+ 	processor.importStylesheet(xsl);
+ 	// return Freja._aux.serializeXML(processor.transformToDocument(xml));
+-	return processor.transformToDocument(xml);
++	return processor.transformToFragment(xml, window.document);
+ };
+ /** cloneXMLDocument(document) : XMLDocument */
+ Freja._aux.cloneXMLDocument = function(xmlDoc) {
+@@ -91,7 +91,7 @@
+ 	try {
+ 		clone = xmlDoc.cloneNode(true);
+ 	} catch(e) { /* squelch */ }
+-
++	
+ 	// Can't clone a DocumentNode in Safari &amp; Opera. Let's try something else.
+ 	// @note Wouldn't it be easier to serialize the document to string and the parse it to a new document ?
+ 	if (!clone) {
+@@ -101,27 +101,27 @@
+ 			var data = clone.importNode(xmlDoc.documentElement.cloneNode(true), true);
+ 			try {
+ 				clone.appendChild(data);
+-			} catch(e) {
++			} catch(e) {				
+ 				// Opera has already created a documentElement and can't append another root node
+ 				var rootNode = clone.documentElement;
+-				for (var i = data.childNodes.length; i &gt;= 0; i--) {
++			
++				for (var i = data.childNodes.length-1; i &gt;= 0; i--) {
+ 					rootNode.insertBefore(data.childNodes[i], rootNode.firstChild);
+ 				}
++				
+ 				// need to copy root node attributes
+ 				for (var i = 0; i &lt; xmlDoc.documentElement.attributes.length; i++) {
+ 					var name  = xmlDoc.documentElement.attributes.item(i).name;
+ 					var value = xmlDoc.documentElement.attributes.item(i).value;
+ 					clone.documentElement.setAttribute(name, value);
+-				}
++				}				
+ 			}
+ 		}
+ 	}
++	
+ 	return clone;
+ };
+-/**  Opera 9 XMLDocument Fix. Thanks to Chris D.  */
+-if(!XMLDocument) {
+-   var XMLDocument = Document;
+-}
++
+ /** hasSupportForXSLT() : boolean */
+ Freja._aux.hasSupportForXSLT = function() { return (typeof(XSLTProcessor) != &quot;undefined&quot;); };
+ /** createQueryEngine() : Freja.QueryEngine */
+@@ -132,3 +132,206 @@
+ 		return new Freja.QueryEngine.SimplePath();
+ 	}
+ };
++
++
++/**
++ * ====================================================================
++ * About
++ * ====================================================================
++ * Sarissa cross browser XML library - IE XPath Emulation 
++ * @version 0.9.7.6
++ * @author: Manos Batsis, mailto: mbatsis at users full stop sourceforge full stop net
++ *
++ * This script emulates Internet Explorer's selectNodes and selectSingleNode
++ * for Mozilla. Associating namespace prefixes with URIs for your XPath queries
++ * is easy with IE's setProperty. 
++ * USers may also map a namespace prefix to a default (unprefixed) namespace in the
++ * source document with Sarissa.setXpathNamespaces
++ *
++ *
++ * ====================================================================
++ * Licence
++ * ====================================================================
++ * Sarissa is free software distributed under the GNU GPL version 2 (see &lt;a href=&quot;gpl.txt&quot;&gt;gpl.txt&lt;/a&gt;) or higher, 
++ * GNU LGPL version 2.1 (see &lt;a href=&quot;lgpl.txt&quot;&gt;lgpl.txt&lt;/a&gt;) or higher and Apache Software License 2.0 or higher 
++ * (see &lt;a href=&quot;asl.txt&quot;&gt;asl.txt&lt;/a&gt;). This means you can choose one of the three and use that if you like. If 
++ * you make modifications under the ASL, i would appreciate it if you submitted those.
++ * In case your copy of Sarissa does not include the license texts, you may find
++ * them online in various formats at &lt;a href=&quot;<A HREF="http://www.gnu.org">http://www.gnu.org</A>&quot;&gt;<A HREF="http://www.gnu.org&lt;/a">http://www.gnu.org&lt;/a</A>&gt; and 
++ * &lt;a href=&quot;<A HREF="http://www.apache.org">http://www.apache.org</A>&quot;&gt;<A HREF="http://www.apache.org&lt;/a">http://www.apache.org&lt;/a</A>&gt;.
++ *
++ * THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY 
++ * KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE 
++ * WARRANTIES OF MERCHANTABILITY,FITNESS FOR A PARTICULAR PURPOSE 
++ * AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR 
++ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR 
++ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
++ * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
++ */
++if(_SARISSA_HAS_DOM_FEATURE &amp;&amp; document.implementation.hasFeature(&quot;XPath&quot;, &quot;3.0&quot;)){
++    /**
++    * &lt;p&gt;SarissaNodeList behaves as a NodeList but is only used as a result to &lt;code&gt;selectNodes&lt;/code&gt;,
++    * so it also has some properties IEs proprietery object features.&lt;/p&gt;
++    * @private
++    * @constructor
++    * @argument i the (initial) list size
++    */
++    function SarissaNodeList(i){
++        this.length = i;
++    };
++    /** &lt;p&gt;Set an Array as the prototype object&lt;/p&gt; */
++    SarissaNodeList.prototype = new Array(0);
++    /** &lt;p&gt;Inherit the Array constructor &lt;/p&gt; */
++    SarissaNodeList.prototype.constructor = Array;
++    /**
++    * &lt;p&gt;Returns the node at the specified index or null if the given index
++    * is greater than the list size or less than zero &lt;/p&gt;
++    * &lt;p&gt;&lt;b&gt;Note&lt;/b&gt; that in ECMAScript you can also use the square-bracket
++    * array notation instead of calling &lt;code&gt;item&lt;/code&gt;
++    * @argument i the index of the member to return
++    * @returns the member corresponding to the given index
++    */
++    SarissaNodeList.prototype.item = function(i) {
++        return (i &lt; 0 || i &gt;= this.length)?null:this[i];
++    };
++    /**
++    * &lt;p&gt;Emulate IE's expr property
++    * (Here the SarissaNodeList object is given as the result of selectNodes).&lt;/p&gt;
++    * @returns the XPath expression passed to selectNodes that resulted in
++    *          this SarissaNodeList
++    */
++    SarissaNodeList.prototype.expr = &quot;&quot;;
++    /** dummy, used to accept IE's stuff without throwing errors */
++    if(window.XMLDocument &amp;&amp; (!XMLDocument.prototype.setProperty)){
++        XMLDocument.prototype.setProperty  = function(x,y){};
++    };
++    /**
++    * &lt;p&gt;Programmatically control namespace URI/prefix mappings for XPath
++    * queries.&lt;/p&gt;
++    * &lt;p&gt;This method comes especially handy when used to apply XPath queries
++    * on XML documents with a default namespace, as there is no other way
++    * of mapping that to a prefix.&lt;/p&gt;
++    * &lt;p&gt;Using no namespace prefix in DOM Level 3 XPath queries, implies you
++    * are looking for elements in the null namespace. If you need to look
++    * for nodes in the default namespace, you need to map a prefix to it
++    * first like:&lt;/p&gt;
++    * &lt;pre&gt;Sarissa.setXpathNamespaces(oDoc, &quot;xmlns:myprefix=&amp;<A HREF="aposhttp://mynsURI&amp;amp;apos&amp;quot;">aposhttp://mynsURI&amp;apos&quot;</A>);&lt;/pre&gt;
++    * &lt;p&gt;&lt;b&gt;Note 1 &lt;/b&gt;: Use this method only if the source document features
++    * a default namespace (without a prefix), otherwise just use IE's setProperty
++    * (moz will rezolve non-default namespaces by itself). You will need to map that
++    * namespace to a prefix for queries to work.&lt;/p&gt;
++    * &lt;p&gt;&lt;b&gt;Note 2 &lt;/b&gt;: This method calls IE's setProperty method to set the
++    * appropriate namespace-prefix mappings, so you dont have to do that.&lt;/p&gt;
++    * @param oDoc The target XMLDocument to set the namespace mappings for.
++    * @param sNsSet A whilespace-seperated list of namespace declarations as
++    *            those would appear in an XML document. E.g.:
++    *            &lt;code&gt;&quot;xmlns:xhtml=&apos;<A HREF="http://www.w3.org/1999/xhtml&amp;apos;">http://www.w3.org/1999/xhtml&apos;</A>
++    * xmlns:&apos;<A HREF="http://www.w3.org/1999/XSL/Transform&amp;apos;&amp;quot;&lt;/code">http://www.w3.org/1999/XSL/Transform&apos;&quot;&lt;/code</A>&gt;
++    * @throws An error if the format of the given namespace declarations is bad.
++    */
++    Sarissa.setXpathNamespaces = function(oDoc, sNsSet) {
++        //oDoc._sarissa_setXpathNamespaces(sNsSet);
++        oDoc._sarissa_useCustomResolver = true;
++        var namespaces = sNsSet.indexOf(&quot; &quot;)&gt;-1?sNsSet.split(&quot; &quot;):new Array(sNsSet);
++        oDoc._sarissa_xpathNamespaces = new Array(namespaces.length);
++        for(var i=0;i &lt; namespaces.length;i++){
++            var ns = namespaces[i];
++            var colonPos = ns.indexOf(&quot;:&quot;);
++            var assignPos = ns.indexOf(&quot;=&quot;);
++            if(colonPos &gt; 0 &amp;&amp; assignPos &gt; colonPos+1){
++                var prefix = ns.substring(colonPos+1, assignPos);
++                var uri = ns.substring(assignPos+2, ns.length-1);
++                oDoc._sarissa_xpathNamespaces[prefix] = uri;
++            }else{
++                throw &quot;Bad format on namespace declaration(s) given&quot;;
++            };
++        };
++    };
++    /**
++    * @private Flag to control whether a custom namespace resolver should
++    *          be used, set to true by Sarissa.setXpathNamespaces
++    */
++    XMLDocument.prototype._sarissa_useCustomResolver = false;
++    /** @private */
++    XMLDocument.prototype._sarissa_xpathNamespaces = new Array();
++    /**
++    * &lt;p&gt;Extends the XMLDocument to emulate IE's selectNodes.&lt;/p&gt;
++    * @argument sExpr the XPath expression to use
++    * @argument contextNode this is for internal use only by the same
++    *           method when called on Elements
++    * @returns the result of the XPath search as a SarissaNodeList
++    * @throws An error if no namespace URI is found for the given prefix.
++    */
++    XMLDocument.prototype.selectNodes = function(sExpr, contextNode, returnSingle){
++        var nsDoc = this;
++        var nsresolver = this._sarissa_useCustomResolver
++        ? function(prefix){
++            var s = nsDoc._sarissa_xpathNamespaces[prefix];
++            if(s)return s;
++            else throw &quot;No namespace URI found for prefix: '&quot; + prefix+&quot;'&quot;;
++            }
++        : this.createNSResolver(this.documentElement);
++        var result = null;
++        if(!returnSingle){
++            var oResult = this.evaluate(sExpr,
++                (contextNode?contextNode:this),
++                nsresolver,
++                XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
++            var nodeList = new SarissaNodeList(oResult.snapshotLength);
++            nodeList.expr = sExpr;
++            for(var i=0;i&lt;nodeList.length;i++)
++                nodeList[i] = oResult.snapshotItem(i);
++            result = nodeList;
++        }
++        else {
++            result = oResult = this.evaluate(sExpr,
++                (contextNode?contextNode:this),
++                nsresolver,
++                XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
++        };
++        return result;      
++    };
++    /**
++    * &lt;p&gt;Extends the Element to emulate IE's selectNodes&lt;/p&gt;
++    * @argument sExpr the XPath expression to use
++    * @returns the result of the XPath search as an (Sarissa)NodeList
++    * @throws An
++    *             error if invoked on an HTML Element as this is only be
++    *             available to XML Elements.
++    */
++    Element.prototype.selectNodes = function(sExpr){
++        var doc = this.ownerDocument;
++        if(doc.selectNodes)
++            return doc.selectNodes(sExpr, this);
++        else
++            throw &quot;Method selectNodes is only supported by XML Elements&quot;;
++    };
++    /**
++    * &lt;p&gt;Extends the XMLDocument to emulate IE's selectSingleNode.&lt;/p&gt;
++    * @argument sExpr the XPath expression to use
++    * @argument contextNode this is for internal use only by the same
++    *           method when called on Elements
++    * @returns the result of the XPath search as an (Sarissa)NodeList
++    */
++    XMLDocument.prototype.selectSingleNode = function(sExpr, contextNode){
++        var ctx = contextNode?contextNode:null;
++        return this.selectNodes(sExpr, ctx, true);
++    };
++    /**
++    * &lt;p&gt;Extends the Element to emulate IE's selectSingleNode.&lt;/p&gt;
++    * @argument sExpr the XPath expression to use
++    * @returns the result of the XPath search as an (Sarissa)NodeList
++    * @throws An error if invoked on an HTML Element as this is only be
++    *             available to XML Elements.
++    */
++    Element.prototype.selectSingleNode = function(sExpr){
++        var doc = this.ownerDocument;
++        if(doc.selectSingleNode)
++            return doc.selectSingleNode(sExpr, this);
++        else
++            throw &quot;Method selectNodes is only supported by XML Elements&quot;;
++    };
++    Sarissa.IS_ENABLED_SELECT_NODES = true;
++};
++
+
+Modified: branch/2.0.1/tests/test_Model.js
+===================================================================
+--- branch/2.0.1/tests/test_Model.js	2007-01-25 05:44:24 UTC (rev 72)
++++ branch/2.0.1/tests/test_Model.js	2007-01-25 22:09:26 UTC (rev 73)
+@@ -43,8 +43,7 @@
+ 	var model = Freja.AssetManager.getModel(&quot;data/model2.xml&quot;);
+ 	t.is(model.get(&quot;item/@price&quot;), &quot;$3.80&quot;);
+ 	t.is(model.get(&quot;item/description&quot;), &quot;with Goat Cheese, a touch of Cumin and Cayenne&quot;);
+-
+-
++	
+ 	var model3 = Freja.AssetManager.getModel(&quot;data/model3.xml&quot;);
+ 	model3.set(&quot;item/price&quot;,&quot;$5.40&quot;);
+ 	t.is(model3.get(&quot;item/price&quot;), &quot;$5.40&quot;);
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000070.html">[Freja-svn] r72 - in branch/2.0.1/src: . auxiliary
+</A></li>
+	<LI>Next message: <A HREF="000072.html">[Freja-svn] r74 - in branch/2.0.1: lib src src/auxiliary
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#71">[ date ]</a>
+              <a href="thread.html#71">[ thread ]</a>
+              <a href="subject.html#71">[ subject ]</a>
+              <a href="author.html#71">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/freja-svn">More information about the Freja-svn
+mailing list</a><br>
+</body></html>

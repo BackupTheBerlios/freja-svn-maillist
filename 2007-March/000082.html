@@ -1,0 +1,114 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Freja-svn] r84 - branch/2.0.1/examples/contacts/views
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/freja-svn/2007-March/index.html" >
+   <LINK REL="made" HREF="mailto:freja-svn%40lists.berlios.de?Subject=Re%3A%20%5BFreja-svn%5D%20r84%20-%20branch/2.0.1/examples/contacts/views&In-Reply-To=%3C200703192244.l2JMi0pF026909%40sheep.berlios.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000081.html">
+   <LINK REL="Next"  HREF="000083.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Freja-svn] r84 - branch/2.0.1/examples/contacts/views</H1>
+    <B>cedsav at mail.berlios.de</B> 
+    <A HREF="mailto:freja-svn%40lists.berlios.de?Subject=Re%3A%20%5BFreja-svn%5D%20r84%20-%20branch/2.0.1/examples/contacts/views&In-Reply-To=%3C200703192244.l2JMi0pF026909%40sheep.berlios.de%3E"
+       TITLE="[Freja-svn] r84 - branch/2.0.1/examples/contacts/views">cedsav at mail.berlios.de
+       </A><BR>
+    <I>Mon Mar 19 23:44:00 CET 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000081.html">[Freja-svn] r83 - in branch/2.0.1/examples/basecamp_api: . css views
+</A></li>
+        <LI>Next message: <A HREF="000083.html">[Freja-svn] r85 - branch/2.0.1/examples/tutorial
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#82">[ date ]</a>
+              <a href="thread.html#82">[ thread ]</a>
+              <a href="subject.html#82">[ subject ]</a>
+              <a href="author.html#82">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Author: cedsav
+Date: 2007-03-19 23:43:55 +0100 (Mon, 19 Mar 2007)
+New Revision: 84
+
+Modified:
+   branch/2.0.1/examples/contacts/views/create.xsl
+   branch/2.0.1/examples/contacts/views/edit.xsl
+   branch/2.0.1/examples/contacts/views/index.xsl
+Log:
+Changed XSL output method to HTML
+
+Modified: branch/2.0.1/examples/contacts/views/create.xsl
+===================================================================
+--- branch/2.0.1/examples/contacts/views/create.xsl	2007-03-19 22:39:29 UTC (rev 83)
++++ branch/2.0.1/examples/contacts/views/create.xsl	2007-03-19 22:43:55 UTC (rev 84)
+@@ -1,7 +1,7 @@
+ &lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+ &lt;xsl:stylesheet version=&quot;1.0&quot;
+ 	xmlns:xsl=&quot;<A HREF="http://www.w3.org/1999/XSL/Transform">http://www.w3.org/1999/XSL/Transform</A>&quot;&gt;
+-
++&lt;xsl:output method=&quot;html&quot; indent=&quot;yes&quot; encoding=&quot;UTF-8&quot;/&gt;
+ &lt;xsl:template match=&quot;/&quot;&gt;
+ 	&lt;form method=&quot;post&quot; action=&quot;#&quot; class=&quot;form&quot;&gt;
+ 		&lt;p&gt;email:&lt;input name=&quot;email&quot; type=&quot;text&quot; value=&quot;&quot; /&gt;&lt;/p&gt;
+
+Modified: branch/2.0.1/examples/contacts/views/edit.xsl
+===================================================================
+--- branch/2.0.1/examples/contacts/views/edit.xsl	2007-03-19 22:39:29 UTC (rev 83)
++++ branch/2.0.1/examples/contacts/views/edit.xsl	2007-03-19 22:43:55 UTC (rev 84)
+@@ -1,7 +1,7 @@
+ &lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+ &lt;xsl:stylesheet version=&quot;1.0&quot;
+ 	xmlns:xsl=&quot;<A HREF="http://www.w3.org/1999/XSL/Transform">http://www.w3.org/1999/XSL/Transform</A>&quot;&gt;
+-
++&lt;xsl:output method=&quot;html&quot; indent=&quot;yes&quot; encoding=&quot;UTF-8&quot;/&gt;
+ &lt;xsl:template match=&quot;record&quot;&gt;	
+ 	&lt;form method=&quot;post&quot; action=&quot;#&quot; class=&quot;form&quot;&gt;
+ 	&lt;xsl:attribute name=&quot;url&quot;&gt;&lt;xsl:value-of select=&quot;url&quot; /&gt;&lt;/xsl:attribute&gt;
+
+Modified: branch/2.0.1/examples/contacts/views/index.xsl
+===================================================================
+--- branch/2.0.1/examples/contacts/views/index.xsl	2007-03-19 22:39:29 UTC (rev 83)
++++ branch/2.0.1/examples/contacts/views/index.xsl	2007-03-19 22:43:55 UTC (rev 84)
+@@ -1,7 +1,7 @@
+ &lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+ &lt;xsl:stylesheet version=&quot;1.0&quot;
+ 	xmlns:xsl=&quot;<A HREF="http://www.w3.org/1999/XSL/Transform">http://www.w3.org/1999/XSL/Transform</A>&quot;&gt;
+-
++&lt;xsl:output method=&quot;html&quot; indent=&quot;yes&quot; encoding=&quot;UTF-8&quot;/&gt;
+ &lt;xsl:template match=&quot;result&quot;&gt;
+ &lt;table border=&quot;1&quot; cellpadding=&quot;4&quot; cellspacing=&quot;4&quot;&gt;
+ &lt;xsl:for-each select=&quot;record&quot;&gt;
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000081.html">[Freja-svn] r83 - in branch/2.0.1/examples/basecamp_api: . css views
+</A></li>
+	<LI>Next message: <A HREF="000083.html">[Freja-svn] r85 - branch/2.0.1/examples/tutorial
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#82">[ date ]</a>
+              <a href="thread.html#82">[ thread ]</a>
+              <a href="subject.html#82">[ subject ]</a>
+              <a href="author.html#82">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/freja-svn">More information about the Freja-svn
+mailing list</a><br>
+</body></html>

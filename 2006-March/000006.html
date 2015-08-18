@@ -1,0 +1,295 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Freja-svn] r11 - in trunk: examples/contacts examples/contacts/models/php_inc examples/contacts/views lib
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/freja-svn/2006-March/index.html" >
+   <LINK REL="made" HREF="mailto:freja-svn%40lists.berlios.de?Subject=Re%3A%20%5BFreja-svn%5D%20r11%20-%20in%20trunk%3A%20examples/contacts%20examples/contacts/models/php_inc%20examples/contacts/views%20lib&In-Reply-To=%3C200603190227.k2J2RP6v027552%40sheep.berlios.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000008.html">
+   <LINK REL="Next"  HREF="000007.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Freja-svn] r11 - in trunk: examples/contacts examples/contacts/models/php_inc examples/contacts/views lib</H1>
+    <B>troelskn at BerliOS</B> 
+    <A HREF="mailto:freja-svn%40lists.berlios.de?Subject=Re%3A%20%5BFreja-svn%5D%20r11%20-%20in%20trunk%3A%20examples/contacts%20examples/contacts/models/php_inc%20examples/contacts/views%20lib&In-Reply-To=%3C200603190227.k2J2RP6v027552%40sheep.berlios.de%3E"
+       TITLE="[Freja-svn] r11 - in trunk: examples/contacts examples/contacts/models/php_inc examples/contacts/views lib">troelskn at berlios.de
+       </A><BR>
+    <I>Sun Mar 19 03:27:25 CET 2006</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000008.html">[Freja-svn] r10 - in trunk: . examples/contacts external lib tests
+</A></li>
+        <LI>Next message: <A HREF="000007.html">[Freja-svn] r12 - in trunk: examples/contacts lib
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6">[ date ]</a>
+              <a href="thread.html#6">[ thread ]</a>
+              <a href="subject.html#6">[ subject ]</a>
+              <a href="author.html#6">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Author: troelskn
+Date: 2006-03-19 03:27:16 +0100 (Sun, 19 Mar 2006)
+New Revision: 11
+
+Modified:
+   trunk/examples/contacts/client.js
+   trunk/examples/contacts/models/php_inc/inc.resource.php
+   trunk/examples/contacts/models/php_inc/inc.select.php
+   trunk/examples/contacts/models/php_inc/stdinc.php
+   trunk/examples/contacts/views/edit.xsl
+   trunk/examples/contacts/views/index.xsl
+   trunk/lib/Freja.js
+Log:
+Small changes to Model.DataSource
+
+Modified: trunk/examples/contacts/client.js
+===================================================================
+--- trunk/examples/contacts/client.js	2006-03-19 01:41:45 UTC (rev 10)
++++ trunk/examples/contacts/client.js	2006-03-19 02:27:16 UTC (rev 11)
+@@ -7,7 +7,8 @@
+ index.placeholder = &quot;content&quot;;
+ index.handlers[&quot;edit&quot;] = {
+ 	onclick : function(node) {
+-		edit.render(contacts.get(node.getAttribute('pkey')));
++//		edit.render(contacts.get(node.getAttribute('pkey')));
++		edit.render(getModel(node.getAttribute('url')));
+ 	}
+ };
+ index.handlers[&quot;delete&quot;] = {
+@@ -15,7 +16,8 @@
+ 		if (!confirm(&quot;Really delete it?&quot;)) {
+ 			return;
+ 		}
+-		var model = contacts.get(node.getAttribute('pkey'));
++//		var model = contacts.get(node.getAttribute('pkey'));
++		var model = getModel(node.getAttribute('url'));
+ 		var d = model._delete()
+ 		d.addCallback(function() {
+ 			contacts.select().reload();
+@@ -54,7 +56,8 @@
+ edit.handlers[&quot;form&quot;] = {
+ 	onsubmit : function(node) {
+ 		try {
+-			var model = contacts.get(node.getAttribute('pkey'));
++//			var model = contacts.get(node.getAttribute('pkey'));
++			var model = getModel(node.getAttribute('url'));
+ 			model.updateFrom(getView(&quot;views/edit.xsl&quot;));
+ 			var d = model.save();
+ 			d.addCallback(function() {
+
+Modified: trunk/examples/contacts/models/php_inc/inc.resource.php
+===================================================================
+--- trunk/examples/contacts/models/php_inc/inc.resource.php	2006-03-19 01:41:45 UTC (rev 10)
++++ trunk/examples/contacts/models/php_inc/inc.resource.php	2006-03-19 02:27:16 UTC (rev 11)
+@@ -23,7 +23,7 @@
+ 		}
+ 		header(&quot;Content-Type:text/xml&quot;);
+ 		echo &quot;&lt;?xml version='1.0' ?&quot;.&quot;&gt;&quot;;
+-		$row['pkey'] = json_serialize(Array($model-&gt;pkey =&gt; $row[$model-&gt;pkey]));
++		$row['url'] = url($_SERVER['PHP_SELF'], Array($model-&gt;pkey =&gt; $row[$model-&gt;pkey]));
+ 		echo xml_serialize('record', $row);
+ 	exit;
+ 	case 'PUT':
+
+Modified: trunk/examples/contacts/models/php_inc/inc.select.php
+===================================================================
+--- trunk/examples/contacts/models/php_inc/inc.select.php	2006-03-19 01:41:45 UTC (rev 10)
++++ trunk/examples/contacts/models/php_inc/inc.select.php	2006-03-19 02:27:16 UTC (rev 11)
+@@ -4,7 +4,8 @@
+ echo &quot;&lt;?xml version='1.0' ?&gt;&quot;;
+ echo &quot;&lt;result&gt;\n&quot;;
+ foreach ($result as $row) {
+-	$row['pkey'] = json_serialize($row);
++	$row['url'] = url(dirname($_SERVER['PHP_SELF']).&quot;/contact.php&quot;, Array($model-&gt;pkey =&gt; $row[$model-&gt;pkey]));
++//	$row['pkey'] = json_serialize($row);
+ 	echo xml_serialize('record', $row);
+ }
+ echo &quot;&lt;/result&gt;\n&quot;;
+
+Modified: trunk/examples/contacts/models/php_inc/stdinc.php
+===================================================================
+--- trunk/examples/contacts/models/php_inc/stdinc.php	2006-03-19 01:41:45 UTC (rev 10)
++++ trunk/examples/contacts/models/php_inc/stdinc.php	2006-03-19 02:27:16 UTC (rev 11)
+@@ -236,6 +236,40 @@
+ 	return &quot;{&quot;.implode(&quot;,&quot;, $pairs).&quot;}&quot;;
+ }
+ 
++function url($href = NULL, $args = Array()) {
++	if (is_null($href)) {
++		$href = $_SERVER['PHP_SELF'];
++	}
++	$href = ltrim($href, &quot;/&quot;);
++	$href = rtrim($href, &quot;?&quot;);
++	if (!preg_match(&quot;~^<A HREF="http://~">http://~</A>&quot;, $href)) {
++		if (isset($_SERVER['HTTP_HOST'])) {
++			$href = &quot;<A HREF="http://">http://</A>&quot;.$_SERVER['HTTP_HOST'].&quot;/&quot;.$href;
++		} else {
++			$href = &quot;<A HREF="http://localhost/">http://localhost/</A>&quot;.$href;
++		}
++	}
++	if (preg_match(&quot;/(.*)\\?(.*)/&quot;, $href, $matches)) {
++		$href = $matches[1];
++		parse_str($matches[2], $parsed);
++		$args = array_merge($parsed, $args);
++	}
++	$params = Array();
++	foreach ($args as $key =&gt; $value) {
++		if (!is_null($value)) {
++			$params[] = rawurlencode($key).&quot;=&quot;.rawurlencode($value);
++		}
++	}
++	if (count($params) &gt; 0) {
++		if (strpos($href, &quot;?&quot;) === FALSE) {
++			return $href.&quot;?&quot;.implode(&quot;&amp;&quot;, $params);
++		} else {
++			return $href.&quot;&amp;&quot;.implode(&quot;&amp;&quot;, $params);
++		}
++	}
++	return $href;
++}
++
+ function error_handler($errno, $errstr, $errfile, $errline) {
+ 	if (error_reporting() == 0) {
+ 		return;
+
+Modified: trunk/examples/contacts/views/edit.xsl
+===================================================================
+--- trunk/examples/contacts/views/edit.xsl	2006-03-19 01:41:45 UTC (rev 10)
++++ trunk/examples/contacts/views/edit.xsl	2006-03-19 02:27:16 UTC (rev 11)
+@@ -3,7 +3,7 @@
+ 
+ &lt;xsl:template match=&quot;record&quot;&gt;	
+ 	&lt;form method=&quot;post&quot; action=&quot;#&quot; handler=&quot;form&quot;&gt;
+-	&lt;xsl:attribute name=&quot;pkey&quot;&gt;&lt;xsl:value-of select=&quot;pkey&quot; /&gt;&lt;/xsl:attribute&gt;
++	&lt;xsl:attribute name=&quot;url&quot;&gt;&lt;xsl:value-of select=&quot;url&quot; /&gt;&lt;/xsl:attribute&gt;
+ 		&lt;p&gt;&lt;xsl:value-of select=&quot;email&quot; /&gt;&lt;/p&gt;
+ 		&lt;p&gt;&lt;input name=&quot;record/first_name&quot; type=&quot;text&quot; value=&quot;{first_name}&quot; /&gt;&lt;/p&gt;
+ 		&lt;p&gt;&lt;input name=&quot;record/surname&quot; type=&quot;text&quot; value=&quot;{surname}&quot; /&gt;&lt;/p&gt;
+
+Modified: trunk/examples/contacts/views/index.xsl
+===================================================================
+--- trunk/examples/contacts/views/index.xsl	2006-03-19 01:41:45 UTC (rev 10)
++++ trunk/examples/contacts/views/index.xsl	2006-03-19 02:27:16 UTC (rev 11)
+@@ -8,10 +8,10 @@
+ 		&lt;td&gt;&lt;xsl:value-of select=&quot;email&quot; /&gt;&lt;/td&gt;
+ 		&lt;td&gt;
+ 			&lt;input type=&quot;button&quot; value=&quot;edit&quot; handler=&quot;edit&quot;&gt;
+-				&lt;xsl:attribute name=&quot;pkey&quot;&gt;&lt;xsl:value-of select=&quot;pkey&quot; /&gt;&lt;/xsl:attribute&gt;
++				&lt;xsl:attribute name=&quot;url&quot;&gt;&lt;xsl:value-of select=&quot;url&quot; /&gt;&lt;/xsl:attribute&gt;
+ 			&lt;/input&gt;
+ 			&lt;input type=&quot;button&quot; value=&quot;delete&quot; handler=&quot;delete&quot;&gt;
+-				&lt;xsl:attribute name=&quot;pkey&quot;&gt;&lt;xsl:value-of select=&quot;pkey&quot; /&gt;&lt;/xsl:attribute&gt;
++				&lt;xsl:attribute name=&quot;url&quot;&gt;&lt;xsl:value-of select=&quot;url&quot; /&gt;&lt;/xsl:attribute&gt;
+ 			&lt;/input&gt;
+ 		&lt;/td&gt;
+ 	&lt;/tr&gt;
+
+Modified: trunk/lib/Freja.js
+===================================================================
+--- trunk/lib/Freja.js	2006-03-19 01:41:45 UTC (rev 10)
++++ trunk/lib/Freja.js	2006-03-19 02:27:16 UTC (rev 11)
+@@ -296,36 +296,24 @@
+ }
+ 
+ /**
+-  * DataSource provides a gateway-type interface to a model service.
++  * DataSource provides a gateway-type interface to a REST service.
+   */
+-Freja.Model.DataSource = function(baseURL, selectURL) {
+-	this.baseURL = baseURL;
+-	this.selectURL = selectURL;
++Freja.Model.DataSource = function(createURL, indexURL) {
++	this.createURL = createURL;
++	this.indexURL = indexURL;
+ }
+ /**
+   * Returns a list of primary-keys to records in the datasource
+   */
+ Freja.Model.DataSource.prototype.select = function() {
+-	return getModel(this.selectURL);
++	return getModel(this.indexURL);
+ };
+ /**
+-  * Returns a single record from a primary-key
+-  */
+-Freja.Model.DataSource.prototype.get = function(pkey) {
+-	try {
+-		var args = eval(&quot;(&quot; + pkey + &quot;)&quot;);
+-	} catch (ex) {
+-		throw new Error(&quot;JSON can't be eval'ed:\n&quot; + pkey);
+-	}
+-	var url = this.baseURL + &quot;?&quot; + queryString(args);
+-	return getModel(url);
+-};
+-/**
+   * Creates a new instance of a record
+   * @todo errback to the deferred on errors
+   */
+ Freja.Model.DataSource.prototype.create = function(values) {
+-	var url = this.baseURL;
++	var url = this.createURL;
+ 	var match = /^(file:\/\/.*\/)([^/]*)$/.exec(window.location.href);
+ 	if (match) {
+ 		url = match[1] + url; // local
+@@ -416,28 +404,6 @@
+ 
+ 		var h = new Handler(model, this, d);
+ 		h.trigger();
+-/*
+-		if (!this.ready) {
+-			connect(this, &quot;onload&quot;, bind(this.render, this, model));
+-			return;
+-		}
+-		if (model &amp;&amp; !model.ready) {
+-			connect(model, &quot;onload&quot;, bind(this.render, this, model));
+-			return;
+-		}
+-		if (!model) {
+-			model = { document : (new DOMParser()).parseFromString(&quot;&lt;?xml version='1.0' ?&gt;&lt;dummy/&gt;&quot;, &quot;text/xml&quot;)};
+-		}
+-		var trans = this.renderer.transform(model, this);
+-		trans.addCallback(bind(function(html) {
+-			this.destination.innerHTML = html;
+-		}, this));
+-		trans.addCallback(bind(function() {
+-			MochiKit.Signal.signal(this, &quot;onrendercomplete&quot;, this.destination)
+-		}, this));
+-		trans.addCallback(d.callback);
+-		trans.addErrback(d.errback);
+-*/
+ 	} catch (ex) {
+ 		d.errback(ex);
+ 	}
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000008.html">[Freja-svn] r10 - in trunk: . examples/contacts external lib tests
+</A></li>
+	<LI>Next message: <A HREF="000007.html">[Freja-svn] r12 - in trunk: examples/contacts lib
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#6">[ date ]</a>
+              <a href="thread.html#6">[ thread ]</a>
+              <a href="subject.html#6">[ subject ]</a>
+              <a href="author.html#6">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/freja-svn">More information about the Freja-svn
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,1769 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Freja-svn] r88 - in trunk: lib/minimal lib/mochi+sarissa	src/auxiliary
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/freja-svn/2007-March/index.html" >
+   <LINK REL="made" HREF="mailto:freja-svn%40lists.berlios.de?Subject=Re%3A%20%5BFreja-svn%5D%20r88%20-%20in%20trunk%3A%20lib/minimal%20lib/mochi%2Bsarissa%0A%09src/auxiliary&In-Reply-To=%3C200703212035.l2LKZE81001912%40sheep.berlios.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000085.html">
+   <LINK REL="Next"  HREF="000087.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Freja-svn] r88 - in trunk: lib/minimal lib/mochi+sarissa	src/auxiliary</H1>
+    <B>cedsav at mail.berlios.de</B> 
+    <A HREF="mailto:freja-svn%40lists.berlios.de?Subject=Re%3A%20%5BFreja-svn%5D%20r88%20-%20in%20trunk%3A%20lib/minimal%20lib/mochi%2Bsarissa%0A%09src/auxiliary&In-Reply-To=%3C200703212035.l2LKZE81001912%40sheep.berlios.de%3E"
+       TITLE="[Freja-svn] r88 - in trunk: lib/minimal lib/mochi+sarissa	src/auxiliary">cedsav at mail.berlios.de
+       </A><BR>
+    <I>Wed Mar 21 21:35:14 CET 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000085.html">[Freja-svn] r87 - trunk/external
+</A></li>
+        <LI>Next message: <A HREF="000087.html">[Freja-svn] r89 - in trunk: examples/tutorial lib/minimal	lib/mochi+sarissa src src/auxiliary
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#86">[ date ]</a>
+              <a href="thread.html#86">[ thread ]</a>
+              <a href="subject.html#86">[ subject ]</a>
+              <a href="author.html#86">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Author: cedsav
+Date: 2007-03-21 21:30:15 +0100 (Wed, 21 Mar 2007)
+New Revision: 88
+
+Modified:
+   trunk/lib/minimal/Freja.js
+   trunk/lib/minimal/Freja_pack.js
+   trunk/lib/mochi+sarissa/Freja.js
+   trunk/lib/mochi+sarissa/Freja_pack.js
+   trunk/src/auxiliary/minimal.js
+   trunk/src/auxiliary/mochi+sarissa.js
+Log:
+Added Freja._aux.importNode method.
+
+Modified: trunk/lib/minimal/Freja.js
+===================================================================
+--- trunk/lib/minimal/Freja.js	2007-03-21 19:05:13 UTC (rev 87)
++++ trunk/lib/minimal/Freja.js	2007-03-21 20:30:15 UTC (rev 88)
+@@ -2,7 +2,7 @@
+ 
+     Freja 2.1
+ 
+-    Build $Wed, 21 Mar 2007 15:05:31 UTC$
++    Build $Wed, 21 Mar 2007 20:26:12 UTC$
+ 
+     Target: minimal
+ 
+@@ -1194,7 +1194,13 @@
+ Freja._aux.Deferred.prototype.addErrback = function(fncError) {
+ 	this.addCallbacks(null, fncError);
+ };
+-
++Freja._aux.importNode = function(document, node, deep) {
++	if(typeof deep =='undefined') deep = true;
++	if(document.importNode)
++		return document.importNode(node,deep);
++	else
++		return node.cloneNode(deep);
++}
+ /**
+   * The baseclass for queryengines
+   * @abstract
+
+Modified: trunk/lib/minimal/Freja_pack.js
+===================================================================
+--- trunk/lib/minimal/Freja_pack.js	2007-03-21 19:05:13 UTC (rev 87)
++++ trunk/lib/minimal/Freja_pack.js	2007-03-21 20:30:15 UTC (rev 88)
+@@ -796,67 +796,77 @@
+ Freja._aux.Deferred.prototype.addErrback=function(_b4){
+ this.addCallbacks(null,_b4);
+ };
++Freja._aux.importNode=function(_b5,_b6,_b7){
++if(typeof _b7==&quot;undefined&quot;){
++_b7=true;
++}
++if(_b5.importNode){
++return _b5.importNode(_b6,_b7);
++}else{
++return _b6.cloneNode(_b7);
++}
++};
+ Freja.QueryEngine=function(){
+ };
+-Freja.QueryEngine.prototype.getElementById=function(_b5,id){
+-var _b7=_b5.getElementsByTagName(&quot;*&quot;);
+-for(var i=0;i&lt;_b7.length;i++){
+-if(_b7[i].getAttribute(&quot;id&quot;)==id){
+-return _b7[i];
++Freja.QueryEngine.prototype.getElementById=function(_b8,id){
++var _ba=_b8.getElementsByTagName(&quot;*&quot;);
++for(var i=0;i&lt;_ba.length;i++){
++if(_ba[i].getAttribute(&quot;id&quot;)==id){
++return _ba[i];
+ }
+ }
+ };
+-Freja.QueryEngine.prototype.get=function(_b9,_ba){
+-var _bb=this._find(_b9,_ba);
+-if(!_bb){
+-throw new Error(&quot;Can't evaluate expression &quot;+_ba);
++Freja.QueryEngine.prototype.get=function(_bc,_bd){
++var _be=this._find(_bc,_bd);
++if(!_be){
++throw new Error(&quot;Can't evaluate expression &quot;+_bd);
+ }
+-switch(_bb.nodeType){
++switch(_be.nodeType){
+ case 1:
+-if(_bb.firstChild&amp;&amp;(_bb.firstChild.nodeType==3||_bb.firstChild.nodeType==4)){
+-return _bb.firstChild.nodeValue;
++if(_be.firstChild&amp;&amp;(_be.firstChild.nodeType==3||_be.firstChild.nodeType==4)){
++return _be.firstChild.nodeValue;
+ }
+ break;
+ case 2:
+-return _bb.nodeValue;
++return _be.nodeValue;
+ break;
+ case 3:
+ case 4:
+-return _bb.nodeValue;
++return _be.nodeValue;
+ break;
+ }
+ return null;
+ };
+-Freja.QueryEngine.prototype.set=function(_bc,_bd,_be){
+-var _bf=this._find(_bc,_bd);
+-if(!_bf){
+-var _c0=_bd.substr(_bd.lastIndexOf(&quot;/&quot;)+1);
+-if(_c0.charAt(0)==&quot;@&quot;){
+-var _c1=_bd.substring(0,_bd.lastIndexOf(&quot;/&quot;));
+-var _c2=this._find(_bc,_c1);
+-if(_c2){
+-_c2.setAttribute(_c0.substr(1),_be);
++Freja.QueryEngine.prototype.set=function(_bf,_c0,_c1){
++var _c2=this._find(_bf,_c0);
++if(!_c2){
++var _c3=_c0.substr(_c0.lastIndexOf(&quot;/&quot;)+1);
++if(_c3.charAt(0)==&quot;@&quot;){
++var _c4=_c0.substring(0,_c0.lastIndexOf(&quot;/&quot;));
++var _c5=this._find(_bf,_c4);
++if(_c5){
++_c5.setAttribute(_c3.substr(1),_c1);
+ return;
+ }
+ }
+-throw new Error(&quot;Can't evaluate expression &quot;+_bd);
++throw new Error(&quot;Can't evaluate expression &quot;+_c0);
+ }
+-switch(_bf.nodeType){
++switch(_c2.nodeType){
+ case 1:
+-if(_bf.firstChild&amp;&amp;(_bf.firstChild.nodeType==3||_bf.firstChild.nodeType==4)){
+-_bf.firstChild.nodeValue=_be;
++if(_c2.firstChild&amp;&amp;(_c2.firstChild.nodeType==3||_c2.firstChild.nodeType==4)){
++_c2.firstChild.nodeValue=_c1;
+ }else{
+-if(_be!=&quot;&quot;){
+-_bf.appendChild(_bc.createTextNode(_be));
++if(_c1!=&quot;&quot;){
++_c2.appendChild(_bf.createTextNode(_c1));
+ }
+ }
+ break;
+ case 2:
+-_bf.nodeValue=_be;
++_c2.nodeValue=_c1;
+ break;
+ case 3:
+ case 4:
+-_bf.nodeValue=_be;
++_c2.nodeValue=_c1;
+ break;
+ }
+ return;
+@@ -864,76 +874,76 @@
+ Freja.QueryEngine.XPath=function(){
+ };
+ Freja.Class.extend(Freja.QueryEngine.XPath,Freja.QueryEngine);
+-Freja.QueryEngine.XPath.prototype._find=function(_c3,_c4){
+-var _c5=_c3.selectSingleNode(_c4);
+-return _c5;
++Freja.QueryEngine.XPath.prototype._find=function(_c6,_c7){
++var _c8=_c6.selectSingleNode(_c7);
++return _c8;
+ };
+ Freja.QueryEngine.SimplePath=function(){
+ };
+ Freja.Class.extend(Freja.QueryEngine.SimplePath,Freja.QueryEngine);
+-Freja.QueryEngine.SimplePath.prototype._find=function(_c6,_c7){
+-if(!_c7.match(/^[\d\w\/@\[\]=_\-']*$/)){
+-throw new Error(&quot;Can't evaluate expression &quot;+_c7);
++Freja.QueryEngine.SimplePath.prototype._find=function(_c9,_ca){
++if(!_ca.match(/^[\d\w\/@\[\]=_\-']*$/)){
++throw new Error(&quot;Can't evaluate expression &quot;+_ca);
+ }
+-var _c8=_c7.split(&quot;/&quot;);
+-var _c9=_c6;
+-var _ca=new RegExp(&quot;^@([\\d\\w]*)&quot;);
+-var _cb=new RegExp(&quot;^([@\\d\\w]*)\\[([\\d]*)\\]$&quot;);
+-var _cc=new RegExp(&quot;^([\\d\\w]+)\\[@([@\\d\\w]+)=['\&quot;]{1}(.*)['\&quot;]{1}\\]$&quot;);
+-var _cd=null;
+-var _ce=0;
+-for(var i=0;i&lt;_c8.length;++i){
+-var _d0=_c8[i];
+-var _d1=_cc.exec(_d0);
+-if(_d1){
+-if(i&gt;0&amp;&amp;_c8[i-1]==&quot;&quot;){
+-var cn=_c9.getElementsByTagName(_d1[1]);
++var _cb=_ca.split(&quot;/&quot;);
++var _cc=_c9;
++var _cd=new RegExp(&quot;^@([\\d\\w]*)&quot;);
++var _ce=new RegExp(&quot;^([@\\d\\w]*)\\[([\\d]*)\\]$&quot;);
++var _cf=new RegExp(&quot;^([\\d\\w]+)\\[@([@\\d\\w]+)=['\&quot;]{1}(.*)['\&quot;]{1}\\]$&quot;);
++var _d0=null;
++var _d1=0;
++for(var i=0;i&lt;_cb.length;++i){
++var _d3=_cb[i];
++var _d4=_cf.exec(_d3);
++if(_d4){
++if(i&gt;0&amp;&amp;_cb[i-1]==&quot;&quot;){
++var cn=_cc.getElementsByTagName(_d4[1]);
+ }else{
+-var cn=_c9.childNodes;
++var cn=_cc.childNodes;
+ }
+ for(var j=0,l=cn.length;j&lt;l;j++){
+-if(cn[j].nodeType==1&amp;&amp;cn[j].tagName==_d1[1]&amp;&amp;cn[j].getAttribute(_d1[2])==_d1[3]){
+-_c9=cn[j];
++if(cn[j].nodeType==1&amp;&amp;cn[j].tagName==_d4[1]&amp;&amp;cn[j].getAttribute(_d4[2])==_d4[3]){
++_cc=cn[j];
+ break;
+ }
+ }
+ if(j==l){
+-throw new Error(&quot;Can't evaluate expression &quot;+_d0);
++throw new Error(&quot;Can't evaluate expression &quot;+_d3);
+ }
+ }else{
+-_ce=_cb.exec(_d0);
+-if(_ce){
+-_d0=_ce[1];
+-_ce=_ce[2]-1;
++_d1=_ce.exec(_d3);
++if(_d1){
++_d3=_d1[1];
++_d1=_d1[2]-1;
+ }else{
+-_ce=0;
++_d1=0;
+ }
+-if(_d0!=&quot;&quot;){
+-_cd=_ca.exec(_d0);
+-if(_cd){
+-_c9=_c9.getAttributeNode(_cd[1]);
++if(_d3!=&quot;&quot;){
++_d0=_cd.exec(_d3);
++if(_d0){
++_cc=_cc.getAttributeNode(_d0[1]);
+ }else{
+-_c9=_c9.getElementsByTagName(_d0).item(_ce);
++_cc=_cc.getElementsByTagName(_d3).item(_d1);
+ }
+ }
+ }
+ }
+-if(_c9&amp;&amp;_c9.firstChild&amp;&amp;_c9.firstChild.nodeType==3){
+-return _c9.firstChild;
++if(_cc&amp;&amp;_cc.firstChild&amp;&amp;_cc.firstChild.nodeType==3){
++return _cc.firstChild;
+ }
+-if(_c9&amp;&amp;_c9.firstChild&amp;&amp;_c9.firstChild.nodeType==4){
+-return _c9.firstChild;
++if(_cc&amp;&amp;_cc.firstChild&amp;&amp;_cc.firstChild.nodeType==4){
++return _cc.firstChild;
+ }
+-if(!_c9){
+-throw new Error(&quot;Can't evaluate expression &quot;+_c7);
++if(!_cc){
++throw new Error(&quot;Can't evaluate expression &quot;+_ca);
+ }
+-return _c9;
++return _cc;
+ };
+-Freja.Model=function(url,_d5){
++Freja.Model=function(url,_d8){
+ this.url=url;
+ this.ready=false;
+ this.document=null;
+-this._query=_d5;
++this._query=_d8;
+ };
+ Freja.Model.prototype.getElementById=function(id){
+ if(this.document){
+@@ -941,31 +951,31 @@
+ }
+ return null;
+ };
+-Freja.Model.prototype.get=function(_d7){
++Freja.Model.prototype.get=function(_da){
+ if(this.document){
+-return this._query.get(this.document,_d7);
++return this._query.get(this.document,_da);
+ }
+ return null;
+ };
+-Freja.Model.prototype.set=function(_d8,_d9){
++Freja.Model.prototype.set=function(_db,_dc){
+ if(this.document){
+-return this._query.set(this.document,_d8,_d9);
++return this._query.set(this.document,_db,_dc);
+ }
+ return null;
+ };
+-Freja.Model.prototype.updateFrom=function(_da){
+-var _db=_da.getValues();
+-for(var i=0;i&lt;_db[0].length;++i){
+-if(_db[0][i].lastIndexOf(&quot;/&quot;)!=-1){
+-this.set(_db[0][i],_db[1][i]);
++Freja.Model.prototype.updateFrom=function(_dd){
++var _de=_dd.getValues();
++for(var i=0;i&lt;_de[0].length;++i){
++if(_de[0][i].lastIndexOf(&quot;/&quot;)!=-1){
++this.set(_de[0][i],_de[1][i]);
+ }
+ }
+ };
+ Freja.Model.prototype.save=function(){
+ var url=this.url;
+-var _de=/^(file:\/\/.*\/)([^\/]*)$/.exec(window.location.href);
+-if(_de){
+-url=_de[1]+url;
++var _e1=/^(file:\/\/.*\/)([^\/]*)$/.exec(window.location.href);
++if(_e1){
++url=_e1[1]+url;
+ }
+ var d=Freja._aux.createDeferred();
+ var req=Freja.AssetManager.openXMLHttpRequest(&quot;POST&quot;,url);
+@@ -979,68 +989,68 @@
+ };
+ Freja.Model.prototype.remove=function(){
+ var url=this.url;
+-var _e2=/^(file:\/\/.*\/)([^\/]*)$/.exec(window.location.href);
+-if(_e2){
+-url=_e2[1]+url;
++var _e5=/^(file:\/\/.*\/)([^\/]*)$/.exec(window.location.href);
++if(_e5){
++url=_e5[1]+url;
+ }
+ var req=Freja.AssetManager.openXMLHttpRequest(&quot;DELETE&quot;,url);
+ return Freja._aux.sendXMLHttpRequest(req);
+ };
+ Freja.Model.prototype.reload=function(){
+ this.ready=false;
+-var _e4=Freja._aux.bind(function(_e5){
+-this.document=_e5;
++var _e7=Freja._aux.bind(function(_e8){
++this.document=_e8;
+ this.ready=true;
+ Freja._aux.signal(this,&quot;onload&quot;);
+ },this);
+ var d=Freja.AssetManager.loadAsset(this.url,true);
+-d.addCallbacks(_e4,Freja.AssetManager.onerror);
++d.addCallbacks(_e7,Freja.AssetManager.onerror);
+ return d;
+ };
+-Freja.Model.DataSource=function(_e7,_e8){
+-this.createURL=_e7;
+-this.indexURL=_e8;
++Freja.Model.DataSource=function(_ea,_eb){
++this.createURL=_ea;
++this.indexURL=_eb;
+ };
+ Freja.Model.DataSource.prototype.select=function(){
+ return getModel(this.indexURL);
+ };
+-Freja.Model.DataSource.prototype.create=function(_e9){
++Freja.Model.DataSource.prototype.create=function(_ec){
+ var url=this.createURL;
+-var _eb=/^(file:\/\/.*\/)([^\/]*)$/.exec(window.location.href);
+-if(_eb){
+-url=_eb[1]+url;
++var _ee=/^(file:\/\/.*\/)([^\/]*)$/.exec(window.location.href);
++if(_ee){
++url=_ee[1]+url;
+ }
+ var req=Freja.AssetManager.openXMLHttpRequest(&quot;PUT&quot;,url);
+-var _ed={};
+-for(var i=0,len=_e9[0].length;i&lt;len;++i){
+-_ed[_e9[0][i]]=_e9[1][i];
++var _f0={};
++for(var i=0,len=_ec[0].length;i&lt;len;++i){
++_f0[_ec[0][i]]=_ec[1][i];
+ }
+-return Freja._aux.sendXMLHttpRequest(req,Freja._aux.xmlize(_ed,&quot;record&quot;));
++return Freja._aux.sendXMLHttpRequest(req,Freja._aux.xmlize(_f0,&quot;record&quot;));
+ };
+-Freja.View=function(url,_f0){
++Freja.View=function(url,_f3){
+ this.url=url;
+ this.ready=false;
+ this.document=null;
+-this._renderer=_f0;
++this._renderer=_f3;
+ this._destination=null;
+ this.behaviors=[];
+ this.placeholder=null;
+ Freja._aux.connect(this,&quot;onrendercomplete&quot;,Freja._aux.bind(this._connectBehavior,this));
+ };
+-Freja.View.prototype.render=function(_f1,_f2,_f3){
+-if(typeof (_f2)==&quot;undefined&quot;){
+-_f2=this.placeholder;
++Freja.View.prototype.render=function(_f4,_f5,_f6){
++if(typeof (_f5)==&quot;undefined&quot;){
++_f5=this.placeholder;
+ }
+-if(typeof (_f3)==&quot;undefined&quot;){
+-_f3=this.xslParameters;
++if(typeof (_f6)==&quot;undefined&quot;){
++_f6=this.xslParameters;
+ }
+-var _f4=function(_f5,_f6,_f7,_f8){
+-this.model=_f5;
+-this.view=_f6;
+-this.deferred=_f7;
+-this.xslParameters=_f8;
++var _f7=function(_f8,_f9,_fa,_fb){
++this.model=_f8;
++this.view=_f9;
++this.deferred=_fa;
++this.xslParameters=_fb;
+ };
+-_f4.prototype.trigger=function(){
++_f7.prototype.trigger=function(){
+ try{
+ if(!this.view.ready){
+ Freja._aux.connect(this.view,&quot;onload&quot;,Freja._aux.bind(this.trigger,this));
+@@ -1050,30 +1060,30 @@
+ Freja._aux.connect(this.model,&quot;onload&quot;,Freja._aux.bind(this.trigger,this));
+ return;
+ }
+-var _f9;
++var _fc;
+ if(typeof (this.model)==&quot;undefined&quot;){
+-_f9={document:Freja._aux.loadXML(&quot;&lt;?xml version='1.0' ?&gt;&lt;dummy/&gt;&quot;)};
++_fc={document:Freja._aux.loadXML(&quot;&lt;?xml version='1.0' ?&gt;&lt;dummy/&gt;&quot;)};
+ }else{
+ if(this.model instanceof Freja.Model){
+-_f9=this.model;
++_fc=this.model;
+ }else{
+-_f9={document:Freja._aux.loadXML(&quot;&lt;?xml version='1.0' ?&gt;\n&quot;+Freja._aux.xmlize(this.model,&quot;item&quot;))};
++_fc={document:Freja._aux.loadXML(&quot;&lt;?xml version='1.0' ?&gt;\n&quot;+Freja._aux.xmlize(this.model,&quot;item&quot;))};
+ }
+ }
+-var _fa=this.view._renderer.transform(_f9,this.view,this.xslParameters);
+-_fa.addCallback(Freja._aux.bind(function(_fb){
+-if(typeof _fb==&quot;string&quot;){
+-this._destination.innerHTML=_fb;
++var _fd=this.view._renderer.transform(_fc,this.view,this.xslParameters);
++_fd.addCallback(Freja._aux.bind(function(_fe){
++if(typeof _fe==&quot;string&quot;){
++this._destination.innerHTML=_fe;
+ }else{
+ this._destination.innerHTML=&quot;&quot;;
+-this._destination.appendChild(_fb);
++this._destination.appendChild(_fe);
+ }
+ },this.view));
+-_fa.addCallback(Freja._aux.bind(function(){
++_fd.addCallback(Freja._aux.bind(function(){
+ Freja._aux.signal(this,&quot;onrendercomplete&quot;,this._destination);
+ },this.view));
+-_fa.addCallback(this.deferred.callback);
+-_fa.addErrback(this.deferred.errback);
++_fd.addCallback(this.deferred.callback);
++_fd.addErrback(this.deferred.errback);
+ }
+ catch(ex){
+ this.deferred.errback(ex);
+@@ -1081,13 +1091,13 @@
+ };
+ var d=Freja._aux.createDeferred();
+ try{
+-if(typeof (_f2)==&quot;object&quot;){
+-this._destination=_f2;
++if(typeof (_f5)==&quot;object&quot;){
++this._destination=_f5;
+ }else{
+-this._destination=document.getElementById(_f2);
++this._destination=document.getElementById(_f5);
+ }
+ this._destination.innerHTML=Freja.AssetManager.THROBBER_HTML;
+-var h=new _f4(_f1,this,d,_f3);
++var h=new _f7(_f4,this,d,_f6);
+ h.trigger();
+ }
+ catch(ex){
+@@ -1095,49 +1105,49 @@
+ }
+ return d;
+ };
+-Freja.View.prototype._connectBehavior=function(_fe){
++Freja.View.prototype._connectBehavior=function(_101){
+ try{
+-var _ff=function(node,_101,_102){
+-Freja._aux.connect(node,_101,Freja._aux.bind(function(e){
+-var _104=false;
++var _102=function(node,_104,_105){
++Freja._aux.connect(node,_104,Freja._aux.bind(function(e){
++var _107=false;
+ try{
+-_104=_102(this);
++_107=_105(this);
+ }
+ catch(ex){
+ throw new Error(&quot;An error ocurred in user handler.\n&quot;+ex.message);
+ }
+ finally{
+-if(!_104){
++if(!_107){
+ e.stop();
+ }
+ }
+ },node));
+ };
+-var _105=function(node,_107){
++var _108=function(node,_10a){
+ for(var i=0,c=node.childNodes,l=c.length;i&lt;l;++i){
+-var _109=c[i];
+-if(_109.nodeType==1){
+-if(_109.className){
+-var _10a=_109.className.split(&quot; &quot;);
+-for(var j=0;j&lt;_10a.length;j++){
+-var _10c=_107[_10a[j]];
+-if(_10c){
+-for(var _10d in _10c){
+-if(_10d==&quot;init&quot;){
+-_10c.init(_109);
++var _10c=c[i];
++if(_10c.nodeType==1){
++if(_10c.className){
++var _10d=_10c.className.split(&quot; &quot;);
++for(var j=0;j&lt;_10d.length;j++){
++var _10f=_10a[_10d[j]];
++if(_10f){
++for(var _110 in _10f){
++if(_110==&quot;init&quot;){
++_10f.init(_10c);
+ }else{
+-_ff(_109,_10d,_10c[_10d]);
++_102(_10c,_110,_10f[_110]);
+ }
+ }
+ }
+ }
+ }
+-_105(_109,_107);
++_108(_10c,_10a);
+ }
+ }
+ };
+ for(var ids in this.behaviors){
+-_105(_fe,this.behaviors);
++_108(_101,this.behaviors);
+ break;
+ }
+ }
+@@ -1153,10 +1163,10 @@
+ Freja.View.Renderer.XSLTransformer=function(){
+ };
+ Freja.Class.extend(Freja.View.Renderer.XSLTransformer,Freja.View.Renderer);
+-Freja.View.Renderer.XSLTransformer.prototype.transform=function(_10f,view,_111){
++Freja.View.Renderer.XSLTransformer.prototype.transform=function(_112,view,_114){
+ var d=Freja._aux.createDeferred();
+ try{
+-var html=Freja._aux.transformXSL(_10f.document,view.document,_111);
++var html=Freja._aux.transformXSL(_112.document,view.document,_114);
+ if(!html){
+ d.errback(new Error(&quot;XSL Transformation error.&quot;));
+ }else{
+@@ -1172,16 +1182,16 @@
+ this.url=url;
+ };
+ Freja.Class.extend(Freja.View.Renderer.RemoteXSLTransformer,Freja.View.Renderer);
+-Freja.View.Renderer.RemoteXSLTransformer.prototype.transform=function(_115,view,_117){
++Freja.View.Renderer.RemoteXSLTransformer.prototype.transform=function(_118,view,_11a){
+ var d=Freja._aux.createDeferred();
+-var _119=view.url;
+-var _11a=&quot;xslFile=&quot;+encodeURIComponent(_119)+&quot;&amp;xmlData=&quot;+encodeURIComponent(Freja._aux.serializeXML(_115.document));
+-var _11b=&quot;&quot;;
+-for(var _11c in _117){
+-_11b+=encodeURIComponent(_11c+&quot;,&quot;+_117[_11c]);
++var _11c=view.url;
++var _11d=&quot;xslFile=&quot;+encodeURIComponent(_11c)+&quot;&amp;xmlData=&quot;+encodeURIComponent(Freja._aux.serializeXML(_118.document));
++var _11e=&quot;&quot;;
++for(var _11f in _11a){
++_11e+=encodeURIComponent(_11f+&quot;,&quot;+_11a[_11f]);
+ }
+-if(_11b.length&gt;0){
+-_11a=_11a+&quot;&amp;xslParam=&quot;+_11b;
++if(_11e.length&gt;0){
++_11d=_11d+&quot;&amp;xslParam=&quot;+_11e;
+ }
+ var req=Freja.AssetManager.openXMLHttpRequest(&quot;POST&quot;,Freja.AssetManager.XSLT_SERVICE_URL);
+ req.onreadystatechange=function(){
+@@ -1193,7 +1203,7 @@
+ }
+ }
+ };
+-req.send(_11a);
++req.send(_11d);
+ return d;
+ };
+ Freja.UndoHistory=function(){
+@@ -1202,40 +1212,40 @@
+ this._position=0;
+ this._undoSteps=0;
+ };
+-Freja.UndoHistory.prototype.add=function(_11e){
+-var _11f=this._position%this.maxLength;
+-var _120=_11e.document;
+-this.cache[_11f]={};
+-this.cache[_11f].model=_11e;
+-this.cache[_11f].document=Freja._aux.cloneXMLDocument(_120);
+-if(!this.cache[_11f].document){
++Freja.UndoHistory.prototype.add=function(_121){
++var _122=this._position%this.maxLength;
++var _123=_121.document;
++this.cache[_122]={};
++this.cache[_122].model=_121;
++this.cache[_122].document=Freja._aux.cloneXMLDocument(_123);
++if(!this.cache[_122].document){
+ throw new Error(&quot;Couldn't add to history.&quot;);
+ }else{
+ this._position++;
+-var _121=_11f;
++var _124=_122;
+ while(this._undoSteps&gt;0){
+-_121=(_121+1)%this.maxLength;
+-this.cache[_121]={};
++_124=(_124+1)%this.maxLength;
++this.cache[_124]={};
+ this._undoSteps--;
+ }
+-return _11f;
++return _122;
+ }
+ };
+-Freja.UndoHistory.prototype.undo=function(_122){
++Freja.UndoHistory.prototype.undo=function(_125){
+ if(this._undoSteps&lt;this.cache.length){
+ this._undoSteps++;
+ this._position--;
+ if(this._position&lt;0){
+ this._position=this.maxLength-1;
+ }
+-var _123=this.cache[this._position].model;
++var _126=this.cache[this._position].model;
+ if(this.cache[this._position].document){
+-_123.document=this.cache[this._position].document;
++_126.document=this.cache[this._position].document;
+ }else{
+ throw new Error(&quot;The model's DOMDocument wasn't properly copied into the history&quot;);
+ }
+-if(typeof (_122)!=&quot;undefined&quot;&amp;&amp;_122&gt;1){
+-this.undo(_122-1);
++if(typeof (_125)!=&quot;undefined&quot;&amp;&amp;_125&gt;1){
++this.undo(_125-1);
+ }
+ }else{
+ throw new Error(&quot;Nothing to undo&quot;);
+@@ -1245,8 +1255,8 @@
+ if(this._undoSteps&gt;0){
+ this._undoSteps--;
+ this._position=(this._position+1)%this.maxLength;
+-var _124=this.cache[this._position].model;
+-_124.document=this.cache[this._position].document;
++var _127=this.cache[this._position].model;
++_127.document=this.cache[this._position].document;
+ }else{
+ throw new Error(&quot;Nothing to redo&quot;);
+ }
+@@ -1282,12 +1292,12 @@
+ }
+ }
+ var m=new Freja.Model(url,Freja._aux.createQueryEngine());
+-var _128=Freja._aux.bind(function(_129){
+-this.document=_129;
++var _12b=Freja._aux.bind(function(_12c){
++this.document=_12c;
+ this.ready=true;
+ Freja._aux.signal(this,&quot;onload&quot;);
+ },m);
+-this.loadAsset(url,true).addCallbacks(_128,Freja.AssetManager.onerror);
++this.loadAsset(url,true).addCallbacks(_12b,Freja.AssetManager.onerror);
+ this.models.push(m);
+ return m;
+ };
+@@ -1298,46 +1308,46 @@
+ }
+ }
+ var v=new Freja.View(url,this.createRenderer());
+-var _12d=Freja._aux.bind(function(_12e){
+-this.document=_12e;
++var _130=Freja._aux.bind(function(_131){
++this.document=_131;
+ this.ready=true;
+ Freja._aux.signal(this,&quot;onload&quot;);
+ },v);
+-this.loadAsset(url,false).addCallbacks(_12d,Freja.AssetManager.onerror);
++this.loadAsset(url,false).addCallbacks(_130,Freja.AssetManager.onerror);
+ this.views.push(v);
+ return v;
+ };
+-Freja.AssetManager.openXMLHttpRequest=function(_12f,url){
+-var _131=null;
+-if(Freja.AssetManager.HTTP_METHOD_TUNNEL&amp;&amp;_12f!=&quot;GET&quot;&amp;&amp;_12f!=&quot;POST&quot;){
+-_131=_12f;
+-_12f=&quot;POST&quot;;
++Freja.AssetManager.openXMLHttpRequest=function(_132,url){
++var _134=null;
++if(Freja.AssetManager.HTTP_METHOD_TUNNEL&amp;&amp;_132!=&quot;GET&quot;&amp;&amp;_132!=&quot;POST&quot;){
++_134=_132;
++_132=&quot;POST&quot;;
+ }
+-var req=Freja._aux.openXMLHttpRequest(_12f,url,Freja.AssetManager.HTTP_REQUEST_TYPE==&quot;async&quot;,Freja.AssetManager._username,Freja.AssetManager._password);
+-if(_131){
+-req.setRequestHeader(Freja.AssetManager.HTTP_METHOD_TUNNEL,_131);
++var req=Freja._aux.openXMLHttpRequest(_132,url,Freja.AssetManager.HTTP_REQUEST_TYPE==&quot;async&quot;,Freja.AssetManager._username,Freja.AssetManager._password);
++if(_134){
++req.setRequestHeader(Freja.AssetManager.HTTP_METHOD_TUNNEL,_134);
+ }
+ return req;
+ };
+-Freja.AssetManager.setCredentials=function(_133,_134){
+-this._username=_133;
+-this._password=_134;
++Freja.AssetManager.setCredentials=function(_136,_137){
++this._username=_136;
++this._password=_137;
+ };
+-Freja.AssetManager.loadAsset=function(url,_136){
+-var _137=/^(file:\/\/.*\/)([^\/]*)$/.exec(window.location.href);
+-if(_137){
+-url=_137[1]+url;
++Freja.AssetManager.loadAsset=function(url,_139){
++var _13a=/^(file:\/\/.*\/)([^\/]*)$/.exec(window.location.href);
++if(_13a){
++url=_13a[1]+url;
+ }
+ var d=Freja._aux.createDeferred();
+-var _139=function(_13a){
++var _13c=function(_13d){
+ try{
+-if(_13a.responseText==&quot;&quot;){
++if(_13d.responseText==&quot;&quot;){
+ throw new Error(&quot;Empty response.&quot;);
+ }
+-if(_13a.responseXML.xml==&quot;&quot;){
+-var _13b=Freja._aux.loadXML(_13a.responseText);
++if(_13d.responseXML.xml==&quot;&quot;){
++var _13e=Freja._aux.loadXML(_13d.responseText);
+ }else{
+-var _13b=_13a.responseXML;
++var _13e=_13d.responseXML;
+ }
+ }
+ catch(ex){
+@@ -1345,14 +1355,14 @@
+ }
+ if(window.document.all){
+ setTimeout(function(){
+-d.callback(_13b);
++d.callback(_13e);
+ },1);
+ }else{
+-d.callback(_13b);
++d.callback(_13e);
+ }
+ };
+ try{
+-if(_136&amp;&amp;Freja.AssetManager.HTTP_METHOD_TUNNEL){
++if(_139&amp;&amp;Freja.AssetManager.HTTP_METHOD_TUNNEL){
+ var req=Freja._aux.openXMLHttpRequest(&quot;POST&quot;,url,Freja.AssetManager.HTTP_REQUEST_TYPE==&quot;async&quot;,Freja.AssetManager._username,Freja.AssetManager._password);
+ req.setRequestHeader(Freja.AssetManager.HTTP_METHOD_TUNNEL,&quot;GET&quot;);
+ req.setRequestHeader(&quot;Content-Type&quot;,&quot;application/x-www-form-urlencoded&quot;);
+@@ -1361,12 +1371,12 @@
+ }
+ var comm=Freja._aux.sendXMLHttpRequest(req);
+ if(Freja.AssetManager.HTTP_REQUEST_TYPE==&quot;async&quot;){
+-comm.addCallbacks(_139,function(req){
++comm.addCallbacks(_13c,function(req){
+ d.errback(new Error(&quot;Request failed:&quot;+req.status));
+ });
+ }else{
+ if(req.status==0||req.status==200||req.status==201||req.status==304){
+-_139(req);
++_13c(req);
+ }else{
+ d.errback(new Error(&quot;Request failed:&quot;+req.status));
+ }
+
+Modified: trunk/lib/mochi+sarissa/Freja.js
+===================================================================
+--- trunk/lib/mochi+sarissa/Freja.js	2007-03-21 19:05:13 UTC (rev 87)
++++ trunk/lib/mochi+sarissa/Freja.js	2007-03-21 20:30:15 UTC (rev 88)
+@@ -2,7 +2,7 @@
+ 
+     Freja 2.1
+ 
+-    Build $Wed, 21 Mar 2007 15:06:18 UTC$
++    Build $Wed, 21 Mar 2007 20:26:16 UTC$
+ 
+     Target: mochi+sarissa
+ 
+@@ -234,8 +234,14 @@
+ 		return new Freja.QueryEngine.SimplePath();
+ 	}
+ };
++Freja._aux.importNode = function(document, node, deep) {
++	if(typeof deep =='undefined') deep = true;
++	if(document.importNode)
++		return document.importNode(node,deep);
++	else
++		return node.cloneNode(deep);
++}
+ 
+-
+ /**
+  * ====================================================================
+  * About
+
+Modified: trunk/lib/mochi+sarissa/Freja_pack.js
+===================================================================
+--- trunk/lib/mochi+sarissa/Freja_pack.js	2007-03-21 19:05:13 UTC (rev 87)
++++ trunk/lib/mochi+sarissa/Freja_pack.js	2007-03-21 20:30:15 UTC (rev 88)
+@@ -180,6 +180,16 @@
+ return new Freja.QueryEngine.SimplePath();
+ }
+ };
++Freja._aux.importNode=function(_21,_22,_23){
++if(typeof _23==&quot;undefined&quot;){
++_23=true;
++}
++if(_21.importNode){
++return _21.importNode(_22,_23);
++}else{
++return _22.cloneNode(_23);
++}
++};
+ if(_SARISSA_HAS_DOM_FEATURE&amp;&amp;document.implementation.hasFeature(&quot;XPath&quot;,&quot;3.0&quot;)){
+ function SarissaNodeList(i){
+ this.length=i;
+@@ -194,18 +204,18 @@
+ XMLDocument.prototype.setProperty=function(x,y){
+ };
+ }
+-Sarissa.setXpathNamespaces=function(_25,_26){
+-_25._sarissa_useCustomResolver=true;
+-var _27=_26.indexOf(&quot; &quot;)&gt;-1?_26.split(&quot; &quot;):new Array(_26);
+-_25._sarissa_xpathNamespaces=new Array(_27.length);
+-for(var i=0;i&lt;_27.length;i++){
+-var ns=_27[i];
+-var _2a=ns.indexOf(&quot;:&quot;);
+-var _2b=ns.indexOf(&quot;=&quot;);
+-if(_2a&gt;0&amp;&amp;_2b&gt;_2a+1){
+-var _2c=ns.substring(_2a+1,_2b);
+-var uri=ns.substring(_2b+2,ns.length-1);
+-_25._sarissa_xpathNamespaces[_2c]=uri;
++Sarissa.setXpathNamespaces=function(_28,_29){
++_28._sarissa_useCustomResolver=true;
++var _2a=_29.indexOf(&quot; &quot;)&gt;-1?_29.split(&quot; &quot;):new Array(_29);
++_28._sarissa_xpathNamespaces=new Array(_2a.length);
++for(var i=0;i&lt;_2a.length;i++){
++var ns=_2a[i];
++var _2d=ns.indexOf(&quot;:&quot;);
++var _2e=ns.indexOf(&quot;=&quot;);
++if(_2d&gt;0&amp;&amp;_2e&gt;_2d+1){
++var _2f=ns.substring(_2d+1,_2e);
++var uri=ns.substring(_2e+2,ns.length-1);
++_28._sarissa_xpathNamespaces[_2f]=uri;
+ }else{
+ throw &quot;Bad format on namespace declaration(s) given&quot;;
+ }
+@@ -213,46 +223,46 @@
+ };
+ XMLDocument.prototype._sarissa_useCustomResolver=false;
+ XMLDocument.prototype._sarissa_xpathNamespaces=new Array();
+-XMLDocument.prototype.selectNodes=function(_2e,_2f,_30){
+-var _31=this;
+-var _32=this._sarissa_useCustomResolver?function(_33){
+-var s=_31._sarissa_xpathNamespaces[_33];
++XMLDocument.prototype.selectNodes=function(_31,_32,_33){
++var _34=this;
++var _35=this._sarissa_useCustomResolver?function(_36){
++var s=_34._sarissa_xpathNamespaces[_36];
+ if(s){
+ return s;
+ }else{
+-throw &quot;No namespace URI found for prefix: '&quot;+_33+&quot;'&quot;;
++throw &quot;No namespace URI found for prefix: '&quot;+_36+&quot;'&quot;;
+ }
+ }:this.createNSResolver(this.documentElement);
+-var _35=null;
+-if(!_30){
+-var _36=this.evaluate(_2e,(_2f?_2f:this),_32,XPathResult.ORDERED_NODE_SNAPSHOT_TYPE,null);
+-var _37=new SarissaNodeList(_36.snapshotLength);
+-_37.expr=_2e;
+-for(var i=0;i&lt;_37.length;i++){
+-_37[i]=_36.snapshotItem(i);
++var _38=null;
++if(!_33){
++var _39=this.evaluate(_31,(_32?_32:this),_35,XPathResult.ORDERED_NODE_SNAPSHOT_TYPE,null);
++var _3a=new SarissaNodeList(_39.snapshotLength);
++_3a.expr=_31;
++for(var i=0;i&lt;_3a.length;i++){
++_3a[i]=_39.snapshotItem(i);
+ }
+-_35=_37;
++_38=_3a;
+ }else{
+-_35=_36=this.evaluate(_2e,(_2f?_2f:this),_32,XPathResult.FIRST_ORDERED_NODE_TYPE,null).singleNodeValue;
++_38=_39=this.evaluate(_31,(_32?_32:this),_35,XPathResult.FIRST_ORDERED_NODE_TYPE,null).singleNodeValue;
+ }
+-return _35;
++return _38;
+ };
+-Element.prototype.selectNodes=function(_39){
++Element.prototype.selectNodes=function(_3c){
+ var doc=this.ownerDocument;
+ if(doc.selectNodes){
+-return doc.selectNodes(_39,this);
++return doc.selectNodes(_3c,this);
+ }else{
+ throw &quot;Method selectNodes is only supported by XML Elements&quot;;
+ }
+ };
+-XMLDocument.prototype.selectSingleNode=function(_3b,_3c){
+-var ctx=_3c?_3c:null;
+-return this.selectNodes(_3b,ctx,true);
++XMLDocument.prototype.selectSingleNode=function(_3e,_3f){
++var ctx=_3f?_3f:null;
++return this.selectNodes(_3e,ctx,true);
+ };
+-Element.prototype.selectSingleNode=function(_3e){
++Element.prototype.selectSingleNode=function(_41){
+ var doc=this.ownerDocument;
+ if(doc.selectSingleNode){
+-return doc.selectSingleNode(_3e,this);
++return doc.selectSingleNode(_41,this);
+ }else{
+ throw &quot;Method selectNodes is only supported by XML Elements&quot;;
+ }
+@@ -264,65 +274,65 @@
+ }
+ Freja.QueryEngine=function(){
+ };
+-Freja.QueryEngine.prototype.getElementById=function(_40,id){
+-var _42=_40.getElementsByTagName(&quot;*&quot;);
+-for(var i=0;i&lt;_42.length;i++){
+-if(_42[i].getAttribute(&quot;id&quot;)==id){
+-return _42[i];
++Freja.QueryEngine.prototype.getElementById=function(_43,id){
++var _45=_43.getElementsByTagName(&quot;*&quot;);
++for(var i=0;i&lt;_45.length;i++){
++if(_45[i].getAttribute(&quot;id&quot;)==id){
++return _45[i];
+ }
+ }
+ };
+-Freja.QueryEngine.prototype.get=function(_44,_45){
+-var _46=this._find(_44,_45);
+-if(!_46){
+-throw new Error(&quot;Can't evaluate expression &quot;+_45);
++Freja.QueryEngine.prototype.get=function(_47,_48){
++var _49=this._find(_47,_48);
++if(!_49){
++throw new Error(&quot;Can't evaluate expression &quot;+_48);
+ }
+-switch(_46.nodeType){
++switch(_49.nodeType){
+ case 1:
+-if(_46.firstChild&amp;&amp;(_46.firstChild.nodeType==3||_46.firstChild.nodeType==4)){
+-return _46.firstChild.nodeValue;
++if(_49.firstChild&amp;&amp;(_49.firstChild.nodeType==3||_49.firstChild.nodeType==4)){
++return _49.firstChild.nodeValue;
+ }
+ break;
+ case 2:
+-return _46.nodeValue;
++return _49.nodeValue;
+ break;
+ case 3:
+ case 4:
+-return _46.nodeValue;
++return _49.nodeValue;
+ break;
+ }
+ return null;
+ };
+-Freja.QueryEngine.prototype.set=function(_47,_48,_49){
+-var _4a=this._find(_47,_48);
+-if(!_4a){
+-var _4b=_48.substr(_48.lastIndexOf(&quot;/&quot;)+1);
+-if(_4b.charAt(0)==&quot;@&quot;){
+-var _4c=_48.substring(0,_48.lastIndexOf(&quot;/&quot;));
+-var _4d=this._find(_47,_4c);
+-if(_4d){
+-_4d.setAttribute(_4b.substr(1),_49);
++Freja.QueryEngine.prototype.set=function(_4a,_4b,_4c){
++var _4d=this._find(_4a,_4b);
++if(!_4d){
++var _4e=_4b.substr(_4b.lastIndexOf(&quot;/&quot;)+1);
++if(_4e.charAt(0)==&quot;@&quot;){
++var _4f=_4b.substring(0,_4b.lastIndexOf(&quot;/&quot;));
++var _50=this._find(_4a,_4f);
++if(_50){
++_50.setAttribute(_4e.substr(1),_4c);
+ return;
+ }
+ }
+-throw new Error(&quot;Can't evaluate expression &quot;+_48);
++throw new Error(&quot;Can't evaluate expression &quot;+_4b);
+ }
+-switch(_4a.nodeType){
++switch(_4d.nodeType){
+ case 1:
+-if(_4a.firstChild&amp;&amp;(_4a.firstChild.nodeType==3||_4a.firstChild.nodeType==4)){
+-_4a.firstChild.nodeValue=_49;
++if(_4d.firstChild&amp;&amp;(_4d.firstChild.nodeType==3||_4d.firstChild.nodeType==4)){
++_4d.firstChild.nodeValue=_4c;
+ }else{
+-if(_49!=&quot;&quot;){
+-_4a.appendChild(_47.createTextNode(_49));
++if(_4c!=&quot;&quot;){
++_4d.appendChild(_4a.createTextNode(_4c));
+ }
+ }
+ break;
+ case 2:
+-_4a.nodeValue=_49;
++_4d.nodeValue=_4c;
+ break;
+ case 3:
+ case 4:
+-_4a.nodeValue=_49;
++_4d.nodeValue=_4c;
+ break;
+ }
+ return;
+@@ -330,76 +340,76 @@
+ Freja.QueryEngine.XPath=function(){
+ };
+ Freja.Class.extend(Freja.QueryEngine.XPath,Freja.QueryEngine);
+-Freja.QueryEngine.XPath.prototype._find=function(_4e,_4f){
+-var _50=_4e.selectSingleNode(_4f);
+-return _50;
++Freja.QueryEngine.XPath.prototype._find=function(_51,_52){
++var _53=_51.selectSingleNode(_52);
++return _53;
+ };
+ Freja.QueryEngine.SimplePath=function(){
+ };
+ Freja.Class.extend(Freja.QueryEngine.SimplePath,Freja.QueryEngine);
+-Freja.QueryEngine.SimplePath.prototype._find=function(_51,_52){
+-if(!_52.match(/^[\d\w\/@\[\]=_\-']*$/)){
+-throw new Error(&quot;Can't evaluate expression &quot;+_52);
++Freja.QueryEngine.SimplePath.prototype._find=function(_54,_55){
++if(!_55.match(/^[\d\w\/@\[\]=_\-']*$/)){
++throw new Error(&quot;Can't evaluate expression &quot;+_55);
+ }
+-var _53=_52.split(&quot;/&quot;);
+-var _54=_51;
+-var _55=new RegExp(&quot;^@([\\d\\w]*)&quot;);
+-var _56=new RegExp(&quot;^([@\\d\\w]*)\\[([\\d]*)\\]$&quot;);
+-var _57=new RegExp(&quot;^([\\d\\w]+)\\[@([@\\d\\w]+)=['\&quot;]{1}(.*)['\&quot;]{1}\\]$&quot;);
+-var _58=null;
+-var _59=0;
+-for(var i=0;i&lt;_53.length;++i){
+-var _5b=_53[i];
+-var _5c=_57.exec(_5b);
+-if(_5c){
+-if(i&gt;0&amp;&amp;_53[i-1]==&quot;&quot;){
+-var cn=_54.getElementsByTagName(_5c[1]);
++var _56=_55.split(&quot;/&quot;);
++var _57=_54;
++var _58=new RegExp(&quot;^@([\\d\\w]*)&quot;);
++var _59=new RegExp(&quot;^([@\\d\\w]*)\\[([\\d]*)\\]$&quot;);
++var _5a=new RegExp(&quot;^([\\d\\w]+)\\[@([@\\d\\w]+)=['\&quot;]{1}(.*)['\&quot;]{1}\\]$&quot;);
++var _5b=null;
++var _5c=0;
++for(var i=0;i&lt;_56.length;++i){
++var _5e=_56[i];
++var _5f=_5a.exec(_5e);
++if(_5f){
++if(i&gt;0&amp;&amp;_56[i-1]==&quot;&quot;){
++var cn=_57.getElementsByTagName(_5f[1]);
+ }else{
+-var cn=_54.childNodes;
++var cn=_57.childNodes;
+ }
+ for(var j=0,l=cn.length;j&lt;l;j++){
+-if(cn[j].nodeType==1&amp;&amp;cn[j].tagName==_5c[1]&amp;&amp;cn[j].getAttribute(_5c[2])==_5c[3]){
+-_54=cn[j];
++if(cn[j].nodeType==1&amp;&amp;cn[j].tagName==_5f[1]&amp;&amp;cn[j].getAttribute(_5f[2])==_5f[3]){
++_57=cn[j];
+ break;
+ }
+ }
+ if(j==l){
+-throw new Error(&quot;Can't evaluate expression &quot;+_5b);
++throw new Error(&quot;Can't evaluate expression &quot;+_5e);
+ }
+ }else{
+-_59=_56.exec(_5b);
+-if(_59){
+-_5b=_59[1];
+-_59=_59[2]-1;
++_5c=_59.exec(_5e);
++if(_5c){
++_5e=_5c[1];
++_5c=_5c[2]-1;
+ }else{
+-_59=0;
++_5c=0;
+ }
+-if(_5b!=&quot;&quot;){
+-_58=_55.exec(_5b);
+-if(_58){
+-_54=_54.getAttributeNode(_58[1]);
++if(_5e!=&quot;&quot;){
++_5b=_58.exec(_5e);
++if(_5b){
++_57=_57.getAttributeNode(_5b[1]);
+ }else{
+-_54=_54.getElementsByTagName(_5b).item(_59);
++_57=_57.getElementsByTagName(_5e).item(_5c);
+ }
+ }
+ }
+ }
+-if(_54&amp;&amp;_54.firstChild&amp;&amp;_54.firstChild.nodeType==3){
+-return _54.firstChild;
++if(_57&amp;&amp;_57.firstChild&amp;&amp;_57.firstChild.nodeType==3){
++return _57.firstChild;
+ }
+-if(_54&amp;&amp;_54.firstChild&amp;&amp;_54.firstChild.nodeType==4){
+-return _54.firstChild;
++if(_57&amp;&amp;_57.firstChild&amp;&amp;_57.firstChild.nodeType==4){
++return _57.firstChild;
+ }
+-if(!_54){
+-throw new Error(&quot;Can't evaluate expression &quot;+_52);
++if(!_57){
++throw new Error(&quot;Can't evaluate expression &quot;+_55);
+ }
+-return _54;
++return _57;
+ };
+-Freja.Model=function(url,_60){
++Freja.Model=function(url,_63){
+ this.url=url;
+ this.ready=false;
+ this.document=null;
+-this._query=_60;
++this._query=_63;
+ };
+ Freja.Model.prototype.getElementById=function(id){
+ if(this.document){
+@@ -407,31 +417,31 @@
+ }
+ return null;
+ };
+-Freja.Model.prototype.get=function(_62){
++Freja.Model.prototype.get=function(_65){
+ if(this.document){
+-return this._query.get(this.document,_62);
++return this._query.get(this.document,_65);
+ }
+ return null;
+ };
+-Freja.Model.prototype.set=function(_63,_64){
++Freja.Model.prototype.set=function(_66,_67){
+ if(this.document){
+-return this._query.set(this.document,_63,_64);
++return this._query.set(this.document,_66,_67);
+ }
+ return null;
+ };
+-Freja.Model.prototype.updateFrom=function(_65){
+-var _66=_65.getValues();
+-for(var i=0;i&lt;_66[0].length;++i){
+-if(_66[0][i].lastIndexOf(&quot;/&quot;)!=-1){
+-this.set(_66[0][i],_66[1][i]);
++Freja.Model.prototype.updateFrom=function(_68){
++var _69=_68.getValues();
++for(var i=0;i&lt;_69[0].length;++i){
++if(_69[0][i].lastIndexOf(&quot;/&quot;)!=-1){
++this.set(_69[0][i],_69[1][i]);
+ }
+ }
+ };
+ Freja.Model.prototype.save=function(){
+ var url=this.url;
+-var _69=/^(file:\/\/.*\/)([^\/]*)$/.exec(window.location.href);
+-if(_69){
+-url=_69[1]+url;
++var _6c=/^(file:\/\/.*\/)([^\/]*)$/.exec(window.location.href);
++if(_6c){
++url=_6c[1]+url;
+ }
+ var d=Freja._aux.createDeferred();
+ var req=Freja.AssetManager.openXMLHttpRequest(&quot;POST&quot;,url);
+@@ -445,68 +455,68 @@
+ };
+ Freja.Model.prototype.remove=function(){
+ var url=this.url;
+-var _6d=/^(file:\/\/.*\/)([^\/]*)$/.exec(window.location.href);
+-if(_6d){
+-url=_6d[1]+url;
++var _70=/^(file:\/\/.*\/)([^\/]*)$/.exec(window.location.href);
++if(_70){
++url=_70[1]+url;
+ }
+ var req=Freja.AssetManager.openXMLHttpRequest(&quot;DELETE&quot;,url);
+ return Freja._aux.sendXMLHttpRequest(req);
+ };
+ Freja.Model.prototype.reload=function(){
+ this.ready=false;
+-var _6f=Freja._aux.bind(function(_70){
+-this.document=_70;
++var _72=Freja._aux.bind(function(_73){
++this.document=_73;
+ this.ready=true;
+ Freja._aux.signal(this,&quot;onload&quot;);
+ },this);
+ var d=Freja.AssetManager.loadAsset(this.url,true);
+-d.addCallbacks(_6f,Freja.AssetManager.onerror);
++d.addCallbacks(_72,Freja.AssetManager.onerror);
+ return d;
+ };
+-Freja.Model.DataSource=function(_72,_73){
+-this.createURL=_72;
+-this.indexURL=_73;
++Freja.Model.DataSource=function(_75,_76){
++this.createURL=_75;
++this.indexURL=_76;
+ };
+ Freja.Model.DataSource.prototype.select=function(){
+ return getModel(this.indexURL);
+ };
+-Freja.Model.DataSource.prototype.create=function(_74){
++Freja.Model.DataSource.prototype.create=function(_77){
+ var url=this.createURL;
+-var _76=/^(file:\/\/.*\/)([^\/]*)$/.exec(window.location.href);
+-if(_76){
+-url=_76[1]+url;
++var _79=/^(file:\/\/.*\/)([^\/]*)$/.exec(window.location.href);
++if(_79){
++url=_79[1]+url;
+ }
+ var req=Freja.AssetManager.openXMLHttpRequest(&quot;PUT&quot;,url);
+-var _78={};
+-for(var i=0,len=_74[0].length;i&lt;len;++i){
+-_78[_74[0][i]]=_74[1][i];
++var _7b={};
++for(var i=0,len=_77[0].length;i&lt;len;++i){
++_7b[_77[0][i]]=_77[1][i];
+ }
+-return Freja._aux.sendXMLHttpRequest(req,Freja._aux.xmlize(_78,&quot;record&quot;));
++return Freja._aux.sendXMLHttpRequest(req,Freja._aux.xmlize(_7b,&quot;record&quot;));
+ };
+-Freja.View=function(url,_7b){
++Freja.View=function(url,_7e){
+ this.url=url;
+ this.ready=false;
+ this.document=null;
+-this._renderer=_7b;
++this._renderer=_7e;
+ this._destination=null;
+ this.behaviors=[];
+ this.placeholder=null;
+ Freja._aux.connect(this,&quot;onrendercomplete&quot;,Freja._aux.bind(this._connectBehavior,this));
+ };
+-Freja.View.prototype.render=function(_7c,_7d,_7e){
+-if(typeof (_7d)==&quot;undefined&quot;){
+-_7d=this.placeholder;
++Freja.View.prototype.render=function(_7f,_80,_81){
++if(typeof (_80)==&quot;undefined&quot;){
++_80=this.placeholder;
+ }
+-if(typeof (_7e)==&quot;undefined&quot;){
+-_7e=this.xslParameters;
++if(typeof (_81)==&quot;undefined&quot;){
++_81=this.xslParameters;
+ }
+-var _7f=function(_80,_81,_82,_83){
+-this.model=_80;
+-this.view=_81;
+-this.deferred=_82;
+-this.xslParameters=_83;
++var _82=function(_83,_84,_85,_86){
++this.model=_83;
++this.view=_84;
++this.deferred=_85;
++this.xslParameters=_86;
+ };
+-_7f.prototype.trigger=function(){
++_82.prototype.trigger=function(){
+ try{
+ if(!this.view.ready){
+ Freja._aux.connect(this.view,&quot;onload&quot;,Freja._aux.bind(this.trigger,this));
+@@ -516,30 +526,30 @@
+ Freja._aux.connect(this.model,&quot;onload&quot;,Freja._aux.bind(this.trigger,this));
+ return;
+ }
+-var _84;
++var _87;
+ if(typeof (this.model)==&quot;undefined&quot;){
+-_84={document:Freja._aux.loadXML(&quot;&lt;?xml version='1.0' ?&gt;&lt;dummy/&gt;&quot;)};
++_87={document:Freja._aux.loadXML(&quot;&lt;?xml version='1.0' ?&gt;&lt;dummy/&gt;&quot;)};
+ }else{
+ if(this.model instanceof Freja.Model){
+-_84=this.model;
++_87=this.model;
+ }else{
+-_84={document:Freja._aux.loadXML(&quot;&lt;?xml version='1.0' ?&gt;\n&quot;+Freja._aux.xmlize(this.model,&quot;item&quot;))};
++_87={document:Freja._aux.loadXML(&quot;&lt;?xml version='1.0' ?&gt;\n&quot;+Freja._aux.xmlize(this.model,&quot;item&quot;))};
+ }
+ }
+-var _85=this.view._renderer.transform(_84,this.view,this.xslParameters);
+-_85.addCallback(Freja._aux.bind(function(_86){
+-if(typeof _86==&quot;string&quot;){
+-this._destination.innerHTML=_86;
++var _88=this.view._renderer.transform(_87,this.view,this.xslParameters);
++_88.addCallback(Freja._aux.bind(function(_89){
++if(typeof _89==&quot;string&quot;){
++this._destination.innerHTML=_89;
+ }else{
+ this._destination.innerHTML=&quot;&quot;;
+-this._destination.appendChild(_86);
++this._destination.appendChild(_89);
+ }
+ },this.view));
+-_85.addCallback(Freja._aux.bind(function(){
++_88.addCallback(Freja._aux.bind(function(){
+ Freja._aux.signal(this,&quot;onrendercomplete&quot;,this._destination);
+ },this.view));
+-_85.addCallback(this.deferred.callback);
+-_85.addErrback(this.deferred.errback);
++_88.addCallback(this.deferred.callback);
++_88.addErrback(this.deferred.errback);
+ }
+ catch(ex){
+ this.deferred.errback(ex);
+@@ -547,13 +557,13 @@
+ };
+ var d=Freja._aux.createDeferred();
+ try{
+-if(typeof (_7d)==&quot;object&quot;){
+-this._destination=_7d;
++if(typeof (_80)==&quot;object&quot;){
++this._destination=_80;
+ }else{
+-this._destination=document.getElementById(_7d);
++this._destination=document.getElementById(_80);
+ }
+ this._destination.innerHTML=Freja.AssetManager.THROBBER_HTML;
+-var h=new _7f(_7c,this,d,_7e);
++var h=new _82(_7f,this,d,_81);
+ h.trigger();
+ }
+ catch(ex){
+@@ -561,49 +571,49 @@
+ }
+ return d;
+ };
+-Freja.View.prototype._connectBehavior=function(_89){
++Freja.View.prototype._connectBehavior=function(_8c){
+ try{
+-var _8a=function(_8b,_8c,_8d){
+-Freja._aux.connect(_8b,_8c,Freja._aux.bind(function(e){
+-var _8f=false;
++var _8d=function(_8e,_8f,_90){
++Freja._aux.connect(_8e,_8f,Freja._aux.bind(function(e){
++var _92=false;
+ try{
+-_8f=_8d(this);
++_92=_90(this);
+ }
+ catch(ex){
+ throw new Error(&quot;An error ocurred in user handler.\n&quot;+ex.message);
+ }
+ finally{
+-if(!_8f){
++if(!_92){
+ e.stop();
+ }
+ }
+-},_8b));
++},_8e));
+ };
+-var _90=function(_91,_92){
+-for(var i=0,c=_91.childNodes,l=c.length;i&lt;l;++i){
+-var _94=c[i];
+-if(_94.nodeType==1){
+-if(_94.className){
+-var _95=_94.className.split(&quot; &quot;);
+-for(var j=0;j&lt;_95.length;j++){
+-var _97=_92[_95[j]];
+-if(_97){
+-for(var _98 in _97){
+-if(_98==&quot;init&quot;){
+-_97.init(_94);
++var _93=function(_94,_95){
++for(var i=0,c=_94.childNodes,l=c.length;i&lt;l;++i){
++var _97=c[i];
++if(_97.nodeType==1){
++if(_97.className){
++var _98=_97.className.split(&quot; &quot;);
++for(var j=0;j&lt;_98.length;j++){
++var _9a=_95[_98[j]];
++if(_9a){
++for(var _9b in _9a){
++if(_9b==&quot;init&quot;){
++_9a.init(_97);
+ }else{
+-_8a(_94,_98,_97[_98]);
++_8d(_97,_9b,_9a[_9b]);
+ }
+ }
+ }
+ }
+ }
+-_90(_94,_92);
++_93(_97,_95);
+ }
+ }
+ };
+ for(var ids in this.behaviors){
+-_90(_89,this.behaviors);
++_93(_8c,this.behaviors);
+ break;
+ }
+ }
+@@ -619,14 +629,14 @@
+ Freja.View.Renderer.XSLTransformer=function(){
+ };
+ Freja.Class.extend(Freja.View.Renderer.XSLTransformer,Freja.View.Renderer);
+-Freja.View.Renderer.XSLTransformer.prototype.transform=function(_9a,_9b,_9c){
++Freja.View.Renderer.XSLTransformer.prototype.transform=function(_9d,_9e,_9f){
+ var d=Freja._aux.createDeferred();
+ try{
+-var _9e=Freja._aux.transformXSL(_9a.document,_9b.document,_9c);
+-if(!_9e){
++var _a1=Freja._aux.transformXSL(_9d.document,_9e.document,_9f);
++if(!_a1){
+ d.errback(new Error(&quot;XSL Transformation error.&quot;));
+ }else{
+-d.callback(_9e);
++d.callback(_a1);
+ }
+ }
+ catch(ex){
+@@ -638,16 +648,16 @@
+ this.url=url;
+ };
+ Freja.Class.extend(Freja.View.Renderer.RemoteXSLTransformer,Freja.View.Renderer);
+-Freja.View.Renderer.RemoteXSLTransformer.prototype.transform=function(_a0,_a1,_a2){
++Freja.View.Renderer.RemoteXSLTransformer.prototype.transform=function(_a3,_a4,_a5){
+ var d=Freja._aux.createDeferred();
+-var _a4=_a1.url;
+-var _a5=&quot;xslFile=&quot;+encodeURIComponent(_a4)+&quot;&amp;xmlData=&quot;+encodeURIComponent(Freja._aux.serializeXML(_a0.document));
+-var _a6=&quot;&quot;;
+-for(var _a7 in _a2){
+-_a6+=encodeURIComponent(_a7+&quot;,&quot;+_a2[_a7]);
++var _a7=_a4.url;
++var _a8=&quot;xslFile=&quot;+encodeURIComponent(_a7)+&quot;&amp;xmlData=&quot;+encodeURIComponent(Freja._aux.serializeXML(_a3.document));
++var _a9=&quot;&quot;;
++for(var _aa in _a5){
++_a9+=encodeURIComponent(_aa+&quot;,&quot;+_a5[_aa]);
+ }
+-if(_a6.length&gt;0){
+-_a5=_a5+&quot;&amp;xslParam=&quot;+_a6;
++if(_a9.length&gt;0){
++_a8=_a8+&quot;&amp;xslParam=&quot;+_a9;
+ }
+ var req=Freja.AssetManager.openXMLHttpRequest(&quot;POST&quot;,Freja.AssetManager.XSLT_SERVICE_URL);
+ req.onreadystatechange=function(){
+@@ -659,7 +669,7 @@
+ }
+ }
+ };
+-req.send(_a5);
++req.send(_a8);
+ return d;
+ };
+ Freja.UndoHistory=function(){
+@@ -668,40 +678,40 @@
+ this._position=0;
+ this._undoSteps=0;
+ };
+-Freja.UndoHistory.prototype.add=function(_a9){
+-var _aa=this._position%this.maxLength;
+-var _ab=_a9.document;
+-this.cache[_aa]={};
+-this.cache[_aa].model=_a9;
+-this.cache[_aa].document=Freja._aux.cloneXMLDocument(_ab);
+-if(!this.cache[_aa].document){
++Freja.UndoHistory.prototype.add=function(_ac){
++var _ad=this._position%this.maxLength;
++var _ae=_ac.document;
++this.cache[_ad]={};
++this.cache[_ad].model=_ac;
++this.cache[_ad].document=Freja._aux.cloneXMLDocument(_ae);
++if(!this.cache[_ad].document){
+ throw new Error(&quot;Couldn't add to history.&quot;);
+ }else{
+ this._position++;
+-var _ac=_aa;
++var _af=_ad;
+ while(this._undoSteps&gt;0){
+-_ac=(_ac+1)%this.maxLength;
+-this.cache[_ac]={};
++_af=(_af+1)%this.maxLength;
++this.cache[_af]={};
+ this._undoSteps--;
+ }
+-return _aa;
++return _ad;
+ }
+ };
+-Freja.UndoHistory.prototype.undo=function(_ad){
++Freja.UndoHistory.prototype.undo=function(_b0){
+ if(this._undoSteps&lt;this.cache.length){
+ this._undoSteps++;
+ this._position--;
+ if(this._position&lt;0){
+ this._position=this.maxLength-1;
+ }
+-var _ae=this.cache[this._position].model;
++var _b1=this.cache[this._position].model;
+ if(this.cache[this._position].document){
+-_ae.document=this.cache[this._position].document;
++_b1.document=this.cache[this._position].document;
+ }else{
+ throw new Error(&quot;The model's DOMDocument wasn't properly copied into the history&quot;);
+ }
+-if(typeof (_ad)!=&quot;undefined&quot;&amp;&amp;_ad&gt;1){
+-this.undo(_ad-1);
++if(typeof (_b0)!=&quot;undefined&quot;&amp;&amp;_b0&gt;1){
++this.undo(_b0-1);
+ }
+ }else{
+ throw new Error(&quot;Nothing to undo&quot;);
+@@ -711,8 +721,8 @@
+ if(this._undoSteps&gt;0){
+ this._undoSteps--;
+ this._position=(this._position+1)%this.maxLength;
+-var _af=this.cache[this._position].model;
+-_af.document=this.cache[this._position].document;
++var _b2=this.cache[this._position].model;
++_b2.document=this.cache[this._position].document;
+ }else{
+ throw new Error(&quot;Nothing to redo&quot;);
+ }
+@@ -748,12 +758,12 @@
+ }
+ }
+ var m=new Freja.Model(url,Freja._aux.createQueryEngine());
+-var _b3=Freja._aux.bind(function(_b4){
+-this.document=_b4;
++var _b6=Freja._aux.bind(function(_b7){
++this.document=_b7;
+ this.ready=true;
+ Freja._aux.signal(this,&quot;onload&quot;);
+ },m);
+-this.loadAsset(url,true).addCallbacks(_b3,Freja.AssetManager.onerror);
++this.loadAsset(url,true).addCallbacks(_b6,Freja.AssetManager.onerror);
+ this.models.push(m);
+ return m;
+ };
+@@ -764,46 +774,46 @@
+ }
+ }
+ var v=new Freja.View(url,this.createRenderer());
+-var _b8=Freja._aux.bind(function(_b9){
+-this.document=_b9;
++var _bb=Freja._aux.bind(function(_bc){
++this.document=_bc;
+ this.ready=true;
+ Freja._aux.signal(this,&quot;onload&quot;);
+ },v);
+-this.loadAsset(url,false).addCallbacks(_b8,Freja.AssetManager.onerror);
++this.loadAsset(url,false).addCallbacks(_bb,Freja.AssetManager.onerror);
+ this.views.push(v);
+ return v;
+ };
+-Freja.AssetManager.openXMLHttpRequest=function(_ba,url){
+-var _bc=null;
+-if(Freja.AssetManager.HTTP_METHOD_TUNNEL&amp;&amp;_ba!=&quot;GET&quot;&amp;&amp;_ba!=&quot;POST&quot;){
+-_bc=_ba;
+-_ba=&quot;POST&quot;;
++Freja.AssetManager.openXMLHttpRequest=function(_bd,url){
++var _bf=null;
++if(Freja.AssetManager.HTTP_METHOD_TUNNEL&amp;&amp;_bd!=&quot;GET&quot;&amp;&amp;_bd!=&quot;POST&quot;){
++_bf=_bd;
++_bd=&quot;POST&quot;;
+ }
+-var req=Freja._aux.openXMLHttpRequest(_ba,url,Freja.AssetManager.HTTP_REQUEST_TYPE==&quot;async&quot;,Freja.AssetManager._username,Freja.AssetManager._password);
+-if(_bc){
+-req.setRequestHeader(Freja.AssetManager.HTTP_METHOD_TUNNEL,_bc);
++var req=Freja._aux.openXMLHttpRequest(_bd,url,Freja.AssetManager.HTTP_REQUEST_TYPE==&quot;async&quot;,Freja.AssetManager._username,Freja.AssetManager._password);
++if(_bf){
++req.setRequestHeader(Freja.AssetManager.HTTP_METHOD_TUNNEL,_bf);
+ }
+ return req;
+ };
+-Freja.AssetManager.setCredentials=function(_be,_bf){
+-this._username=_be;
+-this._password=_bf;
++Freja.AssetManager.setCredentials=function(_c1,_c2){
++this._username=_c1;
++this._password=_c2;
+ };
+-Freja.AssetManager.loadAsset=function(url,_c1){
+-var _c2=/^(file:\/\/.*\/)([^\/]*)$/.exec(window.location.href);
+-if(_c2){
+-url=_c2[1]+url;
++Freja.AssetManager.loadAsset=function(url,_c4){
++var _c5=/^(file:\/\/.*\/)([^\/]*)$/.exec(window.location.href);
++if(_c5){
++url=_c5[1]+url;
+ }
+ var d=Freja._aux.createDeferred();
+-var _c4=function(_c5){
++var _c7=function(_c8){
+ try{
+-if(_c5.responseText==&quot;&quot;){
++if(_c8.responseText==&quot;&quot;){
+ throw new Error(&quot;Empty response.&quot;);
+ }
+-if(_c5.responseXML.xml==&quot;&quot;){
+-var _c6=Freja._aux.loadXML(_c5.responseText);
++if(_c8.responseXML.xml==&quot;&quot;){
++var _c9=Freja._aux.loadXML(_c8.responseText);
+ }else{
+-var _c6=_c5.responseXML;
++var _c9=_c8.responseXML;
+ }
+ }
+ catch(ex){
+@@ -811,28 +821,28 @@
+ }
+ if(window.document.all){
+ setTimeout(function(){
+-d.callback(_c6);
++d.callback(_c9);
+ },1);
+ }else{
+-d.callback(_c6);
++d.callback(_c9);
+ }
+ };
+ try{
+-if(_c1&amp;&amp;Freja.AssetManager.HTTP_METHOD_TUNNEL){
++if(_c4&amp;&amp;Freja.AssetManager.HTTP_METHOD_TUNNEL){
+ var req=Freja._aux.openXMLHttpRequest(&quot;POST&quot;,url,Freja.AssetManager.HTTP_REQUEST_TYPE==&quot;async&quot;,Freja.AssetManager._username,Freja.AssetManager._password);
+ req.setRequestHeader(Freja.AssetManager.HTTP_METHOD_TUNNEL,&quot;GET&quot;);
+ req.setRequestHeader(&quot;Content-Type&quot;,&quot;application/x-www-form-urlencoded&quot;);
+ }else{
+ var req=Freja._aux.openXMLHttpRequest(&quot;GET&quot;,url,Freja.AssetManager.HTTP_REQUEST_TYPE==&quot;async&quot;,Freja.AssetManager._username,Freja.AssetManager._password);
+ }
+-var _c8=Freja._aux.sendXMLHttpRequest(req);
++var _cb=Freja._aux.sendXMLHttpRequest(req);
+ if(Freja.AssetManager.HTTP_REQUEST_TYPE==&quot;async&quot;){
+-_c8.addCallbacks(_c4,function(req){
++_cb.addCallbacks(_c7,function(req){
+ d.errback(new Error(&quot;Request failed:&quot;+req.status));
+ });
+ }else{
+ if(req.status==0||req.status==200||req.status==201||req.status==304){
+-_c4(req);
++_c7(req);
+ }else{
+ d.errback(new Error(&quot;Request failed:&quot;+req.status));
+ }
+
+Modified: trunk/src/auxiliary/minimal.js
+===================================================================
+--- trunk/src/auxiliary/minimal.js	2007-03-21 19:05:13 UTC (rev 87)
++++ trunk/src/auxiliary/minimal.js	2007-03-21 20:30:15 UTC (rev 88)
+@@ -1145,3 +1145,10 @@
+ Freja._aux.Deferred.prototype.addErrback = function(fncError) {
+ 	this.addCallbacks(null, fncError);
+ };
++Freja._aux.importNode = function(document, node, deep) {
++	if(typeof deep =='undefined') deep = true;
++	if(document.importNode)
++		return document.importNode(node,deep);
++	else
++		return node.cloneNode(deep);
++}
+\ No newline at end of file
+
+Modified: trunk/src/auxiliary/mochi+sarissa.js
+===================================================================
+--- trunk/src/auxiliary/mochi+sarissa.js	2007-03-21 19:05:13 UTC (rev 87)
++++ trunk/src/auxiliary/mochi+sarissa.js	2007-03-21 20:30:15 UTC (rev 88)
+@@ -185,8 +185,14 @@
+ 		return new Freja.QueryEngine.SimplePath();
+ 	}
+ };
++Freja._aux.importNode = function(document, node, deep) {
++	if(typeof deep =='undefined') deep = true;
++	if(document.importNode)
++		return document.importNode(node,deep);
++	else
++		return node.cloneNode(deep);
++}
+ 
+-
+ /**
+  * ====================================================================
+  * About
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000085.html">[Freja-svn] r87 - trunk/external
+</A></li>
+	<LI>Next message: <A HREF="000087.html">[Freja-svn] r89 - in trunk: examples/tutorial lib/minimal	lib/mochi+sarissa src src/auxiliary
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#86">[ date ]</a>
+              <a href="thread.html#86">[ thread ]</a>
+              <a href="subject.html#86">[ subject ]</a>
+              <a href="author.html#86">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/freja-svn">More information about the Freja-svn
+mailing list</a><br>
+</body></html>

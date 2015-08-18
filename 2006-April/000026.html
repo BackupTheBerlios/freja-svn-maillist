@@ -1,0 +1,293 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Freja-svn] r30 - trunk/lib
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/freja-svn/2006-April/index.html" >
+   <LINK REL="made" HREF="mailto:freja-svn%40lists.berlios.de?Subject=Re%3A%20%5BFreja-svn%5D%20r30%20-%20trunk/lib&In-Reply-To=%3C200604060252.k362q9t4022281%40sheep.berlios.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000025.html">
+   <LINK REL="Next"  HREF="000027.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Freja-svn] r30 - trunk/lib</H1>
+    <B>cedsav at berlios.de</B> 
+    <A HREF="mailto:freja-svn%40lists.berlios.de?Subject=Re%3A%20%5BFreja-svn%5D%20r30%20-%20trunk/lib&In-Reply-To=%3C200604060252.k362q9t4022281%40sheep.berlios.de%3E"
+       TITLE="[Freja-svn] r30 - trunk/lib">cedsav at berlios.de
+       </A><BR>
+    <I>Thu Apr  6 04:52:09 CEST 2006</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000025.html">[Freja-svn] r29 - trunk/src
+</A></li>
+        <LI>Next message: <A HREF="000027.html">[Freja-svn] r31 - trunk/src
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#26">[ date ]</a>
+              <a href="thread.html#26">[ thread ]</a>
+              <a href="subject.html#26">[ subject ]</a>
+              <a href="author.html#26">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Author: cedsav
+Date: 2006-04-06 04:51:35 +0200 (Thu, 06 Apr 2006)
+New Revision: 30
+
+Modified:
+   trunk/lib/Freja.js
+Log:
+
+
+Modified: trunk/lib/Freja.js
+===================================================================
+--- trunk/lib/Freja.js	2006-04-06 02:49:56 UTC (rev 29)
++++ trunk/lib/Freja.js	2006-04-06 02:51:35 UTC (rev 30)
+@@ -2,7 +2,7 @@
+ 
+     Freja 2.0.alpha
+ 
+-    Build $Sun, 2 Apr 2006 18:14:44 UTC$
++    Build $Thu, 6 Apr 2006 02:50:39 UTC$
+ 
+     Target: minimal
+ 
+@@ -60,8 +60,25 @@
+ }
+ Freja._aux = {};
+ /** bind(func, self) : function */
++// from <A HREF="http://blog.ianbicking.org/prototype-and-object-prototype.html">http://blog.ianbicking.org/prototype-and-object-prototype.html</A>
+ Freja._aux.bind = function(func, self) {
+-	return function() { func.apply(self, arguments); };
++	if(typeof (func)==&quot;string&quot;){
++		func=self[func];
++	}
++		
++	var im_func = null;
++    if (typeof(func.im_func) == 'function') {
++        im_func = func.im_func;
++    } else {
++        im_func = func;
++    }
++    func = function () {
++        return func.im_func.apply(func.im_self, arguments);
++    }
++    func.im_func = im_func;
++    func.im_self = self;
++	return func;
++	
+ };
+ /** formContents(elem) : Array */
+ Freja._aux.formContents = function(elem) {
+@@ -117,6 +134,7 @@
+ Freja._aux.registerSignals = function(src, signals) { /* void */ };
+ /** connect(src, signal, fnc) : void */
+ Freja._aux.connect = function(src, signal, fnc) {
++
+ 	if(!src) return;
+ 	if (src.addEventListener) {
+ 		var wrapper = function(e) {
+@@ -154,6 +172,7 @@
+ };
+ /** signal(src, signal, ...) : void */
+ Freja._aux.signal = function(src, signal) {
++	
+ 	try {
+ 		var sigs = src._signals[signal];
+ 		var args = [];
+@@ -161,7 +180,7 @@
+ 			args.push(arguments[i]);
+ 		}
+ 		for (var i=0; i &lt; sigs.length; i++) {
+-			try {
++			try {							
+ 				sigs[i].apply(src, args);
+ 			} catch (e) { /* squelch */ }
+ 		}
+@@ -249,12 +268,15 @@
+ 	return (new DOMParser()).parseFromString(text, &quot;text/xml&quot;);
+ };
+ /** transformXSL(XMLDocument, XSLDocument) : string */
+-Freja._aux.transformXSL = function(xml, xsl) {
++Freja._aux.transformXSL = function(xml, xsl, xslParameters) {
+ 	if (xml.transformNode) {
+ 		return xml.transformNode(xsl);
+ 	};
+ 	var processor = new XSLTProcessor();
+ 	processor.importStylesheet(xsl);
++	for(var paramName in xslParameters) {
++		processor.setParameter(null, paramName,xslParameters[paramName]); 
++	}
+ 	return Freja._aux.serializeXML(processor.transformToDocument(xml));
+ 
+ };
+@@ -515,7 +537,7 @@
+   */
+ Freja.Model.prototype.save = function() {
+ 	var url = this.url;
+-	var match = /^(file:\/\/.*\/)([^/]*)$/.exec(window.location.href);
++	var match = /^(file:\/\/.*\/)([^\/]*)$/.exec(window.location.href);
+ 	if (match) {
+ 		url = match[1] + url; // local
+ 	}
+@@ -538,7 +560,7 @@
+   */
+ Freja.Model.prototype.remove = function() {
+ 	var url = this.url;
+-	var match = /^(file:\/\/.*\/)([^/]*)$/.exec(window.location.href);
++	var match = /^(file:\/\/.*\/)([^\/]*)$/.exec(window.location.href);
+ 	if (match) {
+ 		url = match[1] + url; // local
+ 	}
+@@ -578,7 +600,7 @@
+   */
+ Freja.Model.DataSource.prototype.create = function(values) {
+ 	var url = this.createURL;
+-	var match = /^(file:\/\/.*\/)([^/]*)$/.exec(window.location.href);
++	var match = /^(file:\/\/.*\/)([^\/]*)$/.exec(window.location.href);
+ 	if (match) {
+ 		url = match[1] + url; // local
+ 	}
+@@ -610,7 +632,7 @@
+   *                                      default placeholder.
+   * @returns MochiKit.Async.Deferred
+   */
+-Freja.View.prototype.render = function(model, placeholder) {
++Freja.View.prototype.render = function(model, placeholder, xslParameters) {
+ 	if (typeof(placeholder) == &quot;undefined&quot;) placeholder = this.placeholder;
+ 
+ 	var Handler = function(model, view, deferred) {
+@@ -620,6 +642,7 @@
+ 	};
+ 
+ 	Handler.prototype.trigger = function() {
++	
+ 		try {
+ 			if (!this.view.ready) {
+ 				Freja._aux.connect(this.view, &quot;onload&quot;, Freja._aux.bind(this.trigger, this));
+@@ -639,14 +662,14 @@
+ 				// wrap pojo's in
+ 				model = { document : Freja._aux.loadXML(&quot;&lt;?xml version='1.0' ?&gt;\n&quot; + Freja._aux.xmlize(this.model, &quot;item&quot;)) };
+ 			}
+-			var trans = this.view._renderer.transform(model, this.view);
++			var trans = this.view._renderer.transform(model, this.view, xslParameters);
+ 			trans.addCallback(Freja._aux.bind(function(html) {
+ 				this._destination.innerHTML = html;
+ 			}, this.view));
+ 			trans.addCallback(Freja._aux.bind(function() {
+ 				Freja._aux.signal(this, &quot;onrendercomplete&quot;, this._destination)
+ 			}, this.view));
+-			trans.addCallback(this.deferred.callback);
++			//trans.addCallback(this.deferred.callback);
+ 			trans.addErrback(this.deferred.errback);
+ 		} catch (ex) {
+ 			this.deferred.errback(ex);
+@@ -675,6 +698,7 @@
+ Freja.View.prototype._connectBehaviour = function(destination) {
+ 	try {
+ 		var connectCallback = function(node, eventType, callback) {
++		
+ 			Freja._aux.connect(node, eventType, Freja._aux.bind(
+ 				function(e) {
+ 					var allow = false;
+@@ -691,11 +715,12 @@
+ 			);
+ 		};
+ 		var applyHandlers = function(node, handlers) {
++			
+ 			for (var i = 0, c = node.childNodes, l = c.length; i &lt; l; ++i) {
+ 				var child = c[i];
+ 				if (child.nodeType == 1) {
+-					var id = child.getAttribute(&quot;handler&quot;);
+-					if (id != &quot;&quot;) {
++					var id = child.getAttribute(&quot;id&quot;);
++					if (id != &quot;&quot;) {				
+ 						var handler = handlers[id];
+ 						if (handler) {
+ 							for (var eventType in handler) {
+@@ -711,7 +736,14 @@
+ 				}
+ 			}
+ 		};
+-		applyHandlers(destination, this.handlers);
++		
++		// Avoid traversing the DOM tree if there's no handler to process.
++		// @note: is there a better way? this.handlers.length is always 0.
++		for (var ids in this.handlers) {
++			applyHandlers(destination, this.handlers);
++			break;
++		}	
++		
+ 	} catch (ex) {
+ 		alert(ex.message);
+ 	}
+@@ -734,10 +766,10 @@
+ /**
+   * @returns MochiKit.Async.Deferred
+   */
+-Freja.View.Renderer.XSLTransformer.prototype.transform = function(model, view) {
++Freja.View.Renderer.XSLTransformer.prototype.transform = function(model, view, xslParameters) {
+         var d = Freja._aux.createDeferred();
+         try {
+-		var html = Freja._aux.transformXSL(model.document, view.document);
++		var html = Freja._aux.transformXSL(model.document, view.document, xslParameters);
+ 		if (!html) {
+ 			d.errback(new Error(&quot;XSL Transformation error.&quot;));
+ 		} else {
+@@ -763,14 +795,14 @@
+ /**
+   * @returns MochiKit.Async.Deferred
+   */
+-Freja.View.Renderer.RemoteXSLTransformer.prototype.transform = function(model, view) {
++Freja.View.Renderer.RemoteXSLTransformer.prototype.transform = function(model, view, xslParameters) {
+         var d = Freja._aux.createDeferred();
+ 
+ 	// prepare posted data  (no need to send the XSL document, just its url)
+ 	var xslUrl = view.url;
+ 	var postedData = &quot;xslFile=&quot; + encodeURIComponent(xslUrl) + &quot;&amp;xmlData=&quot; + encodeURIComponent(Freja._aux.serializeXML(model.document));
+-//	if (xslParams)
+-//		postedData  = postedData + &quot;&amp;xslParam=&quot; + encodeURIComponent(xslParams.toString());
++	if (xslParameters)
++		postedData  = postedData + &quot;&amp;xslParam=&quot; + encodeURIComponent(xslParameters.toString());
+ 	// send request to the server-side XSL transformation service
+ 	var req = Freja.AssetManager.openXMLHttpRequest(&quot;POST&quot;, Freja.AssetManager.XSLT_SERVICE_URL);
+ 	req.onreadystatechange = function() {
+@@ -991,7 +1023,7 @@
+   * @returns MochiKit.Async.Deferred
+   */
+ Freja.AssetManager.loadAsset = function(url, preventCaching) {
+-	var match = /^(file:\/\/.*\/)([^/]*)$/.exec(window.location.href);
++	var match = /^(file:\/\/.*\/)([^\/]*)$/.exec(window.location.href);
+ 	if (match) {
+ 		url = match[1] + url; // local
+ 	}
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000025.html">[Freja-svn] r29 - trunk/src
+</A></li>
+	<LI>Next message: <A HREF="000027.html">[Freja-svn] r31 - trunk/src
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#26">[ date ]</a>
+              <a href="thread.html#26">[ thread ]</a>
+              <a href="subject.html#26">[ subject ]</a>
+              <a href="author.html#26">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/freja-svn">More information about the Freja-svn
+mailing list</a><br>
+</body></html>

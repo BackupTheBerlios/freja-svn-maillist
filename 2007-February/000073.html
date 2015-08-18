@@ -1,0 +1,82 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Freja-svn] r75 - branch/2.0.1/src
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/freja-svn/2007-February/index.html" >
+   <LINK REL="made" HREF="mailto:freja-svn%40lists.berlios.de?Subject=Re%3A%20%5BFreja-svn%5D%20r75%20-%20branch/2.0.1/src&In-Reply-To=%3C200702180412.l1I4CKLC007894%40sheep.berlios.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   
+   <LINK REL="Next"  HREF="000074.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Freja-svn] r75 - branch/2.0.1/src</H1>
+    <B>cedsav at mail.berlios.de</B> 
+    <A HREF="mailto:freja-svn%40lists.berlios.de?Subject=Re%3A%20%5BFreja-svn%5D%20r75%20-%20branch/2.0.1/src&In-Reply-To=%3C200702180412.l1I4CKLC007894%40sheep.berlios.de%3E"
+       TITLE="[Freja-svn] r75 - branch/2.0.1/src">cedsav at mail.berlios.de
+       </A><BR>
+    <I>Sun Feb 18 05:12:20 CET 2007</I>
+    <P><UL>
+        
+        <LI>Next message: <A HREF="000074.html">[Freja-svn] r76 - branch/2.0.1/src/auxiliary
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#73">[ date ]</a>
+              <a href="thread.html#73">[ thread ]</a>
+              <a href="subject.html#73">[ subject ]</a>
+              <a href="author.html#73">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Author: cedsav
+Date: 2007-02-18 05:12:18 +0100 (Sun, 18 Feb 2007)
+New Revision: 75
+
+Modified:
+   branch/2.0.1/src/QueryEngine.js
+Log:
+Fixed bug in SimplePath (simplepath wasn't working in IE, even though IE would normally use the XPath query engine)
+
+Modified: branch/2.0.1/src/QueryEngine.js
+===================================================================
+--- branch/2.0.1/src/QueryEngine.js	2007-01-26 15:07:38 UTC (rev 74)
++++ branch/2.0.1/src/QueryEngine.js	2007-02-18 04:12:18 UTC (rev 75)
+@@ -97,7 +97,7 @@
+ 	if (!expression.match(/^[\d\w\/@\[\]=_\-']*$/)) {
+ 		throw new Error(&quot;Can't evaluate expression &quot; + expression);
+ 	}
+-	var parts = expression.split(/\//);
++	var parts = expression.split(&quot;/&quot;);
+ 	var node = document;
+ 	var regAttr = new RegExp(&quot;^@([\\d\\w]*)&quot;);
+ 	var regOffset = new RegExp(&quot;^([@\\d\\w]*)\\[([\\d]*)\\]$&quot;);
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	
+	<LI>Next message: <A HREF="000074.html">[Freja-svn] r76 - branch/2.0.1/src/auxiliary
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#73">[ date ]</a>
+              <a href="thread.html#73">[ thread ]</a>
+              <a href="subject.html#73">[ subject ]</a>
+              <a href="author.html#73">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/freja-svn">More information about the Freja-svn
+mailing list</a><br>
+</body></html>

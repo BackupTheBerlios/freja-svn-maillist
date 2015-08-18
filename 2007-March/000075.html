@@ -1,0 +1,94 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Freja-svn] r77 - branch/2.0.1/src/auxiliary
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/freja-svn/2007-March/index.html" >
+   <LINK REL="made" HREF="mailto:freja-svn%40lists.berlios.de?Subject=Re%3A%20%5BFreja-svn%5D%20r77%20-%20branch/2.0.1/src/auxiliary&In-Reply-To=%3C200703012323.l21NNGg7007556%40sheep.berlios.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   
+   <LINK REL="Next"  HREF="000076.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Freja-svn] r77 - branch/2.0.1/src/auxiliary</H1>
+    <B>cedsav at mail.berlios.de</B> 
+    <A HREF="mailto:freja-svn%40lists.berlios.de?Subject=Re%3A%20%5BFreja-svn%5D%20r77%20-%20branch/2.0.1/src/auxiliary&In-Reply-To=%3C200703012323.l21NNGg7007556%40sheep.berlios.de%3E"
+       TITLE="[Freja-svn] r77 - branch/2.0.1/src/auxiliary">cedsav at mail.berlios.de
+       </A><BR>
+    <I>Fri Mar  2 00:23:16 CET 2007</I>
+    <P><UL>
+        
+        <LI>Next message: <A HREF="000076.html">[Freja-svn] r78 - branch/2.0.1/src
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#75">[ date ]</a>
+              <a href="thread.html#75">[ thread ]</a>
+              <a href="subject.html#75">[ subject ]</a>
+              <a href="author.html#75">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Author: cedsav
+Date: 2007-03-02 00:23:14 +0100 (Fri, 02 Mar 2007)
+New Revision: 77
+
+Modified:
+   branch/2.0.1/src/auxiliary/mochi+sarissa.js
+Log:
+Added request header to XMLHTTPRequest for server-side framework compatibility (RoR, CakePHP)
+
+Modified: branch/2.0.1/src/auxiliary/mochi+sarissa.js
+===================================================================
+--- branch/2.0.1/src/auxiliary/mochi+sarissa.js	2007-02-18 04:13:20 UTC (rev 76)
++++ branch/2.0.1/src/auxiliary/mochi+sarissa.js	2007-03-01 23:23:14 UTC (rev 77)
+@@ -66,6 +66,8 @@
+ 	if (method == &quot;POST&quot; || method == &quot;PUT&quot;) {
+ 		req.setRequestHeader(&quot;Content-Type&quot;, &quot;application/x-www-form-urlencoded&quot;);
+ 	}
++	// RoR/cakePHP Ajax request detection compatibility:
++	req.setRequestHeader('X-Requested-With', 'XMLHttpRequest');	
+ 	return req;
+ };
+ /** sendXMLHttpRequest(req, sendContent) : Deferred */
+@@ -73,7 +75,10 @@
+ /** xmlize(anyObject, objectName) : string */
+ Freja._aux.xmlize = Sarissa.xmlize;
+ /** serializeXML(node) : string */
+-Freja._aux.serializeXML = Sarissa.serialize;
++Freja._aux.serializeXML = function(node) {
++	if (node.xml) return node.xml;
++	return (new XMLSerializer()).serializeToString(node);
++};
+ /** loadXML(string) : XMLDocument */
+ Freja._aux.loadXML = function(text) {
+ 	return (new DOMParser()).parseFromString(text, &quot;text/xml&quot;);
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	
+	<LI>Next message: <A HREF="000076.html">[Freja-svn] r78 - branch/2.0.1/src
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#75">[ date ]</a>
+              <a href="thread.html#75">[ thread ]</a>
+              <a href="subject.html#75">[ subject ]</a>
+              <a href="author.html#75">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/freja-svn">More information about the Freja-svn
+mailing list</a><br>
+</body></html>

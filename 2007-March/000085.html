@@ -1,0 +1,124 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Freja-svn] r87 - trunk/external
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/freja-svn/2007-March/index.html" >
+   <LINK REL="made" HREF="mailto:freja-svn%40lists.berlios.de?Subject=Re%3A%20%5BFreja-svn%5D%20r87%20-%20trunk/external&In-Reply-To=%3C200703211905.l2LJ5IgW028367%40sheep.berlios.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000084.html">
+   <LINK REL="Next"  HREF="000086.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Freja-svn] r87 - trunk/external</H1>
+    <B>cedsav at mail.berlios.de</B> 
+    <A HREF="mailto:freja-svn%40lists.berlios.de?Subject=Re%3A%20%5BFreja-svn%5D%20r87%20-%20trunk/external&In-Reply-To=%3C200703211905.l2LJ5IgW028367%40sheep.berlios.de%3E"
+       TITLE="[Freja-svn] r87 - trunk/external">cedsav at mail.berlios.de
+       </A><BR>
+    <I>Wed Mar 21 20:05:18 CET 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000084.html">[Freja-svn] r86 - in trunk: . examples/basecamp_api	examples/basecamp_api/css examples/basecamp_api/views	examples/contacts examples/contacts/models/php_inc	examples/contacts/views examples/tutorial	examples/tutorial/views lib lib/minimal lib/mochi+sarissa src	src/auxiliary tests
+</A></li>
+        <LI>Next message: <A HREF="000086.html">[Freja-svn] r88 - in trunk: lib/minimal lib/mochi+sarissa	src/auxiliary
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#85">[ date ]</a>
+              <a href="thread.html#85">[ thread ]</a>
+              <a href="subject.html#85">[ subject ]</a>
+              <a href="author.html#85">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Author: cedsav
+Date: 2007-03-21 20:05:13 +0100 (Wed, 21 Mar 2007)
+New Revision: 87
+
+Modified:
+   trunk/external/srvc-xslt.php
+Log:
+Fixed character encoding issue with remote XSLT
+
+Modified: trunk/external/srvc-xslt.php
+===================================================================
+--- trunk/external/srvc-xslt.php	2007-03-21 15:13:46 UTC (rev 86)
++++ trunk/external/srvc-xslt.php	2007-03-21 19:05:13 UTC (rev 87)
+@@ -1,4 +1,8 @@
+ &lt;?php
++	// XSL Transformation Service for Freja
++	// PHP4.0 Version 1.0
++
++
+ 	function error_handler($errno, $errstr, $errfile, $errline) {
+ 		if (error_reporting() == 0) {
+ 			return;
+@@ -9,8 +13,7 @@
+ 		}
+ 		error_log($errstr.&quot;\n&quot;, 3, $filename);
+ 		header(&quot;HTTP/1.0 500 Internal Error&quot;);
+-		//header('Content-Type: text/xml');
+-		/*echo &quot;&lt;?xml version='1.0' ?&gt;&lt;error&gt;&quot;.$errstr.&quot;&lt;/error&gt;&quot;;*/
++		header('Content-Type: text/plain; charset=&quot;UTF-8&quot;');
+ 		echo &quot;Error: &quot;.$errstr;
+ 		exit;
+ 	}
+@@ -22,20 +25,7 @@
+ 		set_exception_handler('exception_handler');
+ 	}
+ 
+-	// XSL Transformation Service for Freja
+-	// PHP4.0 Version 1.0
+-
+-	// Freja - a javascript Model-View-Controller Framework geared toward Zero-Latency Web Applications
+-	// v1.0 Beta - Dec. 2005
+-	// Copyright (c) 2005 C&#233;dric Savarese &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/freja-svn">pro at 4213miles.com</A>&gt;
+-	// This software is licensed under the CC-GNU LGPL &lt;<A HREF="http://creativecommons.org/licenses/LGPL/2.1/">http://creativecommons.org/licenses/LGPL/2.1/</A>&gt;
+-	// Documentation : <A HREF="http://www.csscripting.com/freja">http://www.csscripting.com/freja</A>
+-
+-
+ 	if (isset($_POST['xmlData']) &amp;&amp; isset($_POST['xslFile'])) {
+-//		if (get_magic_quotes_gpc()) {
+-//			array_map('stripslashes', $_POST);
+-//		}
+ 		$root = realpath(dirname(__FILE__).&quot;/../&quot;);
+ 		$xmlData = stripslashes($_POST['xmlData']);
+ 		$path = isset($_GET['path']) ? (&quot;/&quot;.stripslashes($_GET['path'])) : &quot;&quot;;
+@@ -66,7 +56,7 @@
+ 			$xhtmlOuput = str_replace('&lt;?xml version=&quot;1.0&quot;?&gt;','',$xslDoc-&gt;result_dump_mem($transformedData));
+ 
+ 			header(&quot;HTTP/1.0 200 Ok&quot;);
+-			header('Content-Type: text/xml');
++			header('Content-Type: text/xml, charset=&quot;UTF-8&quot;');
+ 			echo $xhtmlOuput;
+ 
+ 		} else {
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000084.html">[Freja-svn] r86 - in trunk: . examples/basecamp_api	examples/basecamp_api/css examples/basecamp_api/views	examples/contacts examples/contacts/models/php_inc	examples/contacts/views examples/tutorial	examples/tutorial/views lib lib/minimal lib/mochi+sarissa src	src/auxiliary tests
+</A></li>
+	<LI>Next message: <A HREF="000086.html">[Freja-svn] r88 - in trunk: lib/minimal lib/mochi+sarissa	src/auxiliary
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#85">[ date ]</a>
+              <a href="thread.html#85">[ thread ]</a>
+              <a href="subject.html#85">[ subject ]</a>
+              <a href="author.html#85">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/freja-svn">More information about the Freja-svn
+mailing list</a><br>
+</body></html>

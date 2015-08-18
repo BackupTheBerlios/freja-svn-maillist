@@ -1,0 +1,123 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Freja-svn] r33 - trunk/src/auxiliary
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/freja-svn/2006-April/index.html" >
+   <LINK REL="made" HREF="mailto:freja-svn%40lists.berlios.de?Subject=Re%3A%20%5BFreja-svn%5D%20r33%20-%20trunk/src/auxiliary&In-Reply-To=%3C200604061551.k36FpGeg019412%40sheep.berlios.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000028.html">
+   <LINK REL="Next"  HREF="000030.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Freja-svn] r33 - trunk/src/auxiliary</H1>
+    <B>cedsav at berlios.de</B> 
+    <A HREF="mailto:freja-svn%40lists.berlios.de?Subject=Re%3A%20%5BFreja-svn%5D%20r33%20-%20trunk/src/auxiliary&In-Reply-To=%3C200604061551.k36FpGeg019412%40sheep.berlios.de%3E"
+       TITLE="[Freja-svn] r33 - trunk/src/auxiliary">cedsav at berlios.de
+       </A><BR>
+    <I>Thu Apr  6 17:51:16 CEST 2006</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000028.html">[Freja-svn] r32 - trunk/src
+</A></li>
+        <LI>Next message: <A HREF="000030.html">[Freja-svn] r34 - trunk/src/auxiliary
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#29">[ date ]</a>
+              <a href="thread.html#29">[ thread ]</a>
+              <a href="subject.html#29">[ subject ]</a>
+              <a href="author.html#29">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Author: cedsav
+Date: 2006-04-06 17:51:13 +0200 (Thu, 06 Apr 2006)
+New Revision: 33
+
+Modified:
+   trunk/src/auxiliary/minimal.js
+Log:
+changed selectNodes to not throw an error when the XPath expression is not valid.
+
+Modified: trunk/src/auxiliary/minimal.js
+===================================================================
+--- trunk/src/auxiliary/minimal.js	2006-04-06 15:48:26 UTC (rev 32)
++++ trunk/src/auxiliary/minimal.js	2006-04-06 15:51:13 UTC (rev 33)
+@@ -36,7 +36,7 @@
+ 	if (!elem) v = document;
+ 	var names = [];
+ 	var values = [];
+-	var inputs = elem.getElementsByTagNames(&quot;INPUT&quot;);
++	var inputs = elem.getElementsByTagName(&quot;INPUT&quot;);
+ 	for (var i = 0; i &lt; inputs.length; ++i) {
+ 		var input = inputs[i];
+ 		if (input.name) {
+@@ -51,7 +51,7 @@
+ 			}
+ 		}
+ 	}
+-	var textareas = elem.getElementsByTagNames(&quot;TEXTAREA&quot;);
++	var textareas = elem.getElementsByTagName(&quot;TEXTAREA&quot;);
+ 	for (var i = 0; i &lt; textareas.length; ++i) {
+ 		var input = textareas[i];
+ 		if (input.name) {
+@@ -59,7 +59,7 @@
+ 			values.push(input.value);
+ 		}
+ 	}
+-	var selects = elem.getElementsByTagNames(&quot;SELECT&quot;);
++	var selects = elem.getElementsByTagName(&quot;SELECT&quot;);
+ 	for (var i = 0; i &lt; selects.length; ++i) {
+ 		var input = textareas[i];
+ 		if (input.name) {
+@@ -316,10 +316,16 @@
+ 	XMLDocument.prototype.selectNodes = function(sExpr, contextNode) {
+ 		var nsDoc = this;
+ 		var nsresolver = this.createNSResolver(this.documentElement);
+-		var oResult = this.evaluate(sExpr,
+-			(contextNode ? contextNode : this),
+-			nsresolver,
+-			XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
++		
++		try {
++			var oResult = this.evaluate(sExpr,
++				(contextNode ? contextNode : this),
++				nsresolver,
++				XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
++		} catch(e) {
++			return null;
++			// throw new Error(&quot;Can't evaluate expression &quot; + sExpr);
++		}
+ 		var nodeList = new Array(oResult.snapshotLength);
+ 		nodeList.item = function(i) {
+ 			return (i &lt; 0 || i &gt;= this.length) ? null : this[i];
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000028.html">[Freja-svn] r32 - trunk/src
+</A></li>
+	<LI>Next message: <A HREF="000030.html">[Freja-svn] r34 - trunk/src/auxiliary
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#29">[ date ]</a>
+              <a href="thread.html#29">[ thread ]</a>
+              <a href="subject.html#29">[ subject ]</a>
+              <a href="author.html#29">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/freja-svn">More information about the Freja-svn
+mailing list</a><br>
+</body></html>

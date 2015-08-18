@@ -1,0 +1,101 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Freja-svn] r67 - in trunk/tests: . data
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/freja-svn/2006-August/index.html" >
+   <LINK REL="made" HREF="mailto:freja-svn%40lists.berlios.de?Subject=Re%3A%20%5BFreja-svn%5D%20r67%20-%20in%20trunk/tests%3A%20.%20data&In-Reply-To=%3C200608102030.k7AKUraF015982%40sheep.berlios.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   
+   
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Freja-svn] r67 - in trunk/tests: . data</H1>
+    <B>cedsav at mail.berlios.de</B> 
+    <A HREF="mailto:freja-svn%40lists.berlios.de?Subject=Re%3A%20%5BFreja-svn%5D%20r67%20-%20in%20trunk/tests%3A%20.%20data&In-Reply-To=%3C200608102030.k7AKUraF015982%40sheep.berlios.de%3E"
+       TITLE="[Freja-svn] r67 - in trunk/tests: . data">cedsav at mail.berlios.de
+       </A><BR>
+    <I>Thu Aug 10 22:30:53 CEST 2006</I>
+    <P><UL>
+        
+        
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#64">[ date ]</a>
+              <a href="thread.html#64">[ thread ]</a>
+              <a href="subject.html#64">[ subject ]</a>
+              <a href="author.html#64">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Author: cedsav
+Date: 2006-08-10 22:30:50 +0200 (Thu, 10 Aug 2006)
+New Revision: 67
+
+Added:
+   trunk/tests/data/model3.xml
+Modified:
+   trunk/tests/test_Model.js
+Log:
+
+
+Added: trunk/tests/data/model3.xml
+===================================================================
+--- trunk/tests/data/model3.xml	2006-07-29 12:18:58 UTC (rev 66)
++++ trunk/tests/data/model3.xml	2006-08-10 20:30:50 UTC (rev 67)
+@@ -0,0 +1,7 @@
++&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;
++&lt;item&gt;
++	&lt;name&gt;Black Bean and Smoked Tomato&lt;/name&gt;
++	&lt;description&gt;with Goat Cheese, a touch of Cumin and Cayenne&lt;/description&gt;		
++	&lt;price&gt; &lt;/price&gt;
++	&lt;quantity/&gt;	
++&lt;/item&gt;
+\ No newline at end of file
+
+Modified: trunk/tests/test_Model.js
+===================================================================
+--- trunk/tests/test_Model.js	2006-07-29 12:18:58 UTC (rev 66)
++++ trunk/tests/test_Model.js	2006-08-10 20:30:50 UTC (rev 67)
+@@ -44,4 +44,12 @@
+ 	t.is(model.get(&quot;item/@price&quot;), &quot;$3.80&quot;);
+ 	t.is(model.get(&quot;item/description&quot;), &quot;with Goat Cheese, a touch of Cumin and Cayenne&quot;);
+ 
++
++	var model3 = Freja.AssetManager.getModel(&quot;data/model3.xml&quot;);
++	model3.set(&quot;item/price&quot;,&quot;$5.40&quot;);
++	t.is(model3.get(&quot;item/price&quot;), &quot;$5.40&quot;);
++	model3.set(&quot;item/quantity&quot;,&quot;10&quot;);
++	t.is(model3.get(&quot;item/quantity&quot;), &quot;10&quot;);
++
++
+ };
+\ No newline at end of file
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	
+	
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#64">[ date ]</a>
+              <a href="thread.html#64">[ thread ]</a>
+              <a href="subject.html#64">[ subject ]</a>
+              <a href="author.html#64">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/freja-svn">More information about the Freja-svn
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,128 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Freja-svn] r6 - trunk/lib
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/freja-svn/2006-March/index.html" >
+   <LINK REL="made" HREF="mailto:freja-svn%40lists.berlios.de?Subject=Re%3A%20%5BFreja-svn%5D%20r6%20-%20trunk/lib&In-Reply-To=%3C200603092047.k29KlM02008053%40sheep.berlios.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000001.html">
+   <LINK REL="Next"  HREF="000003.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Freja-svn] r6 - trunk/lib</H1>
+    <B>troelskn at BerliOS</B> 
+    <A HREF="mailto:freja-svn%40lists.berlios.de?Subject=Re%3A%20%5BFreja-svn%5D%20r6%20-%20trunk/lib&In-Reply-To=%3C200603092047.k29KlM02008053%40sheep.berlios.de%3E"
+       TITLE="[Freja-svn] r6 - trunk/lib">troelskn at berlios.de
+       </A><BR>
+    <I>Thu Mar  9 21:47:22 CET 2006</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000001.html">[Freja-svn] r5 - in trunk: examples/contacts/models/php_inc lib
+</A></li>
+        <LI>Next message: <A HREF="000003.html">[Freja-svn] r7 - trunk/lib
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2">[ date ]</a>
+              <a href="thread.html#2">[ thread ]</a>
+              <a href="subject.html#2">[ subject ]</a>
+              <a href="author.html#2">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Author: troelskn
+Date: 2006-03-09 21:47:21 +0100 (Thu, 09 Mar 2006)
+New Revision: 6
+
+Modified:
+   trunk/lib/Freja.js
+Log:
+fixed error with loading of views
+
+Modified: trunk/lib/Freja.js
+===================================================================
+--- trunk/lib/Freja.js	2006-03-09 20:26:36 UTC (rev 5)
++++ trunk/lib/Freja.js	2006-03-09 20:47:21 UTC (rev 6)
+@@ -236,7 +236,7 @@
+ 		this.ready = true;
+ 		MochiKit.Signal.signal(this, &quot;onload&quot;);
+ 	}, this);
+-	return Freja.AssetManager.loadAsset(this.url, onload, Freja.AssetManager.onerror);
++	return Freja.AssetManager.loadAsset(this.url, true, onload, Freja.AssetManager.onerror);
+ }
+ 
+ /**
+@@ -522,7 +522,7 @@
+ 		this.ready = true;
+ 		MochiKit.Signal.signal(this, &quot;onload&quot;);
+ 	}, m);
+-	this.loadAsset(url, onload, Freja.AssetManager.onerror);
++	this.loadAsset(url, true, onload, Freja.AssetManager.onerror);
+ 	this.models.push(m);
+ 	return m;
+ }
+@@ -542,7 +542,7 @@
+ 		this.ready = true;
+ 		MochiKit.Signal.signal(this, &quot;onload&quot;);
+ 	}, v);
+-	this.loadAsset(url, onload, Freja.AssetManager.onerror);
++	this.loadAsset(url, false, onload, Freja.AssetManager.onerror);
+ 	this.views.push(v);
+ 	return v;
+ }
+@@ -553,7 +553,7 @@
+   *       callback() have completed ...
+   * @returns MochiKit.Async.Deferred
+   */
+-Freja.AssetManager.loadAsset = function(url, onload, onerror) {
++Freja.AssetManager.loadAsset = function(url, preventCaching, onload, onerror) {
+ 	var match = /^(file:\/\/.*\/)([^/]*)$/.exec(window.location.href);
+ 	if (match) {
+ 		url = match[1] + url; // local
+@@ -577,7 +577,7 @@
+ 	}
+ 	try {
+ 		var req = new XMLHttpRequest();
+-		if (Freja.AssetManager.HTTP_METHOD_TUNNEL) {
++		if (preventCaching &amp;&amp; Freja.AssetManager.HTTP_METHOD_TUNNEL) {
+ 			req.open(&quot;POST&quot;, url, Freja.AssetManager.HTTP_REQUEST_TYPE == &quot;async&quot;);
+ 			req.setRequestHeader(Freja.AssetManager.HTTP_METHOD_TUNNEL, &quot;GET&quot;);
+ 			req.setRequestHeader(&quot;Content-Type&quot;, &quot;application/x-www-form-urlencoded&quot;);
+@@ -595,7 +595,6 @@
+ 	}
+ }
+ Freja.AssetManager.onerror = function(ex) {
+-	throw ex;
+ 	alert(&quot;Freja.AssetManager.onerror\n&quot; + ex.message);
+ }
+ /**
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000001.html">[Freja-svn] r5 - in trunk: examples/contacts/models/php_inc lib
+</A></li>
+	<LI>Next message: <A HREF="000003.html">[Freja-svn] r7 - trunk/lib
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#2">[ date ]</a>
+              <a href="thread.html#2">[ thread ]</a>
+              <a href="subject.html#2">[ subject ]</a>
+              <a href="author.html#2">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/freja-svn">More information about the Freja-svn
+mailing list</a><br>
+</body></html>

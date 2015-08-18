@@ -1,0 +1,94 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Freja-svn] r24 - trunk/src
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/freja-svn/2006-April/index.html" >
+   <LINK REL="made" HREF="mailto:freja-svn%40lists.berlios.de?Subject=Re%3A%20%5BFreja-svn%5D%20r24%20-%20trunk/src&In-Reply-To=%3C200604051602.k35G25XT022938%40sheep.berlios.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000019.html">
+   <LINK REL="Next"  HREF="000021.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Freja-svn] r24 - trunk/src</H1>
+    <B>cedsav at berlios.de</B> 
+    <A HREF="mailto:freja-svn%40lists.berlios.de?Subject=Re%3A%20%5BFreja-svn%5D%20r24%20-%20trunk/src&In-Reply-To=%3C200604051602.k35G25XT022938%40sheep.berlios.de%3E"
+       TITLE="[Freja-svn] r24 - trunk/src">cedsav at berlios.de
+       </A><BR>
+    <I>Wed Apr  5 18:02:05 CEST 2006</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000019.html">[Freja-svn] r23 - trunk/src/auxiliary
+</A></li>
+        <LI>Next message: <A HREF="000021.html">[Freja-svn] r25 - trunk/src/auxiliary
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#20">[ date ]</a>
+              <a href="thread.html#20">[ thread ]</a>
+              <a href="subject.html#20">[ subject ]</a>
+              <a href="author.html#20">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Author: cedsav
+Date: 2006-04-05 18:02:02 +0200 (Wed, 05 Apr 2006)
+New Revision: 24
+
+Modified:
+   trunk/src/View.js
+Log:
+in applyHandlers changed:
+child.getAttribute(&quot;handler&quot;); (??)
+to 
+child.getAttribute(&quot;id&quot;);
+
+
+Modified: trunk/src/View.js
+===================================================================
+--- trunk/src/View.js	2006-04-04 21:18:23 UTC (rev 23)
++++ trunk/src/View.js	2006-04-05 16:02:02 UTC (rev 24)
+@@ -99,11 +99,12 @@
+ 			);
+ 		};
+ 		var applyHandlers = function(node, handlers) {
++	
+ 			for (var i = 0, c = node.childNodes, l = c.length; i &lt; l; ++i) {
+ 				var child = c[i];
+ 				if (child.nodeType == 1) {
+-					var id = child.getAttribute(&quot;handler&quot;);
+-					if (id != &quot;&quot;) {
++					var id = child.getAttribute(&quot;id&quot;);
++					if (id != &quot;&quot;) {				
+ 						var handler = handlers[id];
+ 						if (handler) {
+ 							for (var eventType in handler) {
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000019.html">[Freja-svn] r23 - trunk/src/auxiliary
+</A></li>
+	<LI>Next message: <A HREF="000021.html">[Freja-svn] r25 - trunk/src/auxiliary
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#20">[ date ]</a>
+              <a href="thread.html#20">[ thread ]</a>
+              <a href="subject.html#20">[ subject ]</a>
+              <a href="author.html#20">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/freja-svn">More information about the Freja-svn
+mailing list</a><br>
+</body></html>

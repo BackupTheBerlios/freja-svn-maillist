@@ -1,0 +1,361 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Freja-svn] r16 - in trunk: lib tests
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/freja-svn/2006-March/index.html" >
+   <LINK REL="made" HREF="mailto:freja-svn%40lists.berlios.de?Subject=Re%3A%20%5BFreja-svn%5D%20r16%20-%20in%20trunk%3A%20lib%20tests&In-Reply-To=%3C200603290026.k2T0Qaq6022772%40sheep.berlios.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000011.html">
+   <LINK REL="Next"  HREF="000013.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Freja-svn] r16 - in trunk: lib tests</H1>
+    <B>troelskn at BerliOS</B> 
+    <A HREF="mailto:freja-svn%40lists.berlios.de?Subject=Re%3A%20%5BFreja-svn%5D%20r16%20-%20in%20trunk%3A%20lib%20tests&In-Reply-To=%3C200603290026.k2T0Qaq6022772%40sheep.berlios.de%3E"
+       TITLE="[Freja-svn] r16 - in trunk: lib tests">troelskn at berlios.de
+       </A><BR>
+    <I>Wed Mar 29 02:26:36 CEST 2006</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000011.html">[Freja-svn] r15 - trunk/lib
+</A></li>
+        <LI>Next message: <A HREF="000013.html">[Freja-svn] r17 - trunk/lib
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#12">[ date ]</a>
+              <a href="thread.html#12">[ thread ]</a>
+              <a href="subject.html#12">[ subject ]</a>
+              <a href="author.html#12">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Author: troelskn
+Date: 2006-03-29 02:25:54 +0200 (Wed, 29 Mar 2006)
+New Revision: 16
+
+Added:
+   trunk/tests/test_Freja-History.html
+   trunk/tests/test_History.js
+Modified:
+   trunk/lib/Freja.js
+   trunk/tests/index.html
+Log:
+Added UndoHistory from Freja 1.1
+
+Modified: trunk/lib/Freja.js
+===================================================================
+--- trunk/lib/Freja.js	2006-03-28 00:53:41 UTC (rev 15)
++++ trunk/lib/Freja.js	2006-03-29 00:25:54 UTC (rev 16)
+@@ -105,8 +105,49 @@
+ 	return Freja.External.serializeXML(processor.transformToDocument(xml));
+ 
+ };
++/** cloneXMLDocument(document) : XMLDocument */
++Freja.External.cloneXMLDocument = function(xmlDoc) {
++	var clone = null;
++	try {
++		clone = xmlDoc.cloneNode(true);
++	} catch(e) { /* squelch */ }
++
++	// Can't clone a DocumentNode in Safari &amp; Opera. Let's try something else.
++	// @note Wouldn't it be easier to serialize the document to string and the parse it to a new document ?
++	if (!clone) {
++		if (document.implementation &amp;&amp; document.implementation.createDocument) {
++			clone = document.implementation.createDocument(&quot;&quot;, xmlDoc.documentElement.nodeName, null);
++			// importNode is not safe in Safari ! the source document is altered. used cloneNode to fix the prblm
++			var data = clone.importNode(xmlDoc.documentElement.cloneNode(true), true);
++			try {
++				clone.appendChild(data);
++			} catch(e) {
++				// Opera has already created a documentElement and can't append another root node
++				var rootNode = clone.documentElement;
++				for (var i = data.childNodes.length; i &gt;= 0; i--) {
++					rootNode.insertBefore(data.childNodes[i], rootNode.firstChild);
++				}
++				// need to copy root node attributes
++				for (var i = 0; i &lt; xmlDoc.documentElement.attributes.length; i++) {
++					var name  = xmlDoc.documentElement.attributes.item(i).name;
++					var value = xmlDoc.documentElement.attributes.item(i).value;
++					clone.documentElement.setAttribute(name, value);
++				}
++			}
++		}
++	}
++	return clone;
++};
+ /** hasSupportForXSLT() : boolean */
+ Freja.External.hasSupportForXSLT = (typeof(XSLTProcessor) != &quot;undefined&quot;);
++/** createQueryEngine() : Freja.QueryEngine */
++Freja.External.createQueryEngine = function() {
++	if (Sarissa.IS_ENABLED_SELECT_NODES) {
++		return new Freja.QueryEngine.XPath();
++	} else {
++		return new Freja.QueryEngine.SimplePath();
++	}
++};
+ /**
+   * Single-hierarchy inheritance (class emulation)
+   * @see    <A HREF="http://www.itsalleasy.com/2006/02/05/prototype-chain/">http://www.itsalleasy.com/2006/02/05/prototype-chain/</A>
+@@ -526,13 +567,98 @@
+ 	return d;
+ }
+ /**
++  * This is largely s copied with minor stylistic adjustments from Freja 1.1
++  * I renamed it from Controller.history to distinguish between window.history
++  */
++Freja.UndoHistory = function() {
++	this.cache = [];
++	this.maxLength = 5;
++	this._position = 0;
++	this._undoSteps = 0;
++};
++/**
++  * Creates a snapshot of the model and stores it.
++  */
++Freja.UndoHistory.prototype.add = function(model) {
++	var historyIndex = this._position % this.maxLength;
++
++	var modelDoc = model.document;
++	this.cache[historyIndex] = {};
++	this.cache[historyIndex].model = model;
++	this.cache[historyIndex].document = Freja.External.cloneXMLDocument(modelDoc);
++
++	if (!this.cache[historyIndex].document) {
++		throw new Error(&quot;Couldn't add to history.&quot;);
++	} else {
++		this._position++;
++		// clear rest of the history if undo was used.
++		var clearHistoryIndex = historyIndex;
++		while (this._undoSteps &gt; 0) {
++			clearHistoryIndex = (clearHistoryIndex + 1) % this.maxLength;
++			this.cache[clearHistoryIndex] = {};
++			this._undoSteps--;
++		}
++		return historyIndex; // what would anybody need this for ?
++	}
++};
++/**
++  * Rolls the state back one step.
++  */
++Freja.UndoHistory.prototype.undo = function(steps) {
++	if (this._undoSteps &lt; this.cache.length) {
++		this._undoSteps++;
++		this._position--;
++		if (this._position &lt; 0) {
++			this._position = this.maxLength - 1;
++		}
++
++		var model = this.cache[this._position].model;
++		if (this.cache[this._position].document) {
++			model.document = this.cache[this._position].document;
++		} else {
++			throw new Error(&quot;The model's DOMDocument wasn't properly copied into the history&quot;);
++		}
++		if (typeof(steps) != &quot;undefined&quot; &amp;&amp; steps &gt; 1) {
++			this.undo(steps - 1);
++		}
++	} else {
++		throw new Error(&quot;Nothing to undo&quot;);
++	}
++};
++/**
++  * Reverts the effects of undo.
++  */
++Freja.UndoHistory.prototype.redo = function() {
++	if (this._undoSteps &gt; 0) {
++		this._undoSteps--;
++		this._position = (this._position + 1) % this.maxLength;
++
++		var model = this.cache[this._position].model;
++		model.document = this.cache[this._position].document;
++	} else {
++		throw new Error(&quot;Nothing to redo&quot;);
++	}
++};
++
++/**
++  * Removes the last entry in the cache
++  */
++Freja.UndoHistory.prototype.removeLast = function() {
++	this._position--;
++
++	if (this._position &lt; 0) {
++		this._position = this.maxLength - 1;
++	}
++	this.cache[this._position] = {};
++	this._undoSteps = 0;
++};
++/**
+   * main repository
+   * @static
+   */
+ Freja.AssetManager = {
+ 	models : [],
+-	views : [],
+-	undoHistory : []	// this isn't used atm
++	views : []
+ }
+ /**
+   * Set to sync to make all requests synchroneous. You shouldn't use
+@@ -562,16 +688,6 @@
+ Freja.AssetManager.USERNAME = null;
+ Freja.AssetManager.PASSWORD = null;
+ /**
+-  * returns an instance of the queryengine to use
+-  */
+-Freja.AssetManager.createQueryEngine = function() {
+-	if (Sarissa.IS_ENABLED_SELECT_NODES) {
+-		return new Freja.QueryEngine.XPath();
+-	} else {
+-		return new Freja.QueryEngine.SimplePath();
+-	}
+-}
+-/**
+   * returns an instance of the renderengine to use
+   */
+ Freja.AssetManager.createRenderer = function() {
+@@ -600,7 +716,7 @@
+ 			return this.models[i];
+ 		}
+ 	}
+-	var m = new Freja.Model(url, this.createQueryEngine());
++	var m = new Freja.Model(url, Freja.External.createQueryEngine());
+ 	var onload = Freja.External.bind(function(document) {
+ 		this.document = document;
+ 		this.ready = true;
+
+Modified: trunk/tests/index.html
+===================================================================
+--- trunk/tests/index.html	2006-03-28 00:53:41 UTC (rev 15)
++++ trunk/tests/index.html	2006-03-29 00:25:54 UTC (rev 16)
+@@ -8,6 +8,7 @@
+ &lt;script type=&quot;text/javascript&quot;&gt;
+ TestRunner.runTests(
+     'test_Freja-Model.html',
++    'test_Freja-History.html',
+     'test_Freja-View.html'
+ );
+ &lt;/script&gt;
+
+Added: trunk/tests/test_Freja-History.html
+===================================================================
+--- trunk/tests/test_Freja-History.html	2006-03-28 00:53:41 UTC (rev 15)
++++ trunk/tests/test_Freja-History.html	2006-03-29 00:25:54 UTC (rev 16)
+@@ -0,0 +1,38 @@
++&lt;html&gt;
++&lt;head&gt;
++    &lt;!-- MochiKit is needed by SimpleTest --&gt;
++    &lt;script type=&quot;text/javascript&quot; src=&quot;../lib/MochiKit.js&quot;&gt;&lt;/script&gt;
++    &lt;script type=&quot;text/javascript&quot; src=&quot;SimpleTest/SimpleTest.js&quot;&gt;&lt;/script&gt;
++    &lt;script type=&quot;text/javascript&quot; src=&quot;../lib/Sarissa.js&quot;&gt;&lt;/script&gt;
++    &lt;script type=&quot;text/javascript&quot; src=&quot;../lib/Freja.js&quot;&gt;&lt;/script&gt;
++    &lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;SimpleTest/test.css&quot;&gt;
++&lt;/head&gt;
++&lt;body&gt;
++
++&lt;pre id=&quot;test&quot;&gt;
++&lt;script type=&quot;text/javascript&quot; src=&quot;test_History.js&quot;&gt;&lt;/script&gt;
++&lt;script type=&quot;text/javascript&quot;&gt;
++try {
++
++    tests.test_History({ok:ok, is:is});
++    ok( true, &quot;test suite finished!&quot;);
++
++} catch (err) {
++
++    var s = &quot;test suite failure!\n&quot;;
++    var o = {};
++    var k = null;
++    for (k in err) {
++        // ensure unique keys?!
++        if (!o[k]) {
++            s +=  k + &quot;: &quot; + err[k] + &quot;\n&quot;;
++            o[k] = err[k];
++        }
++    }
++    ok ( false, s );
++
++}
++&lt;/script&gt;
++&lt;/pre&gt;
++&lt;/body&gt;
++&lt;/html&gt;
+\ No newline at end of file
+
+Added: trunk/tests/test_History.js
+===================================================================
+--- trunk/tests/test_History.js	2006-03-28 00:53:41 UTC (rev 15)
++++ trunk/tests/test_History.js	2006-03-29 00:25:54 UTC (rev 16)
+@@ -0,0 +1,40 @@
++if (typeof(dojo) != 'undefined') { dojo.require('Freja'); }
++if (typeof(JSAN) != 'undefined') { JSAN.use('Freja'); }
++if (typeof(tests) == 'undefined') { tests = {}; }
++
++tests.test_History = function (t) {
++	Freja.AssetManager.HTTP_REQUEST_TYPE = &quot;sync&quot;;
++
++	var model = Freja.AssetManager.getModel(&quot;data/model.xml&quot;);
++	var model2 = Freja.AssetManager.getModel(&quot;data/model2.xml&quot;);
++
++	var state = new Freja.UndoHistory();
++
++	var exc = false;
++	try {
++		state.undo();
++	} catch (ex) {
++		exc = ex;
++	}
++	t.ok(exc, &quot;Undo should throw error when nothing has been registered&quot;);
++	var exc = false;
++	try {
++		state.redo();
++	} catch (ex) {
++		exc = ex;
++	}
++	t.ok(exc, &quot;Redo should throw error when nothing has been registered&quot;);
++
++	model.set(&quot;item/name&quot;, &quot;Yoda&quot;);
++	state.add(model); // snapshot initial state
++
++	model.set(&quot;item/name&quot;, &quot;Han-Solo&quot;);
++	t.is(model.get(&quot;item/name&quot;), &quot;Han-Solo&quot;);
++	state.add(model); // snapshot second state
++
++	state.undo(2); // rollback to initial state
++	t.is(model.get(&quot;item/name&quot;), &quot;Yoda&quot;);
++
++	state.redo(); // re-revert to second state
++	t.is(model.get(&quot;item/name&quot;), &quot;Han-Solo&quot;);
++};
+\ No newline at end of file
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000011.html">[Freja-svn] r15 - trunk/lib
+</A></li>
+	<LI>Next message: <A HREF="000013.html">[Freja-svn] r17 - trunk/lib
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#12">[ date ]</a>
+              <a href="thread.html#12">[ thread ]</a>
+              <a href="subject.html#12">[ subject ]</a>
+              <a href="author.html#12">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/freja-svn">More information about the Freja-svn
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,211 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Freja-svn] r90 - in trunk: . examples lib/minimal src src/auxiliary
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/freja-svn/2007-June/index.html" >
+   <LINK REL="made" HREF="mailto:freja-svn%40lists.berlios.de?Subject=Re%3A%20%5BFreja-svn%5D%20r90%20-%20in%20trunk%3A%20.%20examples%20lib/minimal%20src%20src/auxiliary&In-Reply-To=%3C200706162117.l5GLHklt004766%40sheep.berlios.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   
+   
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Freja-svn] r90 - in trunk: . examples lib/minimal src src/auxiliary</H1>
+    <B>cedsav at mail.berlios.de</B> 
+    <A HREF="mailto:freja-svn%40lists.berlios.de?Subject=Re%3A%20%5BFreja-svn%5D%20r90%20-%20in%20trunk%3A%20.%20examples%20lib/minimal%20src%20src/auxiliary&In-Reply-To=%3C200706162117.l5GLHklt004766%40sheep.berlios.de%3E"
+       TITLE="[Freja-svn] r90 - in trunk: . examples lib/minimal src src/auxiliary">cedsav at mail.berlios.de
+       </A><BR>
+    <I>Sat Jun 16 23:17:46 CEST 2007</I>
+    <P><UL>
+        
+        
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#88">[ date ]</a>
+              <a href="thread.html#88">[ thread ]</a>
+              <a href="subject.html#88">[ subject ]</a>
+              <a href="author.html#88">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Author: cedsav
+Date: 2007-06-16 23:17:38 +0200 (Sat, 16 Jun 2007)
+New Revision: 90
+
+Modified:
+   trunk/
+   trunk/examples/
+   trunk/lib/minimal/Freja.js
+   trunk/src/Model.js
+   trunk/src/auxiliary/minimal.js
+Log:
+
+
+
+Property changes on: trunk
+___________________________________________________________________
+Name: svn:ignore
+   + .project
+
+
+
+Property changes on: trunk/examples
+___________________________________________________________________
+Name: svn:ignore
+   - formbuilder
+
+   + formbuilder
+test
+
+
+Modified: trunk/lib/minimal/Freja.js
+===================================================================
+--- trunk/lib/minimal/Freja.js	2007-03-29 21:55:30 UTC (rev 89)
++++ trunk/lib/minimal/Freja.js	2007-06-16 21:17:38 UTC (rev 90)
+@@ -1028,19 +1028,16 @@
+ 	if (!src._signals[signal]) {
+ 		src._signals[signal] = [];
+ 	}
+-	// checks if the callback has already been registered with the same function  (Thx to Chris D)
+-	for(var item=0; item &lt; src._signals[signal].length;item++) {
+-        if(src._signals[signal][item].toString() == fnc.toString()) return;
+-    } 
+-    
+-	src._signals[signal].push(fnc);
++	
++ 	src._signals[signal].push(fnc);
+ };
+ /** signal(src, signal, ...) : void */
+ Freja._aux.signal = function(src, signal) {
+-
++	
+ 	try {
+ 		if(src._signals &amp;&amp; src._signals[signal]) {
+-			var sigs = src._signals[signal];
++			var sigs = src._signals[signal];
++			console.log(signal,&quot; sigs: &quot;,sigs, sigs.length);
+ 			var args = [];
+ 			for (var i=2; i &lt; arguments.length; i++) {
+ 				args.push(arguments[i]);
+@@ -1048,10 +1045,10 @@
+ 			for (var i=0; i &lt; sigs.length; i++) {
+ 				try {
+ 					sigs[i].apply(src, args);
+-				} catch (e) { /* squelch */ }
++				} catch (e) { console.log(&quot;error: &quot;,e); }
+ 			}
+-		}
+-	} catch (e) { /* squelch */ }
++		} 
++	} catch (e) { console.log(&quot;error: &quot;,e); }
+ };
+ /** createDeferred() : Deferred */
+ Freja._aux.createDeferred = function() {
+@@ -1456,7 +1453,8 @@
+ 	var onload = Freja._aux.bind(function(document) {
+ 		this.document = document;
+ 		this.ready = true;
+-		Freja._aux.signal(this, &quot;onload&quot;);
++		Freja._aux.signal(this, &quot;onload&quot;);
++		console.log('signal onload sent');
+ 	}, this);
+ 	var d = Freja.AssetManager.loadAsset(this.url, true);
+ 	d.addCallbacks(onload, Freja.AssetManager.onerror);
+@@ -1522,14 +1520,16 @@
+ 		this.deferred = deferred;
+ 		this.xslParameters = xslParameters;
+ 	};
+-	Handler.prototype.trigger = function() {
++	Handler.prototype.trigger = function() {
++		console.log(&quot;trigger fires, scope:&quot;,this);
+ 		try {
+ 			if (!this.view.ready) {
+ 				Freja._aux.connect(this.view, &quot;onload&quot;, Freja._aux.bind(this.trigger, this));
+ 				return;
+ 			}
+ 			if (typeof(this.model) == &quot;object&quot; &amp;&amp; this.model instanceof Freja.Model &amp;&amp; !this.model.ready) {
+-				Freja._aux.connect(this.model, &quot;onload&quot;, Freja._aux.bind(this.trigger, this));
++				Freja._aux.connect(this.model, &quot;onload&quot;, Freja._aux.bind(this.trigger, this));
++				console.log('model not ready. Connect to onload, scope:',this);
+ 				return;
+ 			}
+ 			var model;
+
+Modified: trunk/src/Model.js
+===================================================================
+--- trunk/src/Model.js	2007-03-29 21:55:30 UTC (rev 89)
++++ trunk/src/Model.js	2007-06-16 21:17:38 UTC (rev 90)
+@@ -90,7 +90,18 @@
+ /**
+   * @returns Freja._aux.Deferred
+   */
+-Freja.Model.prototype.reload = function() {
++Freja.Model.prototype.reload = function(url) {
++	
++	if(url) {
++		// Replace old url in cache with new url
++		for (var i=0; i &lt; Freja.AssetManager.models.length; i++) {
++			if (Freja.AssetManager.models[i].url == this.url) {
++				Freja.AssetManager.models[i].url = url;
++			}
++		}
++		this.url = url;
++	}
++	
+ 	this.ready = false;
+ 	var onload = Freja._aux.bind(function(document) {
+ 		this.document = document;
+
+Modified: trunk/src/auxiliary/minimal.js
+===================================================================
+--- trunk/src/auxiliary/minimal.js	2007-03-29 21:55:30 UTC (rev 89)
++++ trunk/src/auxiliary/minimal.js	2007-06-16 21:17:38 UTC (rev 90)
+@@ -979,10 +979,16 @@
+ 	if (!src._signals[signal]) {
+ 		src._signals[signal] = [];
+ 	}
+-	// checks if the callback has already been registered with the same function  (Thx to Chris D)
+-	for(var item=0; item &lt; src._signals[signal].length;item++) {
+-        if(src._signals[signal][item].toString() == fnc.toString()) return;
+-    } 
++	/*
++	 * @TODO Check this
++	 * see: <A HREF="http://www.formassembly.com/forums/viewtopic.php?t=282&amp;sid=189221aa89bf7245deb04bbfb8d3c7e9">http://www.formassembly.com/forums/viewtopic.php?t=282&amp;sid=189221aa89bf7245deb04bbfb8d3c7e9</A>
++	 * 
++	 * // checks if the callback has already been registered with the same function
++	 * for(var item=0; item &lt; src._signals[signal].length;item++) {
++	 * 	if(src._signals[signal][item].toString() == fnc.toString()) return;
++	 * } 
++	 */
++	 
+     
+ 	src._signals[signal].push(fnc);
+ };
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	
+	
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#88">[ date ]</a>
+              <a href="thread.html#88">[ thread ]</a>
+              <a href="subject.html#88">[ subject ]</a>
+              <a href="author.html#88">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/freja-svn">More information about the Freja-svn
+mailing list</a><br>
+</body></html>

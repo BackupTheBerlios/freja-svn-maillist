@@ -1,0 +1,472 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Freja-svn] r15 - trunk/lib
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/freja-svn/2006-March/index.html" >
+   <LINK REL="made" HREF="mailto:freja-svn%40lists.berlios.de?Subject=Re%3A%20%5BFreja-svn%5D%20r15%20-%20trunk/lib&In-Reply-To=%3C200603280055.k2S0tKXO010923%40sheep.berlios.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000010.html">
+   <LINK REL="Next"  HREF="000012.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Freja-svn] r15 - trunk/lib</H1>
+    <B>troelskn at BerliOS</B> 
+    <A HREF="mailto:freja-svn%40lists.berlios.de?Subject=Re%3A%20%5BFreja-svn%5D%20r15%20-%20trunk/lib&In-Reply-To=%3C200603280055.k2S0tKXO010923%40sheep.berlios.de%3E"
+       TITLE="[Freja-svn] r15 - trunk/lib">troelskn at berlios.de
+       </A><BR>
+    <I>Tue Mar 28 02:55:20 CEST 2006</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000010.html">[Freja-svn] r14 - trunk/lib
+</A></li>
+        <LI>Next message: <A HREF="000012.html">[Freja-svn] r16 - in trunk: lib tests
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#11">[ date ]</a>
+              <a href="thread.html#11">[ thread ]</a>
+              <a href="subject.html#11">[ subject ]</a>
+              <a href="author.html#11">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Author: troelskn
+Date: 2006-03-28 02:53:41 +0200 (Tue, 28 Mar 2006)
+New Revision: 15
+
+Modified:
+   trunk/lib/Freja.js
+Log:
+Isolated all dependencies on external libraries in Freja.External
+
+Modified: trunk/lib/Freja.js
+===================================================================
+--- trunk/lib/Freja.js	2006-03-22 20:45:39 UTC (rev 14)
++++ trunk/lib/Freja.js	2006-03-28 00:53:41 UTC (rev 15)
+@@ -11,6 +11,29 @@
+   */
+ if (typeof(dojo) != &quot;undefined&quot;) {
+ 	dojo.provide(&quot;Freja&quot;);
++}
++if (typeof(Freja) == &quot;undefined&quot;) {
++	Freja = {};
++}
++Freja.NAME = &quot;Freja&quot;;
++Freja.VERSION = &quot;2.0.alpha&quot;;
++Freja.__repr__ = function () {
++	return &quot;[&quot; + this.NAME + &quot; &quot; + this.VERSION + &quot;]&quot;;
++};
++Freja.toString = function () {
++	return this.__repr__();
++};
++/**
++  * Package : end
++  */
++/**
++  * Freja.External
++  * wrapper for external functionality (frameworks).
++  * You shouldn't rely onthis functionality - it's merely a hook for Freja towards
++  * external dependencies. This is the only part of the application you'll need to
++  * adjust, to make Freja play ball with your favourite framework.
++  */
++if (typeof(dojo) != &quot;undefined&quot;) {
+ 	dojo.require(&quot;MochiKit.Base&quot;);
+ 	dojo.require(&quot;MochiKit.Signal&quot;);
+ 	dojo.require(&quot;MochiKit.Async&quot;);
+@@ -38,37 +61,70 @@
+ } catch (e) {
+ 	throw new Error(&quot;Freja depends on MochiKit.Base, MochiKit.Signal, MochiKit.Async and Sarissa!&quot;);
+ }
+-if (typeof(Freja) == &quot;undefined&quot;) {
+-	Freja = {};
+-}
+-Freja.NAME = &quot;Freja&quot;;
+-Freja.VERSION = &quot;2.0.alpha&quot;;
+-Freja.__repr__ = function () {
+-	return &quot;[&quot; + this.NAME + &quot; &quot; + this.VERSION + &quot;]&quot;;
++Freja.External = {};
++/** bind(func, self[, arg, ...]) : function */
++Freja.External.bind = MochiKit.Base.bind;
++
++/** registerSignals(src, signals) : void */
++Freja.External.registerSignals = MochiKit.Signal.registerSignals;
++/** connect(src, signal, dest[, func]) : void */
++Freja.External.connect = MochiKit.Signal.connect;
++/** signal(src, signal, ...) : void */
++Freja.External.signal = MochiKit.Signal.signal;
++/** createDeferred() : Deferred */
++Freja.External.createDeferred = function() {
++	return new MochiKit.Async.Deferred();
+ };
+-Freja.toString = function () {
+-	return this.__repr__();
++/** openXMLHttpRequest(method, url, async, user, pass) : XMLHttpRequest */
++Freja.External.openXMLHttpRequest = function(method, url, async, user, pass) {
++	var req = new XMLHttpRequest();
++	if (user &amp;&amp; pass) {
++		req.open(method, url, async, user, pass);
++	} else {
++		req.open(method, url, async);
++	}
++	if (method == &quot;POST&quot; || method == &quot;PUT&quot;) {
++		req.setRequestHeader(&quot;Content-Type&quot;, &quot;application/x-www-form-urlencoded&quot;);
++	}
++	return req;
+ };
++/** sendXMLHttpRequest(req, sendContent) : Deferred */
++Freja.External.sendXMLHttpRequest = MochiKit.Async.sendXMLHttpRequest;
++/** xmlize(anyObject, objectName) : string */
++Freja.External.xmlize = Sarissa.xmlize;
++/** serializeXML(node) : string */
++Freja.External.serializeXML = Sarissa.serialize;
++/** loadXML(string) : XMLDocument */
++Freja.External.loadXML = function(text) {
++	return (new DOMParser()).parseFromString(text, &quot;text/xml&quot;);
++};
++/** transformXSL(XMLDocument, XSLDocument) : string */
++Freja.External.transformXSL = function(xml, xsl) {
++	var processor = new XSLTProcessor();
++	processor.importStylesheet(xsl);
++	return Freja.External.serializeXML(processor.transformToDocument(xml));
++
++};
++/** hasSupportForXSLT() : boolean */
++Freja.External.hasSupportForXSLT = (typeof(XSLTProcessor) != &quot;undefined&quot;);
+ /**
+-  * Package : end
+-  */
+-/**
+   * Single-hierarchy inheritance (class emulation)
+   * @see    <A HREF="http://www.itsalleasy.com/2006/02/05/prototype-chain/">http://www.itsalleasy.com/2006/02/05/prototype-chain/</A>
++  *         <A HREF="http://www.itsalleasy.com/2006/02/24/classjs-third-time-is-the-charm/">http://www.itsalleasy.com/2006/02/24/classjs-third-time-is-the-charm/</A>
+   *
+   * Extends one prototype by another.
+   * The subtype will have two specialpurpose properties:
+-  *     superstructor    The parent prototype's constructor
++  *     superconstructor    The parent prototype's constructor
+   *     supertype        The parent prototype
+   */
+ Freja.Class = {};
+-Freja.Class.extend = function(subClass, superstructor) {
++Freja.Class.extend = function(subClass, superconstructor) {
+ 	var inlineSuper = function(){};
+-	inlineSuper.prototype = superstructor.prototype;
++	inlineSuper.prototype = superconstructor.prototype;
+ 	subClass.prototype = new inlineSuper();
+ 	subClass.prototype.constructor = subClass;
+-	subClass.prototype.superstructor = superstructor;
+-	subClass.prototype.supertype = superstructor.prototype;
++	subClass.prototype.superconstructor = superconstructor;
++	subClass.prototype.supertype = superconstructor.prototype;
+ }
+ /**
+   * The baseclass for queryengines
+@@ -158,7 +214,7 @@
+ 	this.ready = false;
+ 	this.document = null;
+ 	this.query = query;
+-	registerSignals(this, [&quot;onload&quot;]);
++	Freja.External.registerSignals(this, [&quot;onload&quot;]);
+ }
+ /**
+   * Returns a single value
+@@ -208,12 +264,12 @@
+ 	}
+ 	// since the serialization may fail, we create a deferred for the
+ 	// purpose, rather than just returning the sendXMLHttpRequest directly.
+-	var d = new MochiKit.Async.Deferred();
++	var d = Freja.External.createDeferred();
+ 	var req = Freja.AssetManager.openXMLHttpRequest(&quot;POST&quot;, url);
+ 	try {
+ 		// for some obscure reason exceptions aren't thrown back if I call the
+ 		// shorthand version of sendXMLHttpRequest in IE6.
+-		MochiKit.Async.sendXMLHttpRequest(req, Sarissa.serialize(this.document)).addCallbacks(bind(d.callback, d), bind(d.errback, d));
++		Freja.External.sendXMLHttpRequest(req, Freja.External.serializeXML(this.document)).addCallbacks(Freja.External.bind(d.callback, d), Freja.External.bind(d.errback, d));
+ 	} catch (ex) {
+ 		d.errback(ex);
+ 	}
+@@ -230,17 +286,17 @@
+ 		url = match[1] + url; // local
+ 	}
+ 	var req = Freja.AssetManager.openXMLHttpRequest(&quot;DELETE&quot;, url);
+-	return MochiKit.Async.sendXMLHttpRequest(req);
++	return Freja.External.sendXMLHttpRequest(req);
+ }
+ /**
+   * @returns MochiKit.Async.Deferred
+   */
+ Freja.Model.prototype.reload = function() {
+ 	this.ready = false;
+-	var onload = bind(function(document) {
++	var onload = Freja.External.bind(function(document) {
+ 		this.document = document;
+ 		this.ready = true;
+-		MochiKit.Signal.signal(this, &quot;onload&quot;);
++		Freja.External.signal(this, &quot;onload&quot;);
+ 	}, this);
+ 	var d = Freja.AssetManager.loadAsset(this.url, true);
+ 	d.addCallbacks(onload, Freja.AssetManager.onerror);
+@@ -275,7 +331,7 @@
+ 	for (var i = 0, len = values[0].length; i &lt; len; ++i) {
+ 		payload[values[0][i]] = values[1][i];
+ 	}
+-	return MochiKit.Async.sendXMLHttpRequest(req, Sarissa.xmlize(payload, 'record'));
++	return Freja.External.sendXMLHttpRequest(req, Freja.External.xmlize(payload, 'record'));
+ }
+ 
+ /**
+@@ -290,8 +346,8 @@
+ 	this.handlers = [];
+ 	this.placeholder = null;
+ 	this.destination = null;
+-	registerSignals(this, [&quot;onload&quot;,&quot;onrendercomplete&quot;]);
+-	connect(this, &quot;onrendercomplete&quot;, bind(this.connectBehaviour, this));
++	Freja.External.registerSignals(this, [&quot;onload&quot;,&quot;onrendercomplete&quot;]);
++	Freja.External.connect(this, &quot;onrendercomplete&quot;, Freja.External.bind(this.connectBehaviour, this));
+ }
+ /**
+   * @param    model            Freja.Model
+@@ -310,22 +366,22 @@
+ 	Handler.prototype.trigger = function() {
+ 		try {
+ 			if (!this.view.ready) {
+-				connect(this.view, &quot;onload&quot;, bind(this.trigger, this));
++				Freja.External.connect(this.view, &quot;onload&quot;, Freja.External.bind(this.trigger, this));
+ 				return;
+ 			}
+ 			if (this.model &amp;&amp; !this.model.ready) {
+-				connect(this.model, &quot;onload&quot;, bind(this.trigger, this));
++				Freja.External.connect(this.model, &quot;onload&quot;, Freja.External.bind(this.trigger, this));
+ 				return;
+ 			}
+ 			if (!model) {
+-				model = { document : (new DOMParser()).parseFromString(&quot;&lt;?xml version='1.0' ?&gt;&lt;dummy/&gt;&quot;, &quot;text/xml&quot;)};
++				model = { document : Freja.External.loadXML(&quot;&lt;?xml version='1.0' ?&gt;&lt;dummy/&gt;&quot;)};
+ 			}
+ 			var trans = this.view.renderer.transform(model, this.view);
+-			trans.addCallback(bind(function(html) {
++			trans.addCallback(Freja.External.bind(function(html) {
+ 				this.destination.innerHTML = html;
+ 			}, this.view));
+-			trans.addCallback(bind(function() {
+-				MochiKit.Signal.signal(this, &quot;onrendercomplete&quot;, this.destination)
++			trans.addCallback(Freja.External.bind(function() {
++				Freja.External.signal(this, &quot;onrendercomplete&quot;, this.destination)
+ 			}, this.view));
+ 			trans.addCallback(this.deferred.callback);
+ 			trans.addErrback(this.deferred.errback);
+@@ -334,7 +390,7 @@
+ 		}
+ 	}
+ 
+-	var d = new MochiKit.Async.Deferred();
++	var d = Freja.External.createDeferred();
+ 	try {
+ 		var id = (typeof(placeholder) == &quot;undefined&quot;) ? this.placeholder : placeholder;
+ 		this.destination = $(id);
+@@ -358,7 +414,7 @@
+ Freja.View.prototype.connectBehaviour = function(destination) {
+ 	try {
+ 		var connectCallback = function(node, eventType, callback) {
+-			connect(node, eventType, bind(
++			Freja.External.connect(node, eventType, Freja.External.bind(
+ 				function(e) {
+ 					var allow = false;
+ 					try {
+@@ -419,12 +475,9 @@
+   * @returns MochiKit.Async.Deferred
+   */
+ Freja.View.Renderer.XSLTransformer.prototype.transform = function(model, view) {
+-        var d = new MochiKit.Async.Deferred();
++        var d = Freja.External.createDeferred();
+         try {
+-		var processor = new XSLTProcessor();
+-		processor.importStylesheet(view.document);
+-		var result = processor.transformToDocument(model.document);
+-		var html = Sarissa.serialize(result);
++		var html = Freja.External.transformXSL(model.document, view.document);
+ 		if (!html) {
+ 			d.errback(new Error(&quot;XSL Transformation error.&quot;));
+ 		} else {
+@@ -451,11 +504,11 @@
+   * @returns MochiKit.Async.Deferred
+   */
+ Freja.View.Renderer.RemoteXSLTransformer.prototype.transform = function(model, view) {
+-        var d = new MochiKit.Async.Deferred();
++        var d = Freja.External.createDeferred();
+ 
+ 	// prepare posted data  (no need to send the XSL document, just its url)
+ 	var xslUrl = view.url;
+-	var postedData = &quot;xslFile=&quot; + encodeURIComponent(xslUrl) + &quot;&amp;xmlData=&quot; + encodeURIComponent(Sarissa.serialize(model.document));
++	var postedData = &quot;xslFile=&quot; + encodeURIComponent(xslUrl) + &quot;&amp;xmlData=&quot; + encodeURIComponent(Freja.External.serializeXML(model.document));
+ //	if (xslParams)
+ //		postedData  = postedData + &quot;&amp;xslParam=&quot; + encodeURIComponent(xslParams.toString());
+ 	// send request to the server-side XSL transformation service
+@@ -523,7 +576,7 @@
+   */
+ Freja.AssetManager.createRenderer = function() {
+ //	return new Freja.View.Renderer.RemoteXSLTransformer(this.XSLT_SERVICE_URL);
+-	if (typeof(XSLTProcessor) != &quot;undefined&quot;) {
++	if (Freja.External.hasSupportForXSLT) {
+ 		return new Freja.View.Renderer.XSLTransformer();
+ 	} else {
+ 		return new Freja.View.Renderer.RemoteXSLTransformer(this.XSLT_SERVICE_URL);
+@@ -548,10 +601,10 @@
+ 		}
+ 	}
+ 	var m = new Freja.Model(url, this.createQueryEngine());
+-	var onload = bind(function(document) {
++	var onload = Freja.External.bind(function(document) {
+ 		this.document = document;
+ 		this.ready = true;
+-		MochiKit.Signal.signal(this, &quot;onload&quot;);
++		Freja.External.signal(this, &quot;onload&quot;);
+ 	}, m);
+ 	this.loadAsset(url, true).addCallbacks(onload, Freja.AssetManager.onerror);
+ 	this.models.push(m);
+@@ -568,10 +621,10 @@
+ 		}
+ 	}
+ 	var v = new Freja.View(url, this.createRenderer());
+-	var onload = bind(function(document) {
++	var onload = Freja.External.bind(function(document) {
+ 		this.document = document;
+ 		this.ready = true;
+-		MochiKit.Signal.signal(this, &quot;onload&quot;);
++		Freja.External.signal(this, &quot;onload&quot;);
+ 	}, v);
+ 	this.loadAsset(url, false).addCallbacks(onload, Freja.AssetManager.onerror);
+ 	this.views.push(v);
+@@ -581,24 +634,15 @@
+   * Creates and opens a http-request, tunneling exotic methods if needed.
+   */
+ Freja.AssetManager.openXMLHttpRequest = function(method, url) {
+-	var req = new XMLHttpRequest();
+-	var async = Freja.AssetManager.HTTP_REQUEST_TYPE == &quot;async&quot;;
+ 	var tunnel = null;
+ 	if (Freja.AssetManager.HTTP_METHOD_TUNNEL &amp;&amp; method != &quot;GET&quot; &amp;&amp; method != &quot;POST&quot;) {
+ 		tunnel = method;
+ 		method = &quot;POST&quot;;
+ 	}
+-	if (Freja.AssetManager.USERNAME &amp;&amp; Freja.AssetManager.PASSWORD) {
+-		req.open(method, url, async, Freja.AssetManager.USERNAME, Freja.AssetManager.PASSWORD);
+-	} else {
+-		req.open(method, url, async);
+-	}
++	var req = Freja.External.openXMLHttpRequest(method, url, Freja.AssetManager.HTTP_REQUEST_TYPE == &quot;async&quot;, Freja.AssetManager.USERNAME, Freja.AssetManager.PASSWORD);
+ 	if (tunnel) {
+ 		req.setRequestHeader(Freja.AssetManager.HTTP_METHOD_TUNNEL, tunnel);
+ 	}
+-	if (method == &quot;POST&quot; || method == &quot;PUT&quot;) {
+-		req.setRequestHeader(&quot;Content-Type&quot;, &quot;application/x-www-form-urlencoded&quot;);
+-	}
+ 	return req;
+ }
+ /**
+@@ -609,7 +653,7 @@
+ 	if (match) {
+ 		url = match[1] + url; // local
+ 	}
+-	var d = new MochiKit.Async.Deferred();
++	var d = Freja.External.createDeferred();
+ 	var handler = function(transport) {
+ 		try {
+ 			if (transport.responseText == &quot;&quot;) {
+@@ -618,7 +662,7 @@
+ 			if (transport.responseXML.xml == &quot;&quot;) {
+ 				// The server doesn't reply with Content-Type: text/xml
+ 				// this will happen if the file is loaded locally (through <A HREF="file://">file://</A>)
+-				var document = (new DOMParser()).parseFromString(transport.responseText, &quot;text/xml&quot;);
++				var document = Freja.External.loadXML(transport.responseText);
+ 			} else {
+ 				var document = transport.responseXML;
+ 			}
+@@ -628,30 +672,20 @@
+ 		d.callback(document);
+ 	}
+ 	try {
+-		var req = new XMLHttpRequest();
+-		var async = Freja.AssetManager.HTTP_REQUEST_TYPE == &quot;async&quot;;
+ 		if (preventCaching &amp;&amp; Freja.AssetManager.HTTP_METHOD_TUNNEL) {
+-			if (Freja.AssetManager.USERNAME &amp;&amp; Freja.AssetManager.PASSWORD) {
+-				req.open(&quot;POST&quot;, url, async, Freja.AssetManager.USERNAME, Freja.AssetManager.PASSWORD);
+-			} else {
+-				req.open(&quot;POST&quot;, url, async);
+-			}
++			var req = Freja.External.openXMLHttpRequest(&quot;POST&quot;, url, Freja.AssetManager.HTTP_REQUEST_TYPE == &quot;async&quot;, Freja.AssetManager.USERNAME, Freja.AssetManager.PASSWORD);
+ 			req.setRequestHeader(Freja.AssetManager.HTTP_METHOD_TUNNEL, &quot;GET&quot;);
+ 			req.setRequestHeader(&quot;Content-Type&quot;, &quot;application/x-www-form-urlencoded&quot;);
+ 		} else {
+-			if (Freja.AssetManager.USERNAME &amp;&amp; Freja.AssetManager.PASSWORD) {
+-				req.open(&quot;GET&quot;, url, async, Freja.AssetManager.USERNAME, Freja.AssetManager.PASSWORD);
+-			} else {
+-				req.open(&quot;GET&quot;, url, async);
+-			}
++			var req = Freja.External.openXMLHttpRequest(&quot;GET&quot;, url, Freja.AssetManager.HTTP_REQUEST_TYPE == &quot;async&quot;, Freja.AssetManager.USERNAME, Freja.AssetManager.PASSWORD);
+ 		}
+ 
+ 		// This shouldn't be nescesary, but alas it is - firefox chokes
+ 		// It's probably due to an error in MochiKit, so the problem
+ 		// should be fixed there.
+-		var comm = MochiKit.Async.sendXMLHttpRequest(req);
+-		if (async) {
+-			comm.addCallbacks(handler, bind(d.errback, d));
++		var comm = Freja.External.sendXMLHttpRequest(req);
++		if (Freja.AssetManager.HTTP_REQUEST_TYPE == &quot;async&quot;) {
++			comm.addCallbacks(handler, Freja.External.bind(d.errback, d));
+ 		} else {
+ 			if (req.status == 0 || req.status == 200 || req.status == 304) {
+ 				handler(req);
+@@ -664,11 +698,18 @@
+ 	}
+ 	return d;
+ }
++/**
++  * This is a default error-handler. You should provide your own.
++  * The handler is called if an asynchronous error happens, since
++  * this could not be caught with the usual try ... catch
++  *
++  * It ought to be replaced completely with Deferred
++  */
+ Freja.AssetManager.onerror = function(ex) {
+ 	alert(&quot;Freja.AssetManager.onerror\n&quot; + ex.message);
+ }
+ /**
+   * Global exports
+   */
+-window.getModel = bind(&quot;getModel&quot;, Freja.AssetManager);
+-window.getView = bind(&quot;getView&quot;, Freja.AssetManager);
+\ No newline at end of file
++window.getModel = Freja.External.bind(&quot;getModel&quot;, Freja.AssetManager);
++window.getView = Freja.External.bind(&quot;getView&quot;, Freja.AssetManager);
+\ No newline at end of file
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000010.html">[Freja-svn] r14 - trunk/lib
+</A></li>
+	<LI>Next message: <A HREF="000012.html">[Freja-svn] r16 - in trunk: lib tests
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#11">[ date ]</a>
+              <a href="thread.html#11">[ thread ]</a>
+              <a href="subject.html#11">[ subject ]</a>
+              <a href="author.html#11">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/freja-svn">More information about the Freja-svn
+mailing list</a><br>
+</body></html>

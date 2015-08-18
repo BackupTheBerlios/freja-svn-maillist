@@ -1,0 +1,117 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Freja-svn] r4 - in trunk: examples/contacts lib
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/freja-svn/2006-March/index.html" >
+   <LINK REL="made" HREF="mailto:freja-svn%40lists.berlios.de?Subject=Re%3A%20%5BFreja-svn%5D%20r4%20-%20in%20trunk%3A%20examples/contacts%20lib&In-Reply-To=%3C200603091756.k29HuGpC001798%40sheep.berlios.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   
+   <LINK REL="Next"  HREF="000001.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Freja-svn] r4 - in trunk: examples/contacts lib</H1>
+    <B>troelskn at BerliOS</B> 
+    <A HREF="mailto:freja-svn%40lists.berlios.de?Subject=Re%3A%20%5BFreja-svn%5D%20r4%20-%20in%20trunk%3A%20examples/contacts%20lib&In-Reply-To=%3C200603091756.k29HuGpC001798%40sheep.berlios.de%3E"
+       TITLE="[Freja-svn] r4 - in trunk: examples/contacts lib">troelskn at berlios.de
+       </A><BR>
+    <I>Thu Mar  9 18:56:16 CET 2006</I>
+    <P><UL>
+        
+        <LI>Next message: <A HREF="000001.html">[Freja-svn] r5 - in trunk: examples/contacts/models/php_inc lib
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#0">[ date ]</a>
+              <a href="thread.html#0">[ thread ]</a>
+              <a href="subject.html#0">[ subject ]</a>
+              <a href="author.html#0">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Author: troelskn
+Date: 2006-03-09 18:56:02 +0100 (Thu, 09 Mar 2006)
+New Revision: 4
+
+Modified:
+   trunk/examples/contacts/client.js
+   trunk/lib/Freja.js
+Log:
+Renamed Model.update to Model.save for BC with Freja 1.0
+
+Modified: trunk/examples/contacts/client.js
+===================================================================
+--- trunk/examples/contacts/client.js	2006-03-09 17:25:25 UTC (rev 3)
++++ trunk/examples/contacts/client.js	2006-03-09 17:56:02 UTC (rev 4)
+@@ -55,7 +55,7 @@
+ 		try {
+ 			var model = contacts.get(node.getAttribute('pkey'));
+ 			model.updateFrom(getView(&quot;views/edit.xsl&quot;));
+-			var d = model.update();
++			var d = model.save();
+ 			d.addCallback(function() {
+ 				contacts.select().reload();
+ 				index.render(contacts.select());
+
+Modified: trunk/lib/Freja.js
+===================================================================
+--- trunk/lib/Freja.js	2006-03-09 17:25:25 UTC (rev 3)
++++ trunk/lib/Freja.js	2006-03-09 17:56:02 UTC (rev 4)
+@@ -186,7 +186,7 @@
+   * Writes the model back to the remote service
+   * @returns MochiKit.Async.Deferred
+   */
+-Freja.Model.prototype.update = function() {
++Freja.Model.prototype.save = function() {
+ 	var url = this.url;
+ 	var match = /^(file:\/\/.*\/)([^/]*)$/.exec(window.location.href);
+ 	if (match) {
+@@ -301,11 +301,17 @@
+ 	connect(this, &quot;onrendercomplete&quot;, bind(this.connectBehaviour, this));
+ }
+ /**
++  * @param    model            Freja.Model
++  * @param    placeholder      string    If supplied, this will be used instead of the
++  *                                      default placeholder.
+   * @returns MochiKit.Async.Deferred
+   */
+-Freja.View.prototype.render = function(model) {
++Freja.View.prototype.render = function(model, placeholder /* optional */ ) {
+ 	try {
+-		this.destination = $(this.placeholder);
++		var id = (typeof(placeholder) == &quot;undefined&quot;) ? this.placeholder : placeholder;
++		this.destination = $(id);
++		// @todo    Is this a good idea ?
++		// Perhaps we should leave it to the programmer to do this.
+ 		this.destination.innerHTML = Freja.AssetManager.THROBBER_HTML;
+ 		if (!this.ready) {
+ 			connect(this, &quot;onload&quot;, bind(this.render, this, model));
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	
+	<LI>Next message: <A HREF="000001.html">[Freja-svn] r5 - in trunk: examples/contacts/models/php_inc lib
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#0">[ date ]</a>
+              <a href="thread.html#0">[ thread ]</a>
+              <a href="subject.html#0">[ subject ]</a>
+              <a href="author.html#0">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/freja-svn">More information about the Freja-svn
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,272 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Freja-svn] r66 - in trunk: lib src tests
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/freja-svn/2006-July/index.html" >
+   <LINK REL="made" HREF="mailto:freja-svn%40lists.berlios.de?Subject=Re%3A%20%5BFreja-svn%5D%20r66%20-%20in%20trunk%3A%20lib%20src%20tests&In-Reply-To=%3C200607291219.k6TCJ1n9007132%40sheep.berlios.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   
+   
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Freja-svn] r66 - in trunk: lib src tests</H1>
+    <B>troelskn at BerliOS</B> 
+    <A HREF="mailto:freja-svn%40lists.berlios.de?Subject=Re%3A%20%5BFreja-svn%5D%20r66%20-%20in%20trunk%3A%20lib%20src%20tests&In-Reply-To=%3C200607291219.k6TCJ1n9007132%40sheep.berlios.de%3E"
+       TITLE="[Freja-svn] r66 - in trunk: lib src tests">troelskn at mail.berlios.de
+       </A><BR>
+    <I>Sat Jul 29 14:19:01 CEST 2006</I>
+    <P><UL>
+        
+        
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#63">[ date ]</a>
+              <a href="thread.html#63">[ thread ]</a>
+              <a href="subject.html#63">[ subject ]</a>
+              <a href="author.html#63">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Author: troelskn
+Date: 2006-07-29 14:18:58 +0200 (Sat, 29 Jul 2006)
+New Revision: 66
+
+Modified:
+   trunk/lib/Freja.js
+   trunk/src/AssetManager.js
+   trunk/src/QueryEngine.js
+   trunk/tests/test_View.js
+Log:
+* BUG #7827 Auto-create empty textnode when node is empty is wrong behaviour.
+* Bug #7189 Loading asset that cannot be found (404) returns undefined.
+
+Modified: trunk/lib/Freja.js
+===================================================================
+--- trunk/lib/Freja.js	2006-05-19 21:20:12 UTC (rev 65)
++++ trunk/lib/Freja.js	2006-07-29 12:18:58 UTC (rev 66)
+@@ -2,7 +2,7 @@
+ 
+     Freja 2.0.alpha
+ 
+-    Build $Sat, 29 Apr 2006 09:18:08 UTC$
++    Build $Fri, 28 Jul 2006 13:38:48 UTC$
+ 
+     Target: minimal
+ 
+@@ -215,7 +215,7 @@
+ 	var bComplete = false;
+ 	req.onreadystatechange = function() {
+ 		if (req.readyState == 4 &amp;&amp; !bComplete) {
+-			if (req.status == 0 || req.status == 200 || req.status == 304) {
++			if (req.status == 0 || req.status == 200 || req.status == 201 || req.status == 304) {
+ 				d.callback(req);
+ 			} else {
+ 				d.errback(req);
+@@ -558,10 +558,6 @@
+ 	if (node &amp;&amp; node.firstChild &amp;&amp; node.firstChild.nodeType == 4) {
+ 		return node.firstChild;
+ 	}
+-	if (node &amp;&amp; node.nodeType==1 &amp;&amp; !node.firstChild) {
+-		// empty element (&lt;tag/&gt;). Let's create and return a blank text node
+-		return node.appendChild(window.document.createTextNode(''));
+-	}
+ 
+ 	throw new Error(&quot;Can't evaluate expression &quot; + expression);
+ 	return null;
+@@ -626,10 +622,6 @@
+ 	if (node &amp;&amp; node.firstChild &amp;&amp; node.firstChild.nodeType == 4) {
+ 		return node.firstChild;
+ 	}
+-	if (node &amp;&amp; node.nodeType==1 &amp;&amp; !node.firstChild) {
+-		// empty element (&lt;tag/&gt;). Let's create and return a blank text node
+-		return node.appendChild(window.document.createTextNode(''));
+-	}
+ 
+ 	if (!node) {
+ 		throw new Error(&quot;Can't evaluate expression &quot; + expression);
+@@ -1208,22 +1200,25 @@
+ 		d.callback(document);
+ 	};
+ 	try {
+-		/* Why using HTTP_METHOD_TUNNEL for a GET? 
+-		  if (preventCaching &amp;&amp; Freja.AssetManager.HTTP_METHOD_TUNNEL) {
++		// Why using HTTP_METHOD_TUNNEL for a GET?
++		//-- to prevent caching, since browsers won't cache a POST
++		if (preventCaching &amp;&amp; Freja.AssetManager.HTTP_METHOD_TUNNEL) {
+ 			var req = Freja._aux.openXMLHttpRequest(&quot;POST&quot;, url, Freja.AssetManager.HTTP_REQUEST_TYPE == &quot;async&quot;, Freja.AssetManager._username, Freja.AssetManager._password);
+ 			req.setRequestHeader(Freja.AssetManager.HTTP_METHOD_TUNNEL, &quot;GET&quot;);
+ 			req.setRequestHeader(&quot;Content-Type&quot;, &quot;application/x-www-form-urlencoded&quot;);
+ 		} else {
+-		*/
+ 			var req = Freja._aux.openXMLHttpRequest(&quot;GET&quot;, url, Freja.AssetManager.HTTP_REQUEST_TYPE == &quot;async&quot;, Freja.AssetManager._username, Freja.AssetManager._password);
+-		/*}*/
++		}
+ 
+ 		// This shouldn't be nescesary, but alas it is - firefox chokes
+ 		// It's probably due to an error in MochiKit, so the problem
+ 		// should be fixed there.
+ 		var comm = Freja._aux.sendXMLHttpRequest(req);
+ 		if (Freja.AssetManager.HTTP_REQUEST_TYPE == &quot;async&quot;) {
+-			comm.addCallbacks(handler, Freja._aux.bind(d.errback, d));
++			// fixes bug #7189 (<A HREF="http://developer.berlios.de/bugs/?func=detailbug&amp;group_id=6277&amp;bug_id=7189">http://developer.berlios.de/bugs/?func=detailbug&amp;group_id=6277&amp;bug_id=7189</A>)
++			comm.addCallbacks(handler, function(req) {
++				d.errback(new Error(&quot;Request failed:&quot; + req.status));
++			});
+ 		} else {
+ 			if (req.status == 0 || req.status == 200 || req.status == 304) {
+ 				handler(req);
+@@ -1244,14 +1239,7 @@
+   * It ought to be replaced completely with Deferred
+   */
+ Freja.AssetManager.onerror = function(ex) {
+-	if(ex.message) {
+-		alert(&quot;Freja.AssetManager.onerror\n&quot; + ex.message);
+-	} 
+-	// @note: on asynchronous calls, ex refers to the xmlhttpobject
+-	// see Bug #7189 (<A HREF="http://developer.berlios.de/bugs/?func=detailbug&amp;group_id=6277&amp;bug_id=7189">http://developer.berlios.de/bugs/?func=detailbug&amp;group_id=6277&amp;bug_id=7189</A>)
+-	else if(ex.status){
+-		alert('error '+ ex.status + ' ' +  ex.responseText);
+-	}
++	alert(&quot;Freja.AssetManager.onerror\n&quot; + ex.message);
+ };
+ /**
+   * Global exports
+
+Modified: trunk/src/AssetManager.js
+===================================================================
+--- trunk/src/AssetManager.js	2006-05-19 21:20:12 UTC (rev 65)
++++ trunk/src/AssetManager.js	2006-07-29 12:18:58 UTC (rev 66)
+@@ -141,22 +141,25 @@
+ 		d.callback(document);
+ 	};
+ 	try {
+-		/* Why using HTTP_METHOD_TUNNEL for a GET? 
+-		  if (preventCaching &amp;&amp; Freja.AssetManager.HTTP_METHOD_TUNNEL) {
++		// Why using HTTP_METHOD_TUNNEL for a GET?
++		//-- to prevent caching, since browsers won't cache a POST
++		if (preventCaching &amp;&amp; Freja.AssetManager.HTTP_METHOD_TUNNEL) {
+ 			var req = Freja._aux.openXMLHttpRequest(&quot;POST&quot;, url, Freja.AssetManager.HTTP_REQUEST_TYPE == &quot;async&quot;, Freja.AssetManager._username, Freja.AssetManager._password);
+ 			req.setRequestHeader(Freja.AssetManager.HTTP_METHOD_TUNNEL, &quot;GET&quot;);
+ 			req.setRequestHeader(&quot;Content-Type&quot;, &quot;application/x-www-form-urlencoded&quot;);
+ 		} else {
+-		*/
+ 			var req = Freja._aux.openXMLHttpRequest(&quot;GET&quot;, url, Freja.AssetManager.HTTP_REQUEST_TYPE == &quot;async&quot;, Freja.AssetManager._username, Freja.AssetManager._password);
+-		/*}*/
++		}
+ 
+ 		// This shouldn't be nescesary, but alas it is - firefox chokes
+ 		// It's probably due to an error in MochiKit, so the problem
+ 		// should be fixed there.
+ 		var comm = Freja._aux.sendXMLHttpRequest(req);
+ 		if (Freja.AssetManager.HTTP_REQUEST_TYPE == &quot;async&quot;) {
+-			comm.addCallbacks(handler, Freja._aux.bind(d.errback, d));
++			// fixes bug #7189 (<A HREF="http://developer.berlios.de/bugs/?func=detailbug&amp;group_id=6277&amp;bug_id=7189">http://developer.berlios.de/bugs/?func=detailbug&amp;group_id=6277&amp;bug_id=7189</A>)
++			comm.addCallbacks(handler, function(req) {
++				d.errback(new Error(&quot;Request failed:&quot; + req.status));
++			});
+ 		} else {
+ 			if (req.status == 0 || req.status == 200 || req.status == 304) {
+ 				handler(req);
+@@ -177,14 +180,7 @@
+   * It ought to be replaced completely with Deferred
+   */
+ Freja.AssetManager.onerror = function(ex) {
+-	if(ex.message) {
+-		alert(&quot;Freja.AssetManager.onerror\n&quot; + ex.message);
+-	} 
+-	// @note: on asynchronous calls, ex refers to the xmlhttpobject
+-	// see Bug #7189 (<A HREF="http://developer.berlios.de/bugs/?func=detailbug&amp;group_id=6277&amp;bug_id=7189">http://developer.berlios.de/bugs/?func=detailbug&amp;group_id=6277&amp;bug_id=7189</A>)
+-	else if(ex.status){
+-		alert('error '+ ex.status + ' ' +  ex.responseText);
+-	}
++	alert(&quot;Freja.AssetManager.onerror\n&quot; + ex.message);
+ };
+ /**
+   * Global exports
+
+Modified: trunk/src/QueryEngine.js
+===================================================================
+--- trunk/src/QueryEngine.js	2006-05-19 21:20:12 UTC (rev 65)
++++ trunk/src/QueryEngine.js	2006-07-29 12:18:58 UTC (rev 66)
+@@ -61,10 +61,6 @@
+ 	if (node &amp;&amp; node.firstChild &amp;&amp; node.firstChild.nodeType == 4) {
+ 		return node.firstChild;
+ 	}
+-	if (node &amp;&amp; node.nodeType==1 &amp;&amp; !node.firstChild) {
+-		// empty element (&lt;tag/&gt;). Let's create and return a blank text node
+-		return node.appendChild(window.document.createTextNode(''));
+-	}
+ 
+ 	throw new Error(&quot;Can't evaluate expression &quot; + expression);
+ 	return null;
+@@ -129,10 +125,6 @@
+ 	if (node &amp;&amp; node.firstChild &amp;&amp; node.firstChild.nodeType == 4) {
+ 		return node.firstChild;
+ 	}
+-	if (node &amp;&amp; node.nodeType==1 &amp;&amp; !node.firstChild) {
+-		// empty element (&lt;tag/&gt;). Let's create and return a blank text node
+-		return node.appendChild(window.document.createTextNode(''));
+-	}
+ 
+ 	if (!node) {
+ 		throw new Error(&quot;Can't evaluate expression &quot; + expression);
+
+Modified: trunk/tests/test_View.js
+===================================================================
+--- trunk/tests/test_View.js	2006-05-19 21:20:12 UTC (rev 65)
++++ trunk/tests/test_View.js	2006-07-29 12:18:58 UTC (rev 66)
+@@ -6,6 +6,7 @@
+ 	Freja.AssetManager.HTTP_REQUEST_TYPE = &quot;sync&quot;;
+ 	Freja.AssetManager.XSLT_SERVICE_URL = &quot;../external/srvc-xslt.php&quot;;
+ 	Freja.AssetManager.XSLT_SERVICE_URL = &quot;../external/srvc-xslt.php?path=tests/&quot;;
++
+ 	var view = Freja.AssetManager.getView(&quot;data/view.xsl&quot;);
+ 	t.ok(view instanceof Freja.View);
+ 	t.is(view.ready, true, &quot;state should be ready (loaded)&quot;);
+@@ -46,7 +47,7 @@
+ 	out.parentNode.removeChild(out);
+ 
+ 	t.ok(testofsubmit, &quot;The form has been intercepted by our handler&quot;);
+-
++	
+ 	//////////////////////////////////////////////////////////////////////
+ 	// async tests below
+ 
+@@ -67,4 +68,7 @@
+ 	}
+ 	t.ok(exc == false, &quot;The render should be postproned until loading have completed&quot;);
+ 
++	// test Bug #7189 (<A HREF="http://developer.berlios.de/bugs/?func=detailbug&amp;group_id=6277&amp;bug_id=7189">http://developer.berlios.de/bugs/?func=detailbug&amp;group_id=6277&amp;bug_id=7189</A>)
++	Freja.AssetManager.onerror = function (ex) { if (ex.message != &quot;Request failed:404&quot;) throw ex; }
++	var view = Freja.AssetManager.getView(&quot;not_there.xsl&quot;);
+ };
+\ No newline at end of file
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	
+	
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#63">[ date ]</a>
+              <a href="thread.html#63">[ thread ]</a>
+              <a href="subject.html#63">[ subject ]</a>
+              <a href="author.html#63">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/freja-svn">More information about the Freja-svn
+mailing list</a><br>
+</body></html>

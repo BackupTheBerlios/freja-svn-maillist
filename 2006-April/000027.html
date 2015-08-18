@@ -1,0 +1,101 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Freja-svn] r31 - trunk/src
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/freja-svn/2006-April/index.html" >
+   <LINK REL="made" HREF="mailto:freja-svn%40lists.berlios.de?Subject=Re%3A%20%5BFreja-svn%5D%20r31%20-%20trunk/src&In-Reply-To=%3C200604061547.k36FlQ7O019106%40sheep.berlios.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000026.html">
+   <LINK REL="Next"  HREF="000028.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Freja-svn] r31 - trunk/src</H1>
+    <B>cedsav at berlios.de</B> 
+    <A HREF="mailto:freja-svn%40lists.berlios.de?Subject=Re%3A%20%5BFreja-svn%5D%20r31%20-%20trunk/src&In-Reply-To=%3C200604061547.k36FlQ7O019106%40sheep.berlios.de%3E"
+       TITLE="[Freja-svn] r31 - trunk/src">cedsav at berlios.de
+       </A><BR>
+    <I>Thu Apr  6 17:47:26 CEST 2006</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000026.html">[Freja-svn] r30 - trunk/lib
+</A></li>
+        <LI>Next message: <A HREF="000028.html">[Freja-svn] r32 - trunk/src
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#27">[ date ]</a>
+              <a href="thread.html#27">[ thread ]</a>
+              <a href="subject.html#27">[ subject ]</a>
+              <a href="author.html#27">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Author: cedsav
+Date: 2006-04-06 17:47:23 +0200 (Thu, 06 Apr 2006)
+New Revision: 31
+
+Modified:
+   trunk/src/QueryEngine.js
+Log:
+Allows for _find to return null if no node is not found for the given expression (which is a field name, not necessarily intended to be a XPath expression)
+
+Modified: trunk/src/QueryEngine.js
+===================================================================
+--- trunk/src/QueryEngine.js	2006-04-06 02:51:35 UTC (rev 30)
++++ trunk/src/QueryEngine.js	2006-04-06 15:47:23 UTC (rev 31)
+@@ -13,10 +13,13 @@
+ 	}
+ };
+ Freja.QueryEngine.prototype.get = function(document, expression) {
+-	return this._find(document, expression).nodeValue;
++	var node = this._find(document, expression);
++	if(node) return node.nodeValue;
++	return null;
+ };
+ Freja.QueryEngine.prototype.set = function(document, expression, value) {
+-	this._find(document, expression).nodeValue = value;
++	var node = this._find(document, expression);
++	if(node) node.nodeValue = value;
+ };
+ /**
+   * XPath query engine.
+@@ -32,7 +35,8 @@
+ 	} else if (node &amp;&amp; node.firstChild &amp;&amp; node.firstChild.nodeType == 4) {
+ 		return node.firstChild;
+ 	}
+-	throw new Error(&quot;Can't evaluate expression &quot; + expression);
++	// throw new Error(&quot;Can't evaluate expression &quot; + expression);
++	return null;
+ };
+ /**
+   * SimplePath
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000026.html">[Freja-svn] r30 - trunk/lib
+</A></li>
+	<LI>Next message: <A HREF="000028.html">[Freja-svn] r32 - trunk/src
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#27">[ date ]</a>
+              <a href="thread.html#27">[ thread ]</a>
+              <a href="subject.html#27">[ subject ]</a>
+              <a href="author.html#27">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/freja-svn">More information about the Freja-svn
+mailing list</a><br>
+</body></html>

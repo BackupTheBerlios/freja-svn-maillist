@@ -1,0 +1,101 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Freja-svn] r79 - branch/2.0.1/src
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/freja-svn/2007-March/index.html" >
+   <LINK REL="made" HREF="mailto:freja-svn%40lists.berlios.de?Subject=Re%3A%20%5BFreja-svn%5D%20r79%20-%20branch/2.0.1/src&In-Reply-To=%3C200703122040.l2CKeNJF000733%40sheep.berlios.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000076.html">
+   <LINK REL="Next"  HREF="000078.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Freja-svn] r79 - branch/2.0.1/src</H1>
+    <B>cedsav at mail.berlios.de</B> 
+    <A HREF="mailto:freja-svn%40lists.berlios.de?Subject=Re%3A%20%5BFreja-svn%5D%20r79%20-%20branch/2.0.1/src&In-Reply-To=%3C200703122040.l2CKeNJF000733%40sheep.berlios.de%3E"
+       TITLE="[Freja-svn] r79 - branch/2.0.1/src">cedsav at mail.berlios.de
+       </A><BR>
+    <I>Mon Mar 12 21:40:23 CET 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000076.html">[Freja-svn] r78 - branch/2.0.1/src
+</A></li>
+        <LI>Next message: <A HREF="000078.html">[Freja-svn] r80 - branch/2.0.1/lib
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#77">[ date ]</a>
+              <a href="thread.html#77">[ thread ]</a>
+              <a href="subject.html#77">[ subject ]</a>
+              <a href="author.html#77">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Author: cedsav
+Date: 2007-03-12 21:40:17 +0100 (Mon, 12 Mar 2007)
+New Revision: 79
+
+Modified:
+   branch/2.0.1/src/AssetManager.js
+Log:
+Fixed callback bug in IE6 with resource loaded from file system.
+Added &quot;201 created&quot; in the list of successful HTTP code.
+
+Modified: branch/2.0.1/src/AssetManager.js
+===================================================================
+--- branch/2.0.1/src/AssetManager.js	2007-03-12 20:36:52 UTC (rev 78)
++++ branch/2.0.1/src/AssetManager.js	2007-03-12 20:40:17 UTC (rev 79)
+@@ -138,7 +138,14 @@
+ 		} catch (ex) {
+ 			d.errback(ex);
+ 		}
+-		d.callback(document);
++		if(window.document.all) { 				
++			// Weird bug in IE6 when assets are loaded from local file system.
++			// Despite the async request, the document is loaded and the onload signal is sent 
++			// before the getModel function exits (giving no chance to attach a handler to onload).
++			// Using a 1ms timeout here fixes the problem.
++			setTimeout(function() { d.callback(document); }, 1);		
++		} else
++			d.callback(document);
+ 	};
+ 	try {
+ 		// Why using HTTP_METHOD_TUNNEL for a GET?
+@@ -161,7 +168,7 @@
+ 				d.errback(new Error(&quot;Request failed:&quot; + req.status));
+ 			});
+ 		} else {
+-			if (req.status == 0 || req.status == 200 || req.status == 304) {
++			if (req.status == 0 || req.status == 200 ||  req.status == 201 ||  req.status == 304) {
+ 				handler(req);
+ 			} else {
+ 				d.errback(new Error(&quot;Request failed:&quot; + req.status));
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000076.html">[Freja-svn] r78 - branch/2.0.1/src
+</A></li>
+	<LI>Next message: <A HREF="000078.html">[Freja-svn] r80 - branch/2.0.1/lib
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#77">[ date ]</a>
+              <a href="thread.html#77">[ thread ]</a>
+              <a href="subject.html#77">[ subject ]</a>
+              <a href="author.html#77">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/freja-svn">More information about the Freja-svn
+mailing list</a><br>
+</body></html>

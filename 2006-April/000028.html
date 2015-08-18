@@ -1,0 +1,115 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Freja-svn] r32 - trunk/src
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/freja-svn/2006-April/index.html" >
+   <LINK REL="made" HREF="mailto:freja-svn%40lists.berlios.de?Subject=Re%3A%20%5BFreja-svn%5D%20r32%20-%20trunk/src&In-Reply-To=%3C200604061548.k36FmTN6019271%40sheep.berlios.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000027.html">
+   <LINK REL="Next"  HREF="000029.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Freja-svn] r32 - trunk/src</H1>
+    <B>cedsav at berlios.de</B> 
+    <A HREF="mailto:freja-svn%40lists.berlios.de?Subject=Re%3A%20%5BFreja-svn%5D%20r32%20-%20trunk/src&In-Reply-To=%3C200604061548.k36FmTN6019271%40sheep.berlios.de%3E"
+       TITLE="[Freja-svn] r32 - trunk/src">cedsav at berlios.de
+       </A><BR>
+    <I>Thu Apr  6 17:48:29 CEST 2006</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000027.html">[Freja-svn] r31 - trunk/src
+</A></li>
+        <LI>Next message: <A HREF="000029.html">[Freja-svn] r33 - trunk/src/auxiliary
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#28">[ date ]</a>
+              <a href="thread.html#28">[ thread ]</a>
+              <a href="subject.html#28">[ subject ]</a>
+              <a href="author.html#28">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Author: cedsav
+Date: 2006-04-06 17:48:26 +0200 (Thu, 06 Apr 2006)
+New Revision: 32
+
+Modified:
+   trunk/src/View.js
+Log:
+Fixed textarea regular expression (to allow a / in the name attribute) 
+
+Modified: trunk/src/View.js
+===================================================================
+--- trunk/src/View.js	2006-04-06 15:47:23 UTC (rev 31)
++++ trunk/src/View.js	2006-04-06 15:48:26 UTC (rev 32)
+@@ -28,7 +28,6 @@
+ 	};
+ 
+ 	Handler.prototype.trigger = function() {
+-	
+ 		try {
+ 			if (!this.view.ready) {
+ 				Freja._aux.connect(this.view, &quot;onload&quot;, Freja._aux.bind(this.trigger, this));
+@@ -49,8 +48,8 @@
+ 				model = { document : Freja._aux.loadXML(&quot;&lt;?xml version='1.0' ?&gt;\n&quot; + Freja._aux.xmlize(this.model, &quot;item&quot;)) };
+ 			}
+ 			var trans = this.view._renderer.transform(model, this.view, xslParameters);
+-			trans.addCallback(Freja._aux.bind(function(html) {
+-				this._destination.innerHTML = html;
++			trans.addCallback(Freja._aux.bind(function(html) {									
++				this._destination.innerHTML = html;				
+ 			}, this.view));
+ 			trans.addCallback(Freja._aux.bind(function() {
+ 				Freja._aux.signal(this, &quot;onrendercomplete&quot;, this._destination)
+@@ -138,7 +137,7 @@
+   * Returns the values of a formview
+   */
+ Freja.View.prototype.getValues = function() {
+-	return formContents(this._destination);
++	return Freja._aux.formContents(this._destination);
+ };
+ /**
+   * Base object for viewrenderers
+@@ -162,7 +161,10 @@
+ 			// fix empty textareas
+ 			// Can't this be fixed by outputting as html rather than xml ?
+ 			// &lt;xsl:output method=&quot;html&quot; /&gt;
+-			html = html.replace(/&lt;textarea([^\/&gt;]*)\/&gt;/gi,&quot;&lt;textarea $1&gt;&lt;/textarea&gt;&quot;);
++			// (cedsav) don't remember all the details but method=&quot;xml&quot; is the way to go.
++			// method=&quot;html&quot; would output html not xhtml, plus I think it implies that
++			// you want to output a valid html document (with html, head and body tags).
++			html = html.replace(/&lt;textarea([^&gt;]*)\/&gt;/gi,&quot;&lt;textarea $1&gt;&lt;/textarea&gt;&quot;);
+ 			d.callback(html);
+ 		}
+ 	} catch (ex) {
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000027.html">[Freja-svn] r31 - trunk/src
+</A></li>
+	<LI>Next message: <A HREF="000029.html">[Freja-svn] r33 - trunk/src/auxiliary
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#28">[ date ]</a>
+              <a href="thread.html#28">[ thread ]</a>
+              <a href="subject.html#28">[ subject ]</a>
+              <a href="author.html#28">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/freja-svn">More information about the Freja-svn
+mailing list</a><br>
+</body></html>

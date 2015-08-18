@@ -1,0 +1,255 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Freja-svn] r61 - trunk/src
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/freja-svn/2006-April/index.html" >
+   <LINK REL="made" HREF="mailto:freja-svn%40lists.berlios.de?Subject=Re%3A%20%5BFreja-svn%5D%20r61%20-%20trunk/src&In-Reply-To=%3C98b8086f0604290223w3ee6954ahd2c4b3ed729d707b%40mail.gmail.com%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000057.html">
+   <LINK REL="Next"  HREF="000058.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Freja-svn] r61 - trunk/src</H1>
+    <B>troels knak-nielsen</B> 
+    <A HREF="mailto:freja-svn%40lists.berlios.de?Subject=Re%3A%20%5BFreja-svn%5D%20r61%20-%20trunk/src&In-Reply-To=%3C98b8086f0604290223w3ee6954ahd2c4b3ed729d707b%40mail.gmail.com%3E"
+       TITLE="[Freja-svn] r61 - trunk/src">troelskn at gmail.com
+       </A><BR>
+    <I>Sat Apr 29 11:23:03 CEST 2006</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000057.html">[Freja-svn] r61 - trunk/src
+</A></li>
+        <LI>Next message: <A HREF="000058.html">[Freja-svn] r62 - in trunk: lib src src/auxiliary tests tests/data
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#59">[ date ]</a>
+              <a href="thread.html#59">[ thread ]</a>
+              <a href="subject.html#59">[ subject ]</a>
+              <a href="author.html#59">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>I fixed a bug (document.createTextNode =&gt;
+window.document.createTextNode) but there are still problems. The code
+doesn't pass the testcases (test_Model.js). You should also try to
+write tests for the new features - preferably before implementing it.
+Although that can be tough, in this particular situation it should be
+easy.
+
+On 4/28/06, <A HREF="https://lists.berlios.de/mailman/listinfo/freja-svn">cedsav at berlios.de</A> &lt;<A HREF="https://lists.berlios.de/mailman/listinfo/freja-svn">cedsav at berlios.de</A>&gt; wrote:
+&gt;<i> Author: cedsav
+</I>&gt;<i> Date: 2006-04-28 23:18:29 +0200 (Fri, 28 Apr 2006)
+</I>&gt;<i> New Revision: 61
+</I>&gt;<i>
+</I>&gt;<i> Modified:
+</I>&gt;<i>   trunk/src/QueryEngine.js
+</I>&gt;<i> Log:
+</I>&gt;<i> added support for /element[@attr=value]/ expression to simplepath. Fiddled with get,set and _find. Will need some more work.
+</I>&gt;<i>
+</I>&gt;<i> Modified: trunk/src/QueryEngine.js
+</I>&gt;<i> ===================================================================
+</I>&gt;<i> --- trunk/src/QueryEngine.js    2006-04-26 21:35:32 UTC (rev 60)
+</I>&gt;<i> +++ trunk/src/QueryEngine.js    2006-04-28 21:18:29 UTC (rev 61)
+</I>&gt;<i> @@ -13,37 +13,35 @@
+</I>&gt;<i>        }
+</I>&gt;<i>  };
+</I>&gt;<i>  Freja.QueryEngine.prototype.get = function(document, expression) {
+</I>&gt;<i> -       var node = this._find(document, expression);
+</I>&gt;<i> +       try {
+</I>&gt;<i> +               var node = this._find(document, expression);
+</I>&gt;<i> +       } catch(x) {
+</I>&gt;<i> +               return null;
+</I>&gt;<i> +       }
+</I>&gt;<i>        if(node) return node.nodeValue;
+</I>&gt;<i> -       return null;
+</I>&gt;<i> +
+</I>&gt;<i>  };
+</I>&gt;<i>  Freja.QueryEngine.prototype.set = function(document, expression, value) {
+</I>&gt;<i> -       var node = this._find(document, expression);
+</I>&gt;<i> -       if(node) {
+</I>&gt;<i> -               node.nodeValue = value;
+</I>&gt;<i> -       } else {
+</I>&gt;<i> +       try {
+</I>&gt;<i> +               var node = this._find(document, expression);
+</I>&gt;<i> +               if(node)
+</I>&gt;<i> +                       node.nodeValue = value;
+</I>&gt;<i> +       } catch(x) {
+</I>&gt;<i>                // text node not found. Might need to be created.
+</I>&gt;<i>                // try not to process field names that are not meant to be xpath expressions
+</I>&gt;<i> -               if(expression.lastIndexOf('/') != -1) {
+</I>&gt;<i> +               if(expression.lastIndexOf('/') != -1) {
+</I>&gt;<i>                        var nodeName = expression.substr(expression.lastIndexOf('/')+1);
+</I>&gt;<i> -
+</I>&gt;<i>                        if(nodeName.charAt(0)=='@') {
+</I>&gt;<i>                                // trying to set a non-existing attribute. Let's create it.
+</I>&gt;<i> -                               var newexpression =  expression.substring(0, expression.lastIndexOf('/'));
+</I>&gt;<i> -                               var node = document.selectSingleNode(newexpression);
+</I>&gt;<i> -                               if(node)
+</I>&gt;<i> -                                       node.setAttribute(nodeName.substr(1),value);
+</I>&gt;<i> -                       } else {
+</I>&gt;<i> -                               // this could be an empty node (&lt;tag /&gt;)
+</I>&gt;<i> -                               // let's try to create the text node.
+</I>&gt;<i> -                               var node = document.selectSingleNode(expression);
+</I>&gt;<i> -                               if(node) {
+</I>&gt;<i> -                                       var n = document.createTextNode(value);
+</I>&gt;<i> -                                       node.appendChild(n);
+</I>&gt;<i> -                               } else {
+</I>&gt;<i> -                                       // the element does not exist.
+</I>&gt;<i> +                               var parentExpression =  expression.substring(0, expression.lastIndexOf('/'));
+</I>&gt;<i> +                               var pNode = this._find(document, parentExpression);
+</I>&gt;<i> +                               if(pNode) {
+</I>&gt;<i> +                                       // this._find returns a text node
+</I>&gt;<i> +                                       pNode = pNode.parentNode;
+</I>&gt;<i> +                                       pNode.setAttribute(nodeName.substr(1),value);
+</I>&gt;<i>                                }
+</I>&gt;<i>                        }
+</I>&gt;<i> +                       // else parent element does not exist.. can't do anything
+</I>&gt;<i>                }
+</I>&gt;<i>        }
+</I>&gt;<i>  };
+</I>&gt;<i> @@ -56,53 +54,87 @@
+</I>&gt;<i>        var node = document.selectSingleNode(expression);
+</I>&gt;<i>        if (node &amp;&amp; node.nodeType == 2) {
+</I>&gt;<i>                return node;
+</I>&gt;<i> -       } else if (node &amp;&amp; node.firstChild &amp;&amp; node.firstChild.nodeType == 3) {
+</I>&gt;<i> +       }
+</I>&gt;<i> +       if (node &amp;&amp; node.firstChild &amp;&amp; node.firstChild.nodeType == 3) {
+</I>&gt;<i>                return node.firstChild;
+</I>&gt;<i> -       } else if (node &amp;&amp; node.firstChild &amp;&amp; node.firstChild.nodeType == 4) {
+</I>&gt;<i> +       }
+</I>&gt;<i> +       if (node &amp;&amp; node.firstChild &amp;&amp; node.firstChild.nodeType == 4) {
+</I>&gt;<i>                return node.firstChild;
+</I>&gt;<i>        }
+</I>&gt;<i> -//     throw new Error(&quot;Can't evaluate expression &quot; + expression);
+</I>&gt;<i> +       if (node &amp;&amp; node.nodeType==1 &amp;&amp; !node.firstChild) {
+</I>&gt;<i> +               // empty element (&lt;tag/&gt;). Let's create and return a blank text node
+</I>&gt;<i> +               return node.appendChild(document.createTextNode(''));
+</I>&gt;<i> +       }
+</I>&gt;<i> +
+</I>&gt;<i> +       throw new Error(&quot;Can't evaluate expression &quot; + expression);
+</I>&gt;<i>        return null;
+</I>&gt;<i> -};
+</I>&gt;<i> +};
+</I>&gt;<i>  /**
+</I>&gt;<i>   * SimplePath
+</I>&gt;<i>   */
+</I>&gt;<i>  Freja.QueryEngine.SimplePath = function() {};
+</I>&gt;<i>  Freja.Class.extend(Freja.QueryEngine.SimplePath, Freja.QueryEngine);
+</I>&gt;<i>  Freja.QueryEngine.SimplePath.prototype._find = function(document, expression) {
+</I>&gt;<i> -       if (!expression.match(/^[\d\w\/@\[\]]*$/)) {
+</I>&gt;<i> +       if (!expression.match(/^[\d\w\/@\[\]=_\-']*$/)) {
+</I>&gt;<i>                throw new Error(&quot;Can't evaluate expression &quot; + expression);
+</I>&gt;<i>        }
+</I>&gt;<i>        var parts = expression.split(/\//);
+</I>&gt;<i>        var node = document;
+</I>&gt;<i>        var regAttr = new RegExp(&quot;^@([\\d\\w]*)&quot;);
+</I>&gt;<i>        var regOffset = new RegExp(&quot;^([@\\d\\w]*)\\[([\\d]*)\\]$&quot;);
+</I>&gt;<i> +       var regFilter = new RegExp(&quot;^([\\d\\w]+)\\[@([@\\d\\w]+)=['\&quot;]{1}(.*)['\&quot;]{1}\\]$&quot;);
+</I>&gt;<i>        var attr = null;
+</I>&gt;<i>        var offset = 0;
+</I>&gt;<i>        for (var i = 0; i &lt; parts.length; ++i) {
+</I>&gt;<i>                var part = parts[i];
+</I>&gt;<i> -               offset = regOffset.exec(part);
+</I>&gt;<i> -               if (offset) {
+</I>&gt;<i> -                       part = offset[1];
+</I>&gt;<i> -                       offset = offset[2] - 1;
+</I>&gt;<i> -               } else {
+</I>&gt;<i> -                       offset = 0;
+</I>&gt;<i> +               var filter = regFilter.exec(part);
+</I>&gt;<i> +               if(filter) {
+</I>&gt;<i> +                       // filter[1] element name, filter[2] attribute name, filter[3] attribute value
+</I>&gt;<i> +                       if(i&gt;0 &amp;&amp; parts[i-1]=='') {
+</I>&gt;<i> +                               // expression was of type //element[...]
+</I>&gt;<i> +                               var cn = node.getElementsByTagName(filter[1]);
+</I>&gt;<i> +                       } else {
+</I>&gt;<i> +                               var cn = node.childNodes;
+</I>&gt;<i> +                       }
+</I>&gt;<i> +                       for(var j=0, l=cn.length; j&lt;l ; j++) {
+</I>&gt;<i> +                               if(cn[j].nodeType==1 &amp;&amp; cn[j].tagName==filter[1] &amp;&amp; cn[j].getAttribute(filter[2])== filter[3]) {
+</I>&gt;<i> +                                       node = cn[j];
+</I>&gt;<i> +                                       break;
+</I>&gt;<i> +                               }
+</I>&gt;<i> +                       }
+</I>&gt;<i> +                       if (j==l)
+</I>&gt;<i> +                               throw new Error(&quot;Can't evaluate expression &quot; + part);
+</I>&gt;<i>                }
+</I>&gt;<i> -               if (part != &quot;&quot;) {
+</I>&gt;<i> -                       attr = regAttr.exec(part);
+</I>&gt;<i> -                       if (attr) {
+</I>&gt;<i> -                               node = node.getAttributeNode(attr[1]);
+</I>&gt;<i> +               else {
+</I>&gt;<i> +                       offset = regOffset.exec(part);
+</I>&gt;<i> +                       if (offset) {
+</I>&gt;<i> +                               part = offset[1];
+</I>&gt;<i> +                               offset = offset[2] - 1;
+</I>&gt;<i>                        } else {
+</I>&gt;<i> -                               node = node.getElementsByTagName(part).item(offset);
+</I>&gt;<i> +                               offset = 0;
+</I>&gt;<i>                        }
+</I>&gt;<i> +                       if (part != &quot;&quot;) {
+</I>&gt;<i> +                               attr = regAttr.exec(part);
+</I>&gt;<i> +                               if (attr) {
+</I>&gt;<i> +                                       node = node.getAttributeNode(attr[1]);
+</I>&gt;<i> +                               } else {
+</I>&gt;<i> +                                       node = node.getElementsByTagName(part).item(offset);
+</I>&gt;<i> +                               }
+</I>&gt;<i> +                       }
+</I>&gt;<i>                }
+</I>&gt;<i>        }
+</I>&gt;<i>        if (node &amp;&amp; node.firstChild &amp;&amp; node.firstChild.nodeType == 3) {
+</I>&gt;<i>                return node.firstChild;
+</I>&gt;<i> -       } else if (node &amp;&amp; node.firstChild &amp;&amp; node.firstChild.nodeType == 4) {
+</I>&gt;<i> +       }
+</I>&gt;<i> +       if (node &amp;&amp; node.firstChild &amp;&amp; node.firstChild.nodeType == 4) {
+</I>&gt;<i>                return node.firstChild;
+</I>&gt;<i>        }
+</I>&gt;<i> -       if (!node) {
+</I>&gt;<i> +       if (node &amp;&amp; node.nodeType==1 &amp;&amp; !node.firstChild) {
+</I>&gt;<i> +               // empty element (&lt;tag/&gt;). Let's create and return a blank text node
+</I>&gt;<i> +               return node.appendChild(document.createTextNode(''));
+</I>&gt;<i> +       }
+</I>&gt;<i> +
+</I>&gt;<i> +       if (!node) {
+</I>&gt;<i>                throw new Error(&quot;Can't evaluate expression &quot; + expression);
+</I>&gt;<i>        }
+</I>&gt;<i>        return node;
+</I>&gt;<i>
+</I>&gt;<i> _______________________________________________
+</I>&gt;<i> Freja-svn mailing list
+</I>&gt;<i> <A HREF="https://lists.berlios.de/mailman/listinfo/freja-svn">Freja-svn at lists.berlios.de</A>
+</I>&gt;<i> <A HREF="http://lists.berlios.de/mailman/listinfo/freja-svn">http://lists.berlios.de/mailman/listinfo/freja-svn</A>
+</I>&gt;<i>
+</I>
+
+--
+troels
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000057.html">[Freja-svn] r61 - trunk/src
+</A></li>
+	<LI>Next message: <A HREF="000058.html">[Freja-svn] r62 - in trunk: lib src src/auxiliary tests tests/data
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#59">[ date ]</a>
+              <a href="thread.html#59">[ thread ]</a>
+              <a href="subject.html#59">[ subject ]</a>
+              <a href="author.html#59">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/freja-svn">More information about the Freja-svn
+mailing list</a><br>
+</body></html>

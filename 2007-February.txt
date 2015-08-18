@@ -1,0 +1,60 @@
+From cedsav at mail.berlios.de  Sun Feb 18 05:12:20 2007
+From: cedsav at mail.berlios.de (cedsav at mail.berlios.de)
+Date: Sun, 18 Feb 2007 05:12:20 +0100
+Subject: [Freja-svn] r75 - branch/2.0.1/src
+Message-ID: <200702180412.l1I4CKLC007894@sheep.berlios.de>
+
+Author: cedsav
+Date: 2007-02-18 05:12:18 +0100 (Sun, 18 Feb 2007)
+New Revision: 75
+
+Modified:
+   branch/2.0.1/src/QueryEngine.js
+Log:
+Fixed bug in SimplePath (simplepath wasn't working in IE, even though IE would normally use the XPath query engine)
+
+Modified: branch/2.0.1/src/QueryEngine.js
+===================================================================
+--- branch/2.0.1/src/QueryEngine.js	2007-01-26 15:07:38 UTC (rev 74)
++++ branch/2.0.1/src/QueryEngine.js	2007-02-18 04:12:18 UTC (rev 75)
+@@ -97,7 +97,7 @@
+ 	if (!expression.match(/^[\d\w\/@\[\]=_\-']*$/)) {
+ 		throw new Error("Can't evaluate expression " + expression);
+ 	}
+-	var parts = expression.split(/\//);
++	var parts = expression.split("/");
+ 	var node = document;
+ 	var regAttr = new RegExp("^@([\\d\\w]*)");
+ 	var regOffset = new RegExp("^([@\\d\\w]*)\\[([\\d]*)\\]$");
+
+
+
+From cedsav at mail.berlios.de  Sun Feb 18 05:13:22 2007
+From: cedsav at mail.berlios.de (cedsav at mail.berlios.de)
+Date: Sun, 18 Feb 2007 05:13:22 +0100
+Subject: [Freja-svn] r76 - branch/2.0.1/src/auxiliary
+Message-ID: <200702180413.l1I4DMO1007911@sheep.berlios.de>
+
+Author: cedsav
+Date: 2007-02-18 05:13:20 +0100 (Sun, 18 Feb 2007)
+New Revision: 76
+
+Modified:
+   branch/2.0.1/src/auxiliary/mochi+sarissa.js
+Log:
+Fixed bug that was forcing IE to use the SimplePath query engine instead of XPath
+
+Modified: branch/2.0.1/src/auxiliary/mochi+sarissa.js
+===================================================================
+--- branch/2.0.1/src/auxiliary/mochi+sarissa.js	2007-02-18 04:12:18 UTC (rev 75)
++++ branch/2.0.1/src/auxiliary/mochi+sarissa.js	2007-02-18 04:13:20 UTC (rev 76)
+@@ -339,4 +339,6 @@
+     };
+     Sarissa.IS_ENABLED_SELECT_NODES = true;
+ };
++if(_SARISSA_IS_IE)
++	 Sarissa.IS_ENABLED_SELECT_NODES = true;
+ 
+
+
+

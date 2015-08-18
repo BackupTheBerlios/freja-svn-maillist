@@ -1,0 +1,469 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Freja-svn] r17 - trunk/lib
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/freja-svn/2006-March/index.html" >
+   <LINK REL="made" HREF="mailto:freja-svn%40lists.berlios.de?Subject=Re%3A%20%5BFreja-svn%5D%20r17%20-%20trunk/lib&In-Reply-To=%3C200603290044.k2T0iWSl026417%40sheep.berlios.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000012.html">
+   <LINK REL="Next"  HREF="000014.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Freja-svn] r17 - trunk/lib</H1>
+    <B>troelskn at BerliOS</B> 
+    <A HREF="mailto:freja-svn%40lists.berlios.de?Subject=Re%3A%20%5BFreja-svn%5D%20r17%20-%20trunk/lib&In-Reply-To=%3C200603290044.k2T0iWSl026417%40sheep.berlios.de%3E"
+       TITLE="[Freja-svn] r17 - trunk/lib">troelskn at berlios.de
+       </A><BR>
+    <I>Wed Mar 29 02:44:32 CEST 2006</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000012.html">[Freja-svn] r16 - in trunk: lib tests
+</A></li>
+        <LI>Next message: <A HREF="000014.html">[Freja-svn] r18 - in trunk: lib tests
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#13">[ date ]</a>
+              <a href="thread.html#13">[ thread ]</a>
+              <a href="subject.html#13">[ subject ]</a>
+              <a href="author.html#13">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Author: troelskn
+Date: 2006-03-29 02:43:50 +0200 (Wed, 29 Mar 2006)
+New Revision: 17
+
+Modified:
+   trunk/lib/Freja.js
+Log:
+Sprinkled the source with semi-colons.
+
+Modified: trunk/lib/Freja.js
+===================================================================
+--- trunk/lib/Freja.js	2006-03-29 00:25:54 UTC (rev 16)
++++ trunk/lib/Freja.js	2006-03-29 00:43:50 UTC (rev 17)
+@@ -166,12 +166,12 @@
+ 	subClass.prototype.constructor = subClass;
+ 	subClass.prototype.superconstructor = superconstructor;
+ 	subClass.prototype.supertype = superconstructor.prototype;
+-}
++};
+ /**
+   * The baseclass for queryengines
+   * @abstract
+   */
+-Freja.QueryEngine = function() {}
++Freja.QueryEngine = function() {};
+ Freja.QueryEngine.prototype.getElementById = function(document, id) {
+ 	// getElementById doesn't work on XML document without xml:id
+ 	var allElements = document.getElementsByTagName(&quot;*&quot;);
+@@ -180,17 +180,17 @@
+ 			return allElements[i];
+ 		}
+ 	}
+-}
++};
+ Freja.QueryEngine.prototype.get = function(document, expression) {
+ 	return this._find(document, expression).nodeValue;
+-}
++};
+ Freja.QueryEngine.prototype.set = function(document, expression, value) {
+ 	this._find(document, expression).nodeValue = value;
+-}
++};
+ /**
+   * XPath query engine.
+   */
+-Freja.QueryEngine.XPath = function() {}
++Freja.QueryEngine.XPath = function() {};
+ Freja.Class.extend(Freja.QueryEngine.XPath, Freja.QueryEngine);
+ Freja.QueryEngine.XPath.prototype._find = function(document, expression) {
+ 	var node = document.selectSingleNode(expression);
+@@ -202,7 +202,7 @@
+ 		return node.firstChild;
+ 	}
+ 	throw new Error(&quot;Can't evaluate expression &quot; + expression);
+-}
++};
+ /**
+   * SimplePath
+   */
+@@ -245,7 +245,7 @@
+ 		throw new Error(&quot;Can't evaluate expression &quot; + expression);
+ 	}
+ 	return node;
+-}
++};
+ /**
+   * Standard model component
+   */
+@@ -256,7 +256,7 @@
+ 	this.document = null;
+ 	this.query = query;
+ 	Freja.External.registerSignals(this, [&quot;onload&quot;]);
+-}
++};
+ /**
+   * Returns a single value
+   */
+@@ -265,7 +265,7 @@
+ 		return this.query.getElementById(this.document, id);
+ 	}
+ 	return null;
+-}
++};
+ /**
+   * Returns a single value
+   */
+@@ -274,7 +274,7 @@
+ 		return this.query.get(this.document, expression);
+ 	}
+ 	return null;
+-}
++};
+ /**
+   * Updates a value
+   */
+@@ -283,7 +283,7 @@
+ 		return this.query.set(this.document, expression, value);
+ 	}
+ 	return null;
+-}
++};
+ /**
+   * Updates the model from a view
+   */
+@@ -292,7 +292,7 @@
+ 	for (var i = 0; i &lt; values[0].length; ++i) {
+ 		this.set(values[0][i], values[1][i]);
+ 	}
+-}
++};
+ /**
+   * Writes the model back to the remote service
+   * @returns MochiKit.Async.Deferred
+@@ -315,7 +315,7 @@
+ 		d.errback(ex);
+ 	}
+ 	return d;
+-}
++};
+ /**
+   * Deletes the model from the remote service
+   * @returns MochiKit.Async.Deferred
+@@ -328,7 +328,7 @@
+ 	}
+ 	var req = Freja.AssetManager.openXMLHttpRequest(&quot;DELETE&quot;, url);
+ 	return Freja.External.sendXMLHttpRequest(req);
+-}
++};
+ /**
+   * @returns MochiKit.Async.Deferred
+   */
+@@ -342,15 +342,14 @@
+ 	var d = Freja.AssetManager.loadAsset(this.url, true);
+ 	d.addCallbacks(onload, Freja.AssetManager.onerror);
+ 	return d;
+-}
+-
++};
+ /**
+   * DataSource provides a gateway-type interface to a REST service.
+   */
+ Freja.Model.DataSource = function(createURL, indexURL) {
+ 	this.createURL = createURL;
+ 	this.indexURL = indexURL;
+-}
++};
+ /**
+   * Returns a list of primary-keys to records in the datasource
+   */
+@@ -373,8 +372,7 @@
+ 		payload[values[0][i]] = values[1][i];
+ 	}
+ 	return Freja.External.sendXMLHttpRequest(req, Freja.External.xmlize(payload, 'record'));
+-}
+-
++};
+ /**
+   * Standard view component
+   */
+@@ -389,7 +387,7 @@
+ 	this.destination = null;
+ 	Freja.External.registerSignals(this, [&quot;onload&quot;,&quot;onrendercomplete&quot;]);
+ 	Freja.External.connect(this, &quot;onrendercomplete&quot;, Freja.External.bind(this.connectBehaviour, this));
+-}
++};
+ /**
+   * @param    model            Freja.Model
+   * @param    placeholder      string    If supplied, this will be used instead of the
+@@ -402,7 +400,7 @@
+ 		this.model = model;
+ 		this.view = view;
+ 		this.deferred = deferred;
+-	}
++	};
+ 
+ 	Handler.prototype.trigger = function() {
+ 		try {
+@@ -429,7 +427,7 @@
+ 		} catch (ex) {
+ 			this.deferred.errback(ex);
+ 		}
+-	}
++	};
+ 
+ 	var d = Freja.External.createDeferred();
+ 	try {
+@@ -445,8 +443,7 @@
+ 		d.errback(ex);
+ 	}
+ 	return d;
+-}
+-
++};
+ /**
+   * Decorates the output of the primary renderer, to inject behaviour.
+   * @note Maybe we could use cssQuery (<A HREF="http://dean.edwards.name/my/cssQuery/">http://dean.edwards.name/my/cssQuery/</A>)
+@@ -469,7 +466,7 @@
+ 					}
+ 				}, node)
+ 			);
+-		}
++		};
+ 		var applyHandlers = function(node, handlers) {
+ 			for (var i = 0, c = node.childNodes, l = c.length; i &lt; l; ++i) {
+ 				var child = c[i];
+@@ -490,27 +487,26 @@
+ 					applyHandlers(child, handlers);
+ 				}
+ 			}
+-		}
++		};
+ 		applyHandlers(destination, this.handlers);
+ 	} catch (ex) {
+ 		alert(ex.message);
+ 	}
+-}
++};
+ /**
+   * Returns the values of a formview
+   */
+ Freja.View.prototype.getValues = function() {
+ 	return formContents(this.destination);
+-}
+-
++};
+ /**
+   * Base object for viewrenderers
+   */
+-Freja.View.Renderer = function() {}
++Freja.View.Renderer = function() {};
+ /**
+   * XSLT based render-engine
+   */
+-Freja.View.Renderer.XSLTransformer = function() {}
++Freja.View.Renderer.XSLTransformer = function() {};
+ Freja.Class.extend(Freja.View.Renderer.XSLTransformer, Freja.View.Renderer);
+ /**
+   * @returns MochiKit.Async.Deferred
+@@ -532,14 +528,14 @@
+ 		d.errback(ex);
+ 	}
+ 	return d;
+-}
++};
+ /**
+   * XSLT on a remote service for browser which have no native support.
+   * @param    url    URL of the transform service
+   */
+ Freja.View.Renderer.RemoteXSLTransformer = function(url) {
+ 	this.url = url;
+-}
++};
+ Freja.Class.extend(Freja.View.Renderer.RemoteXSLTransformer, Freja.View.Renderer);
+ /**
+   * @returns MochiKit.Async.Deferred
+@@ -565,7 +561,7 @@
+ 	}
+ 	req.send(postedData);
+ 	return d;
+-}
++};
+ /**
+   * This is largely s copied with minor stylistic adjustments from Freja 1.1
+   * I renamed it from Controller.history to distinguish between window.history
+@@ -639,7 +635,6 @@
+ 		throw new Error(&quot;Nothing to redo&quot;);
+ 	}
+ };
+-
+ /**
+   * Removes the last entry in the cache
+   */
+@@ -658,8 +653,10 @@
+   */
+ Freja.AssetManager = {
+ 	models : [],
+-	views : []
+-}
++	views : [],
++	_username : null,
++	_password : null
++};
+ /**
+   * Set to sync to make all requests synchroneous. You shouldn't use
+   * this setting for anything but testing/debugging.
+@@ -667,9 +664,12 @@
+   */
+ Freja.AssetManager.HTTP_REQUEST_TYPE = &quot;async&quot;;
+ /**
+-  * If this is set to NULL, real PUT and DELETE http-requests will be made,
++  * If this is set to null, real PUT and DELETE http-requests will be made,
+   * otherwise a header will be set instead, and the request tunneled through
+-  * POST. For compatibility, you should use tunneling.
++  * POST.
++  *
++  * Both IE6 and FF1.5 are known to support the required HTTP methods, so
++  * if theese are your target platform, you can disable tunneling.
+   */
+ // Freja.AssetManager.HTTP_METHOD_TUNNEL = null;
+ Freja.AssetManager.HTTP_METHOD_TUNNEL = &quot;Http-Method-Equivalent&quot;;
+@@ -683,11 +683,6 @@
+   */
+ Freja.AssetManager.THROBBER_HTML = &quot;&lt;span style='color:white;background:firebrick'&gt;Loading ...&lt;/span&gt;&quot;;
+ /**
+-  * Set USERNAME + PASSWORD to authenticate with basic HTTP-Authorization.
+-  */
+-Freja.AssetManager.USERNAME = null;
+-Freja.AssetManager.PASSWORD = null;
+-/**
+   * returns an instance of the renderengine to use
+   */
+ Freja.AssetManager.createRenderer = function() {
+@@ -697,7 +692,7 @@
+ 	} else {
+ 		return new Freja.View.Renderer.RemoteXSLTransformer(this.XSLT_SERVICE_URL);
+ 	}
+-}
++};
+ /**
+   * Wipes all caches. This isn't something you will normally use during production,
+   * but it's very helpful for debugging/testing
+@@ -705,7 +700,7 @@
+ Freja.AssetManager.clearCache = function() {
+ 	this.models = [];
+ 	this.views = [];
+-}
++};
+ /**
+   * Load a model-component
+   * @param    url      string
+@@ -725,7 +720,7 @@
+ 	this.loadAsset(url, true).addCallbacks(onload, Freja.AssetManager.onerror);
+ 	this.models.push(m);
+ 	return m;
+-}
++};
+ /**
+   * Load a view-component
+   * @param    url      string
+@@ -745,7 +740,7 @@
+ 	this.loadAsset(url, false).addCallbacks(onload, Freja.AssetManager.onerror);
+ 	this.views.push(v);
+ 	return v;
+-}
++};
+ /**
+   * Creates and opens a http-request, tunneling exotic methods if needed.
+   */
+@@ -755,13 +750,20 @@
+ 		tunnel = method;
+ 		method = &quot;POST&quot;;
+ 	}
+-	var req = Freja.External.openXMLHttpRequest(method, url, Freja.AssetManager.HTTP_REQUEST_TYPE == &quot;async&quot;, Freja.AssetManager.USERNAME, Freja.AssetManager.PASSWORD);
++	var req = Freja.External.openXMLHttpRequest(method, url, Freja.AssetManager.HTTP_REQUEST_TYPE == &quot;async&quot;, Freja.AssetManager._username, Freja.AssetManager._password);
+ 	if (tunnel) {
+ 		req.setRequestHeader(Freja.AssetManager.HTTP_METHOD_TUNNEL, tunnel);
+ 	}
+ 	return req;
+-}
++};
+ /**
++  * Sets username + password for Http-Authentication
++  */
++Freja.AssetManager.setCredentials = function(username, password) {
++	this._username = username;
++	this._password = password;
++};
++/**
+   * @returns MochiKit.Async.Deferred
+   */
+ Freja.AssetManager.loadAsset = function(url, preventCaching) {
+@@ -786,14 +788,14 @@
+ 			d.errback(ex);
+ 		}
+ 		d.callback(document);
+-	}
++	};
+ 	try {
+ 		if (preventCaching &amp;&amp; Freja.AssetManager.HTTP_METHOD_TUNNEL) {
+-			var req = Freja.External.openXMLHttpRequest(&quot;POST&quot;, url, Freja.AssetManager.HTTP_REQUEST_TYPE == &quot;async&quot;, Freja.AssetManager.USERNAME, Freja.AssetManager.PASSWORD);
++			var req = Freja.External.openXMLHttpRequest(&quot;POST&quot;, url, Freja.AssetManager.HTTP_REQUEST_TYPE == &quot;async&quot;, Freja.AssetManager._username, Freja.AssetManager._password);
+ 			req.setRequestHeader(Freja.AssetManager.HTTP_METHOD_TUNNEL, &quot;GET&quot;);
+ 			req.setRequestHeader(&quot;Content-Type&quot;, &quot;application/x-www-form-urlencoded&quot;);
+ 		} else {
+-			var req = Freja.External.openXMLHttpRequest(&quot;GET&quot;, url, Freja.AssetManager.HTTP_REQUEST_TYPE == &quot;async&quot;, Freja.AssetManager.USERNAME, Freja.AssetManager.PASSWORD);
++			var req = Freja.External.openXMLHttpRequest(&quot;GET&quot;, url, Freja.AssetManager.HTTP_REQUEST_TYPE == &quot;async&quot;, Freja.AssetManager._username, Freja.AssetManager._password);
+ 		}
+ 
+ 		// This shouldn't be nescesary, but alas it is - firefox chokes
+@@ -813,7 +815,7 @@
+ 		d.errback(ex);
+ 	}
+ 	return d;
+-}
++};
+ /**
+   * This is a default error-handler. You should provide your own.
+   * The handler is called if an asynchronous error happens, since
+@@ -823,7 +825,7 @@
+   */
+ Freja.AssetManager.onerror = function(ex) {
+ 	alert(&quot;Freja.AssetManager.onerror\n&quot; + ex.message);
+-}
++};
+ /**
+   * Global exports
+   */
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000012.html">[Freja-svn] r16 - in trunk: lib tests
+</A></li>
+	<LI>Next message: <A HREF="000014.html">[Freja-svn] r18 - in trunk: lib tests
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#13">[ date ]</a>
+              <a href="thread.html#13">[ thread ]</a>
+              <a href="subject.html#13">[ subject ]</a>
+              <a href="author.html#13">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/freja-svn">More information about the Freja-svn
+mailing list</a><br>
+</body></html>

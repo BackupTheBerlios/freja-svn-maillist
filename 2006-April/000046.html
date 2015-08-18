@@ -1,0 +1,129 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Freja-svn] r50 - trunk/examples/basecamp_api/proxy/php
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/freja-svn/2006-April/index.html" >
+   <LINK REL="made" HREF="mailto:freja-svn%40lists.berlios.de?Subject=Re%3A%20%5BFreja-svn%5D%20r50%20-%20trunk/examples/basecamp_api/proxy/php&In-Reply-To=%3C200604182155.k3ILtRF5013919%40sheep.berlios.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000045.html">
+   <LINK REL="Next"  HREF="000047.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Freja-svn] r50 - trunk/examples/basecamp_api/proxy/php</H1>
+    <B>troelskn at BerliOS</B> 
+    <A HREF="mailto:freja-svn%40lists.berlios.de?Subject=Re%3A%20%5BFreja-svn%5D%20r50%20-%20trunk/examples/basecamp_api/proxy/php&In-Reply-To=%3C200604182155.k3ILtRF5013919%40sheep.berlios.de%3E"
+       TITLE="[Freja-svn] r50 - trunk/examples/basecamp_api/proxy/php">troelskn at berlios.de
+       </A><BR>
+    <I>Tue Apr 18 23:55:27 CEST 2006</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000045.html">[Freja-svn] r49 - in trunk/examples: . basecamp_api basecamp_api/proxy basecamp_api/proxy/php basecamp_api/views
+</A></li>
+        <LI>Next message: <A HREF="000047.html">[Freja-svn] r51 - in trunk/examples/basecamp_api: . css models proxy/php views
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#46">[ date ]</a>
+              <a href="thread.html#46">[ thread ]</a>
+              <a href="subject.html#46">[ subject ]</a>
+              <a href="author.html#46">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Author: troelskn
+Date: 2006-04-18 23:55:26 +0200 (Tue, 18 Apr 2006)
+New Revision: 50
+
+Modified:
+   trunk/examples/basecamp_api/proxy/php/proxy.php
+Log:
+nitpicking
+
+Modified: trunk/examples/basecamp_api/proxy/php/proxy.php
+===================================================================
+--- trunk/examples/basecamp_api/proxy/php/proxy.php	2006-04-18 21:34:47 UTC (rev 49)
++++ trunk/examples/basecamp_api/proxy/php/proxy.php	2006-04-18 21:55:26 UTC (rev 50)
+@@ -1,12 +1,12 @@
+ &lt;?php
+-	
++
+ 	$login    = &quot;freja&quot;;
+ 	$password = &quot;apitest&quot;;
+ 	$baseUrl  = &quot;<A HREF="http://freja.projectpath.com/">http://freja.projectpath.com/</A>&quot;;
+-	
++
+ 	$HTTPMethod     = $_GET['HTTP_REQUEST_METHOD'];
+ 	$HTTPRequestUrl = $_GET['HTTP_REQUEST_URL'];
+-	
++
+ 	include('Request.php');
+ 
+ 	// safety check, only request legit url
+@@ -14,16 +14,16 @@
+ 
+ 		$req = &amp;new HTTP_Request($HTTPRequestUrl);
+ 		$req-&gt;setBasicAuth($login,$password);
+-		$req-&gt;setMethod($HTTPMethod);	
++		$req-&gt;setMethod($HTTPMethod);
+ 		$req-&gt;addHeader('Content-Type','application/xml');
+ 		$req-&gt;addHeader('Accept','application/xml');
+-		$req-&gt;clearPostData();		
++		$req-&gt;clearPostData();
+ 		// $req-&gt;addPostData('Foo', 'bar');
+ 		$req-&gt;sendRequest();
+-		
++
+ 		$response = $req-&gt;getResponseBody();
+ 		$code     = $req-&gt;getResponseCode();
+-		
++
+ 		switch($code) {
+ 			case 200:
+ 				header(&quot;HTTP/1.0 200 Ok&quot;);
+@@ -33,11 +33,14 @@
+ 				break;
+ 			case 404:
+ 				header(&quot;HTTP/1.0 404 Not Found&quot;);
+-				break;				
++				exit;
++			defaul:
++				header(&quot;HTTP/1.0 502 Bad Gateway&quot;);
++				exit;
+ 		}
+ 		header('Content-Type: text/xml');
+ 		echo $response;
+-	} 
++	}
+ 	else {
+ 		header(&quot;HTTP/1.0 403 Forbidden&quot;);
+ 		echo &quot;Requested url not allowed.&quot;;
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000045.html">[Freja-svn] r49 - in trunk/examples: . basecamp_api basecamp_api/proxy basecamp_api/proxy/php basecamp_api/views
+</A></li>
+	<LI>Next message: <A HREF="000047.html">[Freja-svn] r51 - in trunk/examples/basecamp_api: . css models proxy/php views
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#46">[ date ]</a>
+              <a href="thread.html#46">[ thread ]</a>
+              <a href="subject.html#46">[ subject ]</a>
+              <a href="author.html#46">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/freja-svn">More information about the Freja-svn
+mailing list</a><br>
+</body></html>

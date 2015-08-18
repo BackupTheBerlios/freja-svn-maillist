@@ -1,0 +1,100 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Freja-svn] r36 - trunk/src/auxiliary
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/freja-svn/2006-April/index.html" >
+   <LINK REL="made" HREF="mailto:freja-svn%40lists.berlios.de?Subject=Re%3A%20%5BFreja-svn%5D%20r36%20-%20trunk/src/auxiliary&In-Reply-To=%3C200604061922.k36JMPw8018040%40sheep.berlios.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000031.html">
+   <LINK REL="Next"  HREF="000033.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Freja-svn] r36 - trunk/src/auxiliary</H1>
+    <B>cedsav at berlios.de</B> 
+    <A HREF="mailto:freja-svn%40lists.berlios.de?Subject=Re%3A%20%5BFreja-svn%5D%20r36%20-%20trunk/src/auxiliary&In-Reply-To=%3C200604061922.k36JMPw8018040%40sheep.berlios.de%3E"
+       TITLE="[Freja-svn] r36 - trunk/src/auxiliary">cedsav at berlios.de
+       </A><BR>
+    <I>Thu Apr  6 21:22:25 CEST 2006</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000031.html">[Freja-svn] r35 - trunk/src
+</A></li>
+        <LI>Next message: <A HREF="000033.html">[Freja-svn] r37 - trunk/src
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#32">[ date ]</a>
+              <a href="thread.html#32">[ thread ]</a>
+              <a href="subject.html#32">[ subject ]</a>
+              <a href="author.html#32">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Author: cedsav
+Date: 2006-04-06 21:22:21 +0200 (Thu, 06 Apr 2006)
+New Revision: 36
+
+Modified:
+   trunk/src/auxiliary/minimal.js
+Log:
+fixed (?) Deferred
+
+Modified: trunk/src/auxiliary/minimal.js
+===================================================================
+--- trunk/src/auxiliary/minimal.js	2006-04-06 16:31:13 UTC (rev 35)
++++ trunk/src/auxiliary/minimal.js	2006-04-06 19:22:21 UTC (rev 36)
+@@ -281,13 +281,14 @@
+ 	this._pending = null;
+ };
+ Freja._aux.Deferred.prototype.callback = function() {
+-	if (this._good.length == 0) {
++	if (this._good.length == 0) {	
+ 		this._pending = [this.callback, arguments];
+ 		return;
+ 	}
+ 	for (var i=0; i &lt; this._good.length; i++) {
+-		this._good[i].apply(window, arguments);
++		this._good[i].apply(window, arguments);		
+ 	}
++	this._good = [];
+ };
+ Freja._aux.Deferred.prototype.errback = function() {
+ 	if (this._bad.length == 0) {
+@@ -297,6 +298,7 @@
+ 	for (var i=0; i &lt; this._bad.length; i++) {
+ 		this._bad[i].apply(window, arguments);
+ 	}
++	this._bad = [];
+ };
+ Freja._aux.Deferred.prototype.addCallbacks = function(fncOK, fncError) {
+ 	if (fncOK) this._good[this._good.length] = fncOK;
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000031.html">[Freja-svn] r35 - trunk/src
+</A></li>
+	<LI>Next message: <A HREF="000033.html">[Freja-svn] r37 - trunk/src
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#32">[ date ]</a>
+              <a href="thread.html#32">[ thread ]</a>
+              <a href="subject.html#32">[ subject ]</a>
+              <a href="author.html#32">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/freja-svn">More information about the Freja-svn
+mailing list</a><br>
+</body></html>

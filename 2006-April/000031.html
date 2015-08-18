@@ -1,0 +1,104 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Freja-svn] r35 - trunk/src
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/freja-svn/2006-April/index.html" >
+   <LINK REL="made" HREF="mailto:freja-svn%40lists.berlios.de?Subject=Re%3A%20%5BFreja-svn%5D%20r35%20-%20trunk/src&In-Reply-To=%3C200604061631.k36GVRRs024126%40sheep.berlios.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000030.html">
+   <LINK REL="Next"  HREF="000032.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Freja-svn] r35 - trunk/src</H1>
+    <B>cedsav at berlios.de</B> 
+    <A HREF="mailto:freja-svn%40lists.berlios.de?Subject=Re%3A%20%5BFreja-svn%5D%20r35%20-%20trunk/src&In-Reply-To=%3C200604061631.k36GVRRs024126%40sheep.berlios.de%3E"
+       TITLE="[Freja-svn] r35 - trunk/src">cedsav at berlios.de
+       </A><BR>
+    <I>Thu Apr  6 18:31:27 CEST 2006</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000030.html">[Freja-svn] r34 - trunk/src/auxiliary
+</A></li>
+        <LI>Next message: <A HREF="000032.html">[Freja-svn] r36 - trunk/src/auxiliary
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#31">[ date ]</a>
+              <a href="thread.html#31">[ thread ]</a>
+              <a href="subject.html#31">[ subject ]</a>
+              <a href="author.html#31">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Author: cedsav
+Date: 2006-04-06 18:31:13 +0200 (Thu, 06 Apr 2006)
+New Revision: 35
+
+Modified:
+   trunk/src/QueryEngine.js
+Log:
+workaround in _find for empty elements (&lt;tag /&gt;)
+
+Modified: trunk/src/QueryEngine.js
+===================================================================
+--- trunk/src/QueryEngine.js	2006-04-06 16:13:46 UTC (rev 34)
++++ trunk/src/QueryEngine.js	2006-04-06 16:31:13 UTC (rev 35)
+@@ -18,8 +18,10 @@
+ 	return null;
+ };
+ Freja.QueryEngine.prototype.set = function(document, expression, value) {
+-	var node = this._find(document, expression);
+-	if(node) node.nodeValue = value;
++	var node = this._find(document, expression);	
++	if(node) {
++		node.nodeValue = value;
++	}
+ };
+ /**
+   * XPath query engine.
+@@ -34,8 +36,14 @@
+ 		return node.firstChild;
+ 	} else if (node &amp;&amp; node.firstChild &amp;&amp; node.firstChild.nodeType == 4) {
+ 		return node.firstChild;
++	} else if (node &amp;&amp; !node.firstChild) {
++		// this is an empty node &lt;tag /&gt;. When using 'get' it's fine to return null,
++		// but for 'set', we need to create a textnode somewhere.
++		// for lack of better idea, will do it here.
++		var n = document.createTextNode('');
++		return node.appendChild(n);
+ 	}
+-	// throw new Error(&quot;Can't evaluate expression &quot; + expression);
++//	throw new Error(&quot;Can't evaluate expression &quot; + expression);
+ 	return null;
+ };
+ /**
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000030.html">[Freja-svn] r34 - trunk/src/auxiliary
+</A></li>
+	<LI>Next message: <A HREF="000032.html">[Freja-svn] r36 - trunk/src/auxiliary
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#31">[ date ]</a>
+              <a href="thread.html#31">[ thread ]</a>
+              <a href="subject.html#31">[ subject ]</a>
+              <a href="author.html#31">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/freja-svn">More information about the Freja-svn
+mailing list</a><br>
+</body></html>

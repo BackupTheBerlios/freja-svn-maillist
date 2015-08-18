@@ -1,0 +1,142 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Freja-svn] r18 - in trunk: lib tests
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/freja-svn/2006-March/index.html" >
+   <LINK REL="made" HREF="mailto:freja-svn%40lists.berlios.de?Subject=Re%3A%20%5BFreja-svn%5D%20r18%20-%20in%20trunk%3A%20lib%20tests&In-Reply-To=%3C200603300309.k2U39F5f001656%40sheep.berlios.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000013.html">
+   <LINK REL="Next"  HREF="000015.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Freja-svn] r18 - in trunk: lib tests</H1>
+    <B>troelskn at BerliOS</B> 
+    <A HREF="mailto:freja-svn%40lists.berlios.de?Subject=Re%3A%20%5BFreja-svn%5D%20r18%20-%20in%20trunk%3A%20lib%20tests&In-Reply-To=%3C200603300309.k2U39F5f001656%40sheep.berlios.de%3E"
+       TITLE="[Freja-svn] r18 - in trunk: lib tests">troelskn at berlios.de
+       </A><BR>
+    <I>Thu Mar 30 05:09:15 CEST 2006</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000013.html">[Freja-svn] r17 - trunk/lib
+</A></li>
+        <LI>Next message: <A HREF="000015.html">[Freja-svn] r19 - in trunk: lib tests
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#14">[ date ]</a>
+              <a href="thread.html#14">[ thread ]</a>
+              <a href="subject.html#14">[ subject ]</a>
+              <a href="author.html#14">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Author: troelskn
+Date: 2006-03-30 05:09:04 +0200 (Thu, 30 Mar 2006)
+New Revision: 18
+
+Modified:
+   trunk/lib/Freja.js
+   trunk/tests/test_View.js
+Log:
+Added support for pojo models.
+
+Modified: trunk/lib/Freja.js
+===================================================================
+--- trunk/lib/Freja.js	2006-03-29 00:43:50 UTC (rev 17)
++++ trunk/lib/Freja.js	2006-03-30 03:09:04 UTC (rev 18)
+@@ -408,12 +408,19 @@
+ 				Freja.External.connect(this.view, &quot;onload&quot;, Freja.External.bind(this.trigger, this));
+ 				return;
+ 			}
+-			if (this.model &amp;&amp; !this.model.ready) {
++			if (typeof(this.model) == &quot;object&quot; &amp;&amp; this.model instanceof Freja.Model &amp;&amp; !this.model.ready) {
+ 				Freja.External.connect(this.model, &quot;onload&quot;, Freja.External.bind(this.trigger, this));
+ 				return;
+ 			}
+-			if (!model) {
++			var model;
++			if (typeof(this.model) == &quot;undefined&quot;) {
++				// supply dummy
+ 				model = { document : Freja.External.loadXML(&quot;&lt;?xml version='1.0' ?&gt;&lt;dummy/&gt;&quot;)};
++			} else if (this.model instanceof Freja.Model) {
++				model = this.model;
++			} else {
++				// wrap pojo's in
++				model = { document : Freja.External.loadXML(&quot;&lt;?xml version='1.0' ?&gt;\n&quot; + Freja.External.xmlize(this.model, &quot;item&quot;)) };
+ 			}
+ 			var trans = this.view.renderer.transform(model, this.view);
+ 			trans.addCallback(Freja.External.bind(function(html) {
+
+Modified: trunk/tests/test_View.js
+===================================================================
+--- trunk/tests/test_View.js	2006-03-29 00:43:50 UTC (rev 17)
++++ trunk/tests/test_View.js	2006-03-30 03:09:04 UTC (rev 18)
+@@ -19,6 +19,21 @@
+ 	t.is(out.getElementsByTagName(&quot;H3&quot;).length, 1);
+ 	t.is(out.getElementsByTagName(&quot;H3&quot;).item(0).firstChild.nodeValue, model.get(&quot;item/name&quot;), &quot;Rendered view should contain the models value&quot;);
+ 
++	// test of pojo model
++	Freja.AssetManager.clearCache();
++	var view = Freja.AssetManager.getView(&quot;data/view.xsl&quot;);
++	var out = document.createElement(&quot;DIV&quot;);
++	view.placeholder = out;
++
++	var pojo = {
++		name : &quot;pojo&quot;,
++		description : &quot;Plain Old Javascript Object&quot;,
++		price : &quot;Priceless&quot;
++	};
++	view.render(pojo);
++
++	t.ok(out.innerHTML.toLowerCase().match(&quot;&lt;p&gt;plain old javascript object&lt;/p&gt;&quot;));
++
+ 	// test of form
+ 	var formView = Freja.AssetManager.getView(&quot;data/form-view.xsl&quot;);
+ 	var testofsubmit = false;
+@@ -33,6 +48,9 @@
+ 
+ 	t.ok(testofsubmit, &quot;The form has been intercepted by our handler&quot;);
+ 
++	//////////////////////////////////////////////////////////////////////
++	// async tests below
++
+ 	// we can't test asynch function properly, but we can fire them and assert that
+ 	// they don't throw any exceptions at least
+ 	Freja.AssetManager.clearCache();
+@@ -50,4 +68,5 @@
+ 		exc = ex;
+ 	}
+ 	t.ok(exc == false, &quot;The render should be postproned until loading have completed&quot;);
++
+ };
+\ No newline at end of file
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000013.html">[Freja-svn] r17 - trunk/lib
+</A></li>
+	<LI>Next message: <A HREF="000015.html">[Freja-svn] r19 - in trunk: lib tests
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#14">[ date ]</a>
+              <a href="thread.html#14">[ thread ]</a>
+              <a href="subject.html#14">[ subject ]</a>
+              <a href="author.html#14">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/freja-svn">More information about the Freja-svn
+mailing list</a><br>
+</body></html>

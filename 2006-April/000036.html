@@ -1,0 +1,434 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Freja-svn] r40 - in trunk: examples/contacts/views examples/tutorial/views lib src src/auxiliary tests/data
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/freja-svn/2006-April/index.html" >
+   <LINK REL="made" HREF="mailto:freja-svn%40lists.berlios.de?Subject=Re%3A%20%5BFreja-svn%5D%20r40%20-%20in%20trunk%3A%20examples/contacts/views%20examples/tutorial/views%20lib%20src%20src/auxiliary%20tests/data&In-Reply-To=%3C200604101406.k3AE6beM000711%40sheep.berlios.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000035.html">
+   <LINK REL="Next"  HREF="000037.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Freja-svn] r40 - in trunk: examples/contacts/views examples/tutorial/views lib src src/auxiliary tests/data</H1>
+    <B>troelskn at BerliOS</B> 
+    <A HREF="mailto:freja-svn%40lists.berlios.de?Subject=Re%3A%20%5BFreja-svn%5D%20r40%20-%20in%20trunk%3A%20examples/contacts/views%20examples/tutorial/views%20lib%20src%20src/auxiliary%20tests/data&In-Reply-To=%3C200604101406.k3AE6beM000711%40sheep.berlios.de%3E"
+       TITLE="[Freja-svn] r40 - in trunk: examples/contacts/views examples/tutorial/views lib src src/auxiliary tests/data">troelskn at berlios.de
+       </A><BR>
+    <I>Mon Apr 10 16:06:37 CEST 2006</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000035.html">[Freja-svn] r39 - in trunk/examples: contacts/views tutorial/views
+</A></li>
+        <LI>Next message: <A HREF="000037.html">[Freja-svn] r41 - in trunk: examples/contacts examples/tutorial lib src tests
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#36">[ date ]</a>
+              <a href="thread.html#36">[ thread ]</a>
+              <a href="subject.html#36">[ subject ]</a>
+              <a href="author.html#36">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Author: troelskn
+Date: 2006-04-10 16:06:34 +0200 (Mon, 10 Apr 2006)
+New Revision: 40
+
+Modified:
+   trunk/examples/contacts/views/create.xsl
+   trunk/examples/contacts/views/edit.xsl
+   trunk/examples/contacts/views/index.xsl
+   trunk/examples/tutorial/views/display.xsl
+   trunk/examples/tutorial/views/edit.xsl
+   trunk/lib/Freja.js
+   trunk/src/View.js
+   trunk/src/auxiliary/minimal.js
+   trunk/tests/data/form-view.xsl
+Log:
+It appears that Opera doesn't deal correctly with namespaces. I have therefore changed the freja:behaviour attribute into the non-standard, but de-facto working freja-behaviour.
+Fixed a minor IE bug in auxiliary/minimal.js
+
+Modified: trunk/examples/contacts/views/create.xsl
+===================================================================
+--- trunk/examples/contacts/views/create.xsl	2006-04-10 01:35:12 UTC (rev 39)
++++ trunk/examples/contacts/views/create.xsl	2006-04-10 14:06:34 UTC (rev 40)
+@@ -1,16 +1,14 @@
+ &lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+ &lt;xsl:stylesheet version=&quot;1.0&quot;
+-	xmlns:xsl=&quot;<A HREF="http://www.w3.org/1999/XSL/Transform">http://www.w3.org/1999/XSL/Transform</A>&quot;
+-	xmlns:freja=&quot;<A HREF="http://formassembly.com/freja">http://formassembly.com/freja</A>&quot;
+-&gt;
++	xmlns:xsl=&quot;<A HREF="http://www.w3.org/1999/XSL/Transform">http://www.w3.org/1999/XSL/Transform</A>&quot;&gt;
+ 
+ &lt;xsl:template match=&quot;/&quot;&gt;
+-	&lt;form method=&quot;post&quot; action=&quot;#&quot; freja:behaviour=&quot;form&quot;&gt;
++	&lt;form method=&quot;post&quot; action=&quot;#&quot; freja-behaviour=&quot;form&quot;&gt;
+ 		&lt;p&gt;email:&lt;input name=&quot;email&quot; type=&quot;text&quot; value=&quot;&quot; /&gt;&lt;/p&gt;
+ 		&lt;p&gt;first_name:&lt;input name=&quot;first_name&quot; type=&quot;text&quot; value=&quot;&quot; /&gt;&lt;/p&gt;
+ 		&lt;p&gt;surname:&lt;input name=&quot;surname&quot; type=&quot;text&quot; value=&quot;&quot; /&gt;&lt;/p&gt;
+ 		&lt;p&gt;
+-			&lt;input type=&quot;button&quot; value=&quot;cancel&quot; freja:behaviour=&quot;cancel&quot; /&gt;
++			&lt;input type=&quot;button&quot; value=&quot;cancel&quot; freja-behaviour=&quot;cancel&quot; /&gt;
+ 			&lt;input type=&quot;submit&quot; value=&quot;ok&quot; /&gt;
+ 		&lt;/p&gt;
+ 	&lt;/form&gt;
+
+Modified: trunk/examples/contacts/views/edit.xsl
+===================================================================
+--- trunk/examples/contacts/views/edit.xsl	2006-04-10 01:35:12 UTC (rev 39)
++++ trunk/examples/contacts/views/edit.xsl	2006-04-10 14:06:34 UTC (rev 40)
+@@ -1,17 +1,15 @@
+ &lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+ &lt;xsl:stylesheet version=&quot;1.0&quot;
+-	xmlns:xsl=&quot;<A HREF="http://www.w3.org/1999/XSL/Transform">http://www.w3.org/1999/XSL/Transform</A>&quot;
+-	xmlns:freja=&quot;<A HREF="http://formassembly.com/freja">http://formassembly.com/freja</A>&quot;
+-&gt;
++	xmlns:xsl=&quot;<A HREF="http://www.w3.org/1999/XSL/Transform">http://www.w3.org/1999/XSL/Transform</A>&quot;&gt;
+ 
+ &lt;xsl:template match=&quot;record&quot;&gt;	
+-	&lt;form method=&quot;post&quot; action=&quot;#&quot; freja:behaviour=&quot;form&quot;&gt;
++	&lt;form method=&quot;post&quot; action=&quot;#&quot; freja-behaviour=&quot;form&quot;&gt;
+ 	&lt;xsl:attribute name=&quot;url&quot;&gt;&lt;xsl:value-of select=&quot;url&quot; /&gt;&lt;/xsl:attribute&gt;
+ 		&lt;p&gt;&lt;xsl:value-of select=&quot;email&quot; /&gt;&lt;/p&gt;
+ 		&lt;p&gt;&lt;input name=&quot;record/first_name&quot; type=&quot;text&quot; value=&quot;{first_name}&quot; /&gt;&lt;/p&gt;
+ 		&lt;p&gt;&lt;input name=&quot;record/surname&quot; type=&quot;text&quot; value=&quot;{surname}&quot; /&gt;&lt;/p&gt;
+ 		&lt;p&gt;
+-			&lt;input type=&quot;button&quot; value=&quot;cancel&quot; freja:behaviour=&quot;cancel&quot; /&gt;
++			&lt;input type=&quot;button&quot; value=&quot;cancel&quot; freja-behaviour=&quot;cancel&quot; /&gt;
+ 			&lt;input type=&quot;submit&quot; value=&quot;ok&quot; /&gt;
+ 		&lt;/p&gt;
+ 	&lt;/form&gt;
+
+Modified: trunk/examples/contacts/views/index.xsl
+===================================================================
+--- trunk/examples/contacts/views/index.xsl	2006-04-10 01:35:12 UTC (rev 39)
++++ trunk/examples/contacts/views/index.xsl	2006-04-10 14:06:34 UTC (rev 40)
+@@ -1,8 +1,6 @@
+ &lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+ &lt;xsl:stylesheet version=&quot;1.0&quot;
+-	xmlns:xsl=&quot;<A HREF="http://www.w3.org/1999/XSL/Transform">http://www.w3.org/1999/XSL/Transform</A>&quot;
+-	xmlns:freja=&quot;<A HREF="http://formassembly.com/freja">http://formassembly.com/freja</A>&quot;
+-&gt;
++	xmlns:xsl=&quot;<A HREF="http://www.w3.org/1999/XSL/Transform">http://www.w3.org/1999/XSL/Transform</A>&quot;&gt;
+ 
+ &lt;xsl:template match=&quot;result&quot;&gt;
+ &lt;table border=&quot;1&quot; cellpadding=&quot;4&quot; cellspacing=&quot;4&quot;&gt;
+@@ -10,17 +8,17 @@
+ 	&lt;tr&gt;
+ 		&lt;td&gt;&lt;xsl:value-of select=&quot;email&quot; /&gt;&lt;/td&gt;
+ 		&lt;td&gt;
+-			&lt;input type=&quot;button&quot; value=&quot;edit&quot; freja:behaviour=&quot;edit&quot;&gt;
++			&lt;input type=&quot;button&quot; value=&quot;edit&quot; freja-behaviour=&quot;edit&quot;&gt;
+ 				&lt;xsl:attribute name=&quot;url&quot;&gt;&lt;xsl:value-of select=&quot;url&quot; /&gt;&lt;/xsl:attribute&gt;
+ 			&lt;/input&gt;
+-			&lt;input type=&quot;button&quot; value=&quot;delete&quot; freja:behaviour=&quot;delete&quot;&gt;
++			&lt;input type=&quot;button&quot; value=&quot;delete&quot; freja-behaviour=&quot;delete&quot;&gt;
+ 				&lt;xsl:attribute name=&quot;url&quot;&gt;&lt;xsl:value-of select=&quot;url&quot; /&gt;&lt;/xsl:attribute&gt;
+ 			&lt;/input&gt;
+ 		&lt;/td&gt;
+ 	&lt;/tr&gt;
+ &lt;/xsl:for-each&gt; 
+ 	&lt;tr&gt;
+-		&lt;td align=&quot;right&quot; colspan=&quot;2&quot;&gt;&lt;input type=&quot;button&quot; value=&quot;create&quot; freja:behaviour=&quot;create&quot; /&gt;&lt;/td&gt;
++		&lt;td align=&quot;right&quot; colspan=&quot;2&quot;&gt;&lt;input type=&quot;button&quot; value=&quot;create&quot; freja-behaviour=&quot;create&quot; /&gt;&lt;/td&gt;
+ 	&lt;/tr&gt;
+ &lt;/table&gt;
+ &lt;/xsl:template&gt;
+
+Modified: trunk/examples/tutorial/views/display.xsl
+===================================================================
+--- trunk/examples/tutorial/views/display.xsl	2006-04-10 01:35:12 UTC (rev 39)
++++ trunk/examples/tutorial/views/display.xsl	2006-04-10 14:06:34 UTC (rev 40)
+@@ -1,15 +1,13 @@
+ &lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+ &lt;xsl:stylesheet version=&quot;1.0&quot;
+-	xmlns:xsl=&quot;<A HREF="http://www.w3.org/1999/XSL/Transform">http://www.w3.org/1999/XSL/Transform</A>&quot;
+-	xmlns:freja=&quot;<A HREF="http://formassembly.com/freja">http://formassembly.com/freja</A>&quot;
+-&gt;
++	xmlns:xsl=&quot;<A HREF="http://www.w3.org/1999/XSL/Transform">http://www.w3.org/1999/XSL/Transform</A>&quot;&gt;
+ 
+ &lt;xsl:template match=&quot;item&quot;&gt;	
+ &lt;div&gt;
+ 	&lt;h3&gt;&lt;xsl:value-of select=&quot;name&quot; /&gt;&lt;/h3&gt;
+ 	&lt;p&gt;&lt;xsl:value-of select=&quot;description&quot; /&gt;&lt;/p&gt;
+ 	&lt;p&gt;&lt;em&gt;Price: &lt;xsl:value-of select=&quot;price&quot; /&gt;&lt;/em&gt;&lt;/p&gt;
+-	&lt;p&gt;&lt;a href=&quot;#&quot; freja:behaviour=&quot;editLink&quot;&gt;edit&lt;/a&gt;&lt;/p&gt;
++	&lt;p&gt;&lt;a href=&quot;#&quot; freja-behaviour=&quot;editLink&quot;&gt;edit&lt;/a&gt;&lt;/p&gt;
+ &lt;/div&gt;
+ &lt;/xsl:template&gt;
+ 
+
+Modified: trunk/examples/tutorial/views/edit.xsl
+===================================================================
+--- trunk/examples/tutorial/views/edit.xsl	2006-04-10 01:35:12 UTC (rev 39)
++++ trunk/examples/tutorial/views/edit.xsl	2006-04-10 14:06:34 UTC (rev 40)
+@@ -1,16 +1,14 @@
+ &lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+ &lt;xsl:stylesheet version=&quot;1.0&quot;
+-	xmlns:xsl=&quot;<A HREF="http://www.w3.org/1999/XSL/Transform">http://www.w3.org/1999/XSL/Transform</A>&quot;
+-	xmlns:freja=&quot;<A HREF="http://formassembly.com/freja">http://formassembly.com/freja</A>&quot;
+-&gt;
++	xmlns:xsl=&quot;<A HREF="http://www.w3.org/1999/XSL/Transform">http://www.w3.org/1999/XSL/Transform</A>&quot;&gt;
+ 
+ &lt;xsl:template match=&quot;item&quot;&gt;	
+-	&lt;form method=&quot;post&quot; action=&quot;#&quot; freja:behaviour=&quot;editForm&quot;&gt;
++	&lt;form method=&quot;post&quot; action=&quot;#&quot; freja-behaviour=&quot;editForm&quot;&gt;
+ 		&lt;h3&gt;&lt;input name=&quot;item/name&quot; type=&quot;text&quot; value=&quot;{name}&quot; /&gt;&lt;/h3&gt;
+ 		&lt;p&gt;&lt;textarea name=&quot;item/description&quot;&gt;&lt;xsl:value-of select=&quot;description&quot; /&gt;&lt;/textarea&gt;&lt;/p&gt;
+ 		&lt;p&gt;&lt;input name=&quot;item/price&quot; type=&quot;text&quot; value=&quot;{price}&quot; /&gt;&lt;/p&gt;
+ 		&lt;p&gt;
+-			&lt;a href=&quot;#&quot; freja:behaviour=&quot;displayLink&quot;&gt;display&lt;/a&gt;
++			&lt;a href=&quot;#&quot; freja-behaviour=&quot;displayLink&quot;&gt;display&lt;/a&gt;
+ 			&lt;input type=&quot;submit&quot; value=&quot;ok&quot; /&gt;
+ 		&lt;/p&gt;
+ 	&lt;/form&gt;
+
+Modified: trunk/lib/Freja.js
+===================================================================
+--- trunk/lib/Freja.js	2006-04-10 01:35:12 UTC (rev 39)
++++ trunk/lib/Freja.js	2006-04-10 14:06:34 UTC (rev 40)
+@@ -2,7 +2,7 @@
+ 
+     Freja 2.0.alpha
+ 
+-    Build $Mon, 10 Apr 2006 01:00:19 UTC$
++    Build $Mon, 10 Apr 2006 13:58:21 UTC$
+ 
+     Target: minimal
+ 
+@@ -65,7 +65,7 @@
+ 	if(typeof (func)==&quot;string&quot;){
+ 		func=self[func];
+ 	}
+-		
++
+ 	var im_func = null;
+     if (typeof(func.im_func) == 'function') {
+         im_func = func.im_func;
+@@ -78,7 +78,7 @@
+     func.im_func = im_func;
+     func.im_self = self;
+ 	return func;
+-	
++
+ };
+ /** formContents(elem) : Array */
+ Freja._aux.formContents = function(elem) {
+@@ -172,7 +172,7 @@
+ };
+ /** signal(src, signal, ...) : void */
+ Freja._aux.signal = function(src, signal) {
+-	
++
+ 	try {
+ 		var sigs = src._signals[signal];
+ 		var args = [];
+@@ -180,7 +180,7 @@
+ 			args.push(arguments[i]);
+ 		}
+ 		for (var i=0; i &lt; sigs.length; i++) {
+-			try {							
++			try {
+ 				sigs[i].apply(src, args);
+ 			} catch (e) { /* squelch */ }
+ 		}
+@@ -269,13 +269,13 @@
+ };
+ /** transformXSL(XMLDocument, XSLDocument) : string */
+ Freja._aux.transformXSL = function(xml, xsl, xslParameters) {
+-	if (xml.transformNode) {
++	if (typeof(xml.transformNode) != &quot;undefined&quot;) {
+ 		return xml.transformNode(xsl);
+ 	};
+ 	var processor = new XSLTProcessor();
+ 	processor.importStylesheet(xsl);
+-	for(var paramName in xslParameters) {
+-		processor.setParameter(null, paramName,xslParameters[paramName]); 
++	for (var paramName in xslParameters) {
++		processor.setParameter(null, paramName, xslParameters[paramName]);
+ 	}
+ 	return Freja._aux.serializeXML(processor.transformToDocument(xml));
+ 
+@@ -330,12 +330,12 @@
+ 	this._pending = null;
+ };
+ Freja._aux.Deferred.prototype.callback = function() {
+-	if (this._good.length == 0) {	
++	if (this._good.length == 0) {
+ 		this._pending = [this.callback, arguments];
+ 		return;
+ 	}
+ 	for (var i=0; i &lt; this._good.length; i++) {
+-		this._good[i].apply(window, arguments);		
++		this._good[i].apply(window, arguments);
+ 	}
+ 	this._good = [];
+ };
+@@ -366,7 +366,7 @@
+ 	XMLDocument.prototype.selectNodes = function(sExpr, contextNode) {
+ 		var nsDoc = this;
+ 		var nsresolver = this.createNSResolver(this.documentElement);
+-		
++
+ 		try {
+ 			var oResult = this.evaluate(sExpr,
+ 				(contextNode ? contextNode : this),
+@@ -738,7 +738,7 @@
+ 			for (var i = 0, c = node.childNodes, l = c.length; i &lt; l; ++i) {
+ 				var child = c[i];
+ 				if (child.nodeType == 1) {
+-					var id = child.getAttribute(&quot;freja:behaviour&quot;);
++					var id = child.getAttribute(&quot;freja-behaviour&quot;);
+ 					if (id != &quot;&quot;) {
+ 						var handler = handlers[id];
+ 						if (handler) {
+
+Modified: trunk/src/View.js
+===================================================================
+--- trunk/src/View.js	2006-04-10 01:35:12 UTC (rev 39)
++++ trunk/src/View.js	2006-04-10 14:06:34 UTC (rev 40)
+@@ -106,7 +106,7 @@
+ 			for (var i = 0, c = node.childNodes, l = c.length; i &lt; l; ++i) {
+ 				var child = c[i];
+ 				if (child.nodeType == 1) {
+-					var id = child.getAttribute(&quot;freja:behaviour&quot;);
++					var id = child.getAttribute(&quot;freja-behaviour&quot;);
+ 					if (id != &quot;&quot;) {
+ 						var handler = handlers[id];
+ 						if (handler) {
+
+Modified: trunk/src/auxiliary/minimal.js
+===================================================================
+--- trunk/src/auxiliary/minimal.js	2006-04-10 01:35:12 UTC (rev 39)
++++ trunk/src/auxiliary/minimal.js	2006-04-10 14:06:34 UTC (rev 40)
+@@ -16,7 +16,7 @@
+ 	if(typeof (func)==&quot;string&quot;){
+ 		func=self[func];
+ 	}
+-		
++
+ 	var im_func = null;
+     if (typeof(func.im_func) == 'function') {
+         im_func = func.im_func;
+@@ -29,7 +29,7 @@
+     func.im_func = im_func;
+     func.im_self = self;
+ 	return func;
+-	
++
+ };
+ /** formContents(elem) : Array */
+ Freja._aux.formContents = function(elem) {
+@@ -123,7 +123,7 @@
+ };
+ /** signal(src, signal, ...) : void */
+ Freja._aux.signal = function(src, signal) {
+-	
++
+ 	try {
+ 		var sigs = src._signals[signal];
+ 		var args = [];
+@@ -131,7 +131,7 @@
+ 			args.push(arguments[i]);
+ 		}
+ 		for (var i=0; i &lt; sigs.length; i++) {
+-			try {							
++			try {
+ 				sigs[i].apply(src, args);
+ 			} catch (e) { /* squelch */ }
+ 		}
+@@ -220,13 +220,13 @@
+ };
+ /** transformXSL(XMLDocument, XSLDocument) : string */
+ Freja._aux.transformXSL = function(xml, xsl, xslParameters) {
+-	if (xml.transformNode) {
++	if (typeof(xml.transformNode) != &quot;undefined&quot;) {
+ 		return xml.transformNode(xsl);
+ 	};
+ 	var processor = new XSLTProcessor();
+ 	processor.importStylesheet(xsl);
+-	for(var paramName in xslParameters) {
+-		processor.setParameter(null, paramName,xslParameters[paramName]); 
++	for (var paramName in xslParameters) {
++		processor.setParameter(null, paramName, xslParameters[paramName]);
+ 	}
+ 	return Freja._aux.serializeXML(processor.transformToDocument(xml));
+ 
+@@ -281,12 +281,12 @@
+ 	this._pending = null;
+ };
+ Freja._aux.Deferred.prototype.callback = function() {
+-	if (this._good.length == 0) {	
++	if (this._good.length == 0) {
+ 		this._pending = [this.callback, arguments];
+ 		return;
+ 	}
+ 	for (var i=0; i &lt; this._good.length; i++) {
+-		this._good[i].apply(window, arguments);		
++		this._good[i].apply(window, arguments);
+ 	}
+ 	this._good = [];
+ };
+@@ -317,7 +317,7 @@
+ 	XMLDocument.prototype.selectNodes = function(sExpr, contextNode) {
+ 		var nsDoc = this;
+ 		var nsresolver = this.createNSResolver(this.documentElement);
+-		
++
+ 		try {
+ 			var oResult = this.evaluate(sExpr,
+ 				(contextNode ? contextNode : this),
+
+Modified: trunk/tests/data/form-view.xsl
+===================================================================
+--- trunk/tests/data/form-view.xsl	2006-04-10 01:35:12 UTC (rev 39)
++++ trunk/tests/data/form-view.xsl	2006-04-10 14:06:34 UTC (rev 40)
+@@ -1,15 +1,13 @@
+ &lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+ &lt;xsl:stylesheet version=&quot;1.0&quot;
+-	xmlns:xsl=&quot;<A HREF="http://www.w3.org/1999/XSL/Transform">http://www.w3.org/1999/XSL/Transform</A>&quot;
+-	xmlns:freja=&quot;<A HREF="http://formassembly.com/freja">http://formassembly.com/freja</A>&quot;
+-&gt;
++	xmlns:xsl=&quot;<A HREF="http://www.w3.org/1999/XSL/Transform">http://www.w3.org/1999/XSL/Transform</A>&quot;&gt;
+ 
+ &lt;xsl:template match=&quot;item&quot;&gt;	
+-	&lt;form method=&quot;post&quot; freja:behaviour=&quot;form&quot;&gt;
++	&lt;form method=&quot;post&quot; freja-behaviour=&quot;form&quot;&gt;
+ 		&lt;h3&gt;&lt;input name=&quot;item/name&quot; type=&quot;text&quot; value=&quot;{name}&quot; /&gt;&lt;/h3&gt;
+ 		&lt;p&gt;&lt;textarea name=&quot;item/description&quot;&gt;&lt;xsl:value-of select=&quot;description&quot; /&gt;&lt;/textarea&gt;&lt;/p&gt;
+ 		&lt;p&gt;&lt;input name=&quot;item/price&quot; type=&quot;text&quot; value=&quot;{price}&quot; /&gt;&lt;/p&gt;
+-		&lt;input type=&quot;submit&quot; value=&quot;ok&quot; freja:behaviour=&quot;form-submit&quot; id=&quot;form-submit&quot; /&gt;
++		&lt;input type=&quot;submit&quot; value=&quot;ok&quot; freja-behaviour=&quot;form-submit&quot; id=&quot;form-submit&quot; /&gt;
+ 	&lt;/form&gt;
+ &lt;/xsl:template&gt;
+ 
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000035.html">[Freja-svn] r39 - in trunk/examples: contacts/views tutorial/views
+</A></li>
+	<LI>Next message: <A HREF="000037.html">[Freja-svn] r41 - in trunk: examples/contacts examples/tutorial lib src tests
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#36">[ date ]</a>
+              <a href="thread.html#36">[ thread ]</a>
+              <a href="subject.html#36">[ subject ]</a>
+              <a href="author.html#36">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/freja-svn">More information about the Freja-svn
+mailing list</a><br>
+</body></html>

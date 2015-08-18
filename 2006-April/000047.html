@@ -1,0 +1,643 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Freja-svn] r51 - in trunk/examples/basecamp_api: . css models proxy/php views
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/freja-svn/2006-April/index.html" >
+   <LINK REL="made" HREF="mailto:freja-svn%40lists.berlios.de?Subject=Re%3A%20%5BFreja-svn%5D%20r51%20-%20in%20trunk/examples/basecamp_api%3A%20.%20css%20models%20proxy/php%20views&In-Reply-To=%3C200604192150.k3JLoj5A011524%40sheep.berlios.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000046.html">
+   <LINK REL="Next"  HREF="000048.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Freja-svn] r51 - in trunk/examples/basecamp_api: . css models proxy/php views</H1>
+    <B>cedsav at berlios.de</B> 
+    <A HREF="mailto:freja-svn%40lists.berlios.de?Subject=Re%3A%20%5BFreja-svn%5D%20r51%20-%20in%20trunk/examples/basecamp_api%3A%20.%20css%20models%20proxy/php%20views&In-Reply-To=%3C200604192150.k3JLoj5A011524%40sheep.berlios.de%3E"
+       TITLE="[Freja-svn] r51 - in trunk/examples/basecamp_api: . css models proxy/php views">cedsav at berlios.de
+       </A><BR>
+    <I>Wed Apr 19 23:50:45 CEST 2006</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000046.html">[Freja-svn] r50 - trunk/examples/basecamp_api/proxy/php
+</A></li>
+        <LI>Next message: <A HREF="000048.html">[Freja-svn] r52 - in trunk: examples/contacts examples/contacts/views examples/tutorial examples/tutorial/views src src/auxiliary
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#47">[ date ]</a>
+              <a href="thread.html#47">[ thread ]</a>
+              <a href="subject.html#47">[ subject ]</a>
+              <a href="author.html#47">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Author: cedsav
+Date: 2006-04-19 23:50:27 +0200 (Wed, 19 Apr 2006)
+New Revision: 51
+
+Added:
+   trunk/examples/basecamp_api/css/
+   trunk/examples/basecamp_api/css/main.css
+   trunk/examples/basecamp_api/models/milestones.xml
+   trunk/examples/basecamp_api/models/posts.xml
+   trunk/examples/basecamp_api/models/projects.xml
+   trunk/examples/basecamp_api/models/todos.xml
+   trunk/examples/basecamp_api/views/message_list.xsl
+   trunk/examples/basecamp_api/views/milestone_list.xsl
+   trunk/examples/basecamp_api/views/project_selector.xsl
+   trunk/examples/basecamp_api/views/projects.xsl
+   trunk/examples/basecamp_api/views/todo_list.xsl
+Modified:
+   trunk/examples/basecamp_api/basecamp.js
+   trunk/examples/basecamp_api/index.html
+   trunk/examples/basecamp_api/models/
+   trunk/examples/basecamp_api/proxy/php/
+   trunk/examples/basecamp_api/proxy/php/proxy.php
+   trunk/examples/basecamp_api/views/
+   trunk/examples/basecamp_api/views/project.xsl
+Log:
+
+
+Modified: trunk/examples/basecamp_api/basecamp.js
+===================================================================
+--- trunk/examples/basecamp_api/basecamp.js	2006-04-18 21:55:26 UTC (rev 50)
++++ trunk/examples/basecamp_api/basecamp.js	2006-04-19 21:50:27 UTC (rev 51)
+@@ -1,2 +1,191 @@
+ 
++	// See <A HREF="http://www.basecamphq.com/api/">http://www.basecamphq.com/api/</A>
+ 
++	// Error Handler
++	window.onerror = errorHandler;
++	
++	// RESOURCES
++	// ---------------------------------------------------------------------------------------------
++	// Constants
++	var BASECAMP_URL = &quot;<A HREF="http://freja.projectpath.com">http://freja.projectpath.com</A>&quot;;	
++
++	// 3rd party libraries.
++	var helpers = new wHELPERS();	// misc. javascript functions
++
++	// Views
++	var project_view = getView(&quot;views/project.xsl&quot;);
++	var projectSelector_view = getView(&quot;views/project_selector.xsl&quot;);	
++	var todoList_view = getView(&quot;views/todo_list.xsl&quot;);
++	var messageList_view = getView(&quot;views/message_list.xsl&quot;);
++	var milestoneList_view = getView(&quot;views/milestone_list.xsl&quot;);
++	
++	// Models
++	var projects = getModel(&quot;models/projects.xml&quot;); // Snapshot. Live data: getModel(addProxyToUrl(&quot;/project/list&quot;)));	
++	var todos = null; 	   
++	var messages = null;   
++	var milestones = null; 
++
++	// Project Dependent Assets	
++	function loadProjectAssets(projectId) {	
++		
++		if(!projectId) 
++			var projectId = projects.get(&quot;//project[status='active']/id&quot;);				
++		
++		todos = getModel(&quot;models/todos.xml&quot;); // Snapshot. Live data: getModel(addProxyToUrl(&quot;/projects/&quot;+projectId+&quot;/todos/lists&quot;));							
++		Freja._aux.connect(todos, 'onload', function() { dispatch('showToDoList'); });	
++		
++		messages = getModel(&quot;models/posts.xml&quot;); // Snapshot. Live data: getModel(addProxyToUrl(&quot;/projects/&quot;+projectId+&quot;/msg/archive&quot;));
++		Freja._aux.connect(messages, 'onload', function() { dispatch('showMessageList'); });	
++		
++		milestones = getModel(&quot;models/milestones.xml&quot;); // Snapshot. Live data: getModel(addProxyToUrl(&quot;/projects/&quot;+projectId+&quot;/milestones/list&quot;));
++		Freja._aux.connect(milestones, 'onload', function() { dispatch('showMilestoneList'); });	
++	}
++	Freja._aux.connect(projects, 'onload', function(){loadProjectAssets()});
++	
++	
++	// ---------------------------------------------------------------------------------------------
++	// VIEW BEHAVIORS
++	// ---------------------------------------------------------------------------------------------
++	
++	function addProjectSelectorBehaviors() {
++		//showModelSnapshot(projects);
++		var select = document.getElementById('currentProjectSelector');
++		select.onchange = function(e) {
++			var projectId = select.options[select.selectedIndex].value;
++			loadProjectAssets(projectId);
++		}
++	}	
++	Freja._aux.connect(projectSelector_view, 'onrendercomplete', addProjectSelectorBehaviors);
++
++	function addToDoListBehaviors() {
++		//showModelSnapshot(todos);
++		var el = document.getElementById('placeholder_main').getElementsByTagName(&quot;a&quot;);
++		for (var i=0;i&lt;el.length;i++) {
++			if (helpers.hasClass(el[i], &quot;editToDoListLink&quot;)) {
++				el[i].onclick = function() {
++					dispatch('editToDoList', {toDoListId : extractId(this.id) });
++				}		
++			}			
++		} 
++	}
++	Freja._aux.connect(todoList_view, 'onrendercomplete', addToDoListBehaviors);
++
++	function addMessageListBehaviors() {
++		//showModelSnapshot(messages);
++		var el = document.getElementById('placeholder_main').getElementsByTagName(&quot;a&quot;);
++		for (var i=0;i&lt;el.length;i++) {
++			if (helpers.hasClass(el[i], &quot;editMessageLink&quot;)) {
++				el[i].onclick = function() {
++					dispatch('editMessage', {messageId : extractId(this.id) });
++				}		
++			}			
++		} 
++	}
++	Freja._aux.connect(messageList_view, 'onrendercomplete', addMessageListBehaviors);
++	
++
++	function addMilestoneListBehaviors() {
++		//showModelSnapshot(milestones);
++		var el = document.getElementById('placeholder_main').getElementsByTagName(&quot;a&quot;);
++		for (var i=0;i&lt;el.length;i++) {
++			if (helpers.hasClass(el[i], &quot;editMilestoneLink&quot;)) {
++				el[i].onclick = function() {
++					dispatch('editMilestone', {milestoneId : extractId(this.id) });
++				}		
++			}			
++		} 
++	}
++	Freja._aux.connect(milestoneList_view, 'onrendercomplete', addMilestoneListBehaviors);
++	
++	// ---------------------------------------------------------------------------------------------
++	// DISPATCHER
++	// ---------------------------------------------------------------------------------------------
++	
++	function dispatch(action, params) {
++		
++		switch (action) {
++			default:	
++				// init												
++				dispatch('showProjectSelector');				
++				break;
++			case 'showProjectSelector':	
++				projectSelector_view.render(projects, 'placeholder_projectSelector');				
++				break;
++			case 'showToDoList':					
++				todoList_view.render(todos, 'placeholder_main');				
++				break;
++			case 'showMessageList':
++				messageList_view.render(messages, 'placeholder_main');				
++				break;	
++			case 'showMilestoneList':
++				milestoneList_view.render(milestones, 'placeholder_main');				
++				break;				
++			case 'editProject':
++				project_view.render(projects, 'placeholder_main', params);				
++				break;
++			case 'editCompany':
++				company_view.render(company, 'placeholder_main', params);				
++				break;
++				
++		}
++	}
++	
++	// ---------------------------------------------------------------------------------------------
++	// MISC.
++	// ---------------------------------------------------------------------------------------------
++	function extractId(obj) {
++		// format: 'anystring__id'. Returns the part after the '-'.
++		//         or [event object]
++		// used to encode a Model element id in a unique html id.
++		
++		if(!obj) obj = window.event;
++		
++		switch(typeof obj) {
++			case 'string':
++				id = obj;
++				break;
++			case 'object':
++				if(!obj.id) 
++					obj = helpers.getSourceElement(obj);
++				id = obj.id;					
++				break;
++			case 'undefined':
++				return null;
++				break;
++			default:
++				alert('extractId, unhandled object type: ' + typeof obj);
++				return null;
++				break;
++		}				
++		id = id.substr(id.lastIndexOf('__')+2);
++		return id;
++	}
++	
++	function addProxyToUrl(resourceUrl) {
++		return &quot;proxy/php/proxy.php?url=&quot;+encodeURIComponent(BASECAMP_URL+resourceUrl);	
++	}
++	// ---------------------------------------------------------------------------------------------
++	// debug misc.
++	// ---------------------------------------------------------------------------------------------
++	function showModelSnapshot(model) {
++		var xml = Freja._aux.serializeXML(model.document);
++		var dbg = document.getElementById('placeholder_debug');
++		dbg.innerHTML = &quot;&lt;textarea cols='60' rows='15'&gt;&quot;+xml+&quot;&lt;/textarea&gt;&quot;;		
++		dbg.style.display = &quot;block&quot;;
++	}
++
++	// ---------------------------------------------------------------------------------------------
++	// errorHandler
++	// ---------------------------------------------------------------------------------------------
++	function errorHandler(desc,page,line,chr)  {
++		 alert(
++			  'Sorry, a JavaScript error occurred! \n'
++			 +'\nError description: \t'+desc
++			 +'\nPage address:      \t'+page
++			 +'\nLine number:       \t'+line
++		 )
++		 return true
++	}
++	
++	// let's go!
++	window.onload = dispatch;
+\ No newline at end of file
+
+
+Property changes on: trunk/examples/basecamp_api/css
+___________________________________________________________________
+Name: svn:ignore
+   + _notes
+
+
+Added: trunk/examples/basecamp_api/css/main.css
+===================================================================
+--- trunk/examples/basecamp_api/css/main.css	2006-04-18 21:55:26 UTC (rev 50)
++++ trunk/examples/basecamp_api/css/main.css	2006-04-19 21:50:27 UTC (rev 51)
+@@ -0,0 +1,11 @@
++
++body {
++	margin: 0;
++	padding: 0;
++}
++#placeholder_debug {
++	border-top: 1px solid #000;
++	background-color: #555;
++	display: none;
++}
++
+
+Modified: trunk/examples/basecamp_api/index.html
+===================================================================
+--- trunk/examples/basecamp_api/index.html	2006-04-18 21:55:26 UTC (rev 50)
++++ trunk/examples/basecamp_api/index.html	2006-04-19 21:50:27 UTC (rev 51)
+@@ -13,6 +13,6 @@
+ &lt;/head&gt;
+ 
+ &lt;body&gt;
+-&lt;div id=&quot;content&quot;&gt;&lt;span style=&quot;color:white;background:firebrick&quot;&gt;Loading ...&lt;/span&gt;&lt;/div&gt;
++&lt;div id=&quot;placeholder_projectList&quot;&gt;&lt;/div&gt;
+ &lt;/body&gt;
+ &lt;/html&gt;
+
+
+Property changes on: trunk/examples/basecamp_api/models
+___________________________________________________________________
+Name: svn:ignore
+   + _notes
+
+
+Added: trunk/examples/basecamp_api/models/milestones.xml
+===================================================================
+--- trunk/examples/basecamp_api/models/milestones.xml	2006-04-18 21:55:26 UTC (rev 50)
++++ trunk/examples/basecamp_api/models/milestones.xml	2006-04-19 21:50:27 UTC (rev 51)
+@@ -0,0 +1,15 @@
++&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
++&lt;milestones&gt;
++  &lt;milestone&gt;
++    &lt;wants-notification type=&quot;boolean&quot;&gt;false&lt;/wants-notification&gt;
++    &lt;created-on type=&quot;datetime&quot;&gt;2006-04-18T20:53:56Z&lt;/created-on&gt;
++    &lt;completed type=&quot;boolean&quot;&gt;false&lt;/completed&gt;
++    &lt;project-id type=&quot;integer&quot;&gt;427919&lt;/project-id&gt;
++    &lt;title&gt;Release v2.0&lt;/title&gt;
++    &lt;creator-id type=&quot;integer&quot;&gt;605851&lt;/creator-id&gt;
++    &lt;id type=&quot;integer&quot;&gt;1203942&lt;/id&gt;
++    &lt;deadline type=&quot;date&quot;&gt;2006-05-01&lt;/deadline&gt;
++    &lt;responsible-party-id type=&quot;integer&quot;&gt;605851&lt;/responsible-party-id&gt;
++    &lt;responsible-party-type&gt;Person&lt;/responsible-party-type&gt;
++  &lt;/milestone&gt;
++&lt;/milestones&gt;
+\ No newline at end of file
+
+Added: trunk/examples/basecamp_api/models/posts.xml
+===================================================================
+--- trunk/examples/basecamp_api/models/posts.xml	2006-04-18 21:55:26 UTC (rev 50)
++++ trunk/examples/basecamp_api/models/posts.xml	2006-04-19 21:50:27 UTC (rev 51)
+@@ -0,0 +1,14 @@
++&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
++&lt;!-- THIS IS A SNAPSHOT OF LIVE DATA FROM BASECAMP. USED DURING DEVELOPMENT ONLY --&gt;
++&lt;posts&gt;
++  &lt;post&gt;
++    &lt;title&gt;This is a message&lt;/title&gt;
++    &lt;attachments-count type=&quot;integer&quot;&gt;0&lt;/attachments-count&gt;
++    &lt;id type=&quot;integer&quot;&gt;2194956&lt;/id&gt;
++    &lt;category&gt;
++      &lt;name&gt;Assets&lt;/name&gt;
++      &lt;id type=&quot;integer&quot;&gt;4007205&lt;/id&gt;
++    &lt;/category&gt;
++    &lt;posted-on type=&quot;datetime&quot;&gt;2006-04-18T20:52:59Z&lt;/posted-on&gt;
++  &lt;/post&gt;
++&lt;/posts&gt;
+\ No newline at end of file
+
+Added: trunk/examples/basecamp_api/models/projects.xml
+===================================================================
+--- trunk/examples/basecamp_api/models/projects.xml	2006-04-18 21:55:26 UTC (rev 50)
++++ trunk/examples/basecamp_api/models/projects.xml	2006-04-19 21:50:27 UTC (rev 51)
+@@ -0,0 +1,19 @@
++&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
++&lt;!-- THIS IS A SNAPSHOT OF LIVE DATA FROM BASECAMP. USED DURING DEVELOPMENT ONLY --&gt;
++&lt;projects&gt;
++  &lt;project&gt;
++    &lt;status&gt;active&lt;/status&gt;
++    &lt;name&gt;Freja v2,0 Example&lt;/name&gt;
++    &lt;created-on type=&quot;date&quot;&gt;2006-04-18&lt;/created-on&gt;
++    &lt;announcement/&gt;
++    &lt;company&gt;
++      &lt;name&gt;freja&lt;/name&gt;
++      &lt;id type=&quot;integer&quot;&gt;285940&lt;/id&gt;
++    &lt;/company&gt;
++    &lt;start-page&gt;log&lt;/start-page&gt;
++    &lt;last-changed-on type=&quot;datetime&quot;&gt;2006-04-18T20:53:56Z&lt;/last-changed-on&gt;
++    &lt;show-announcement type=&quot;boolean&quot;&gt;false&lt;/show-announcement&gt;
++    &lt;id type=&quot;integer&quot;&gt;427919&lt;/id&gt;
++    &lt;show-writeboards type=&quot;boolean&quot;&gt;false&lt;/show-writeboards&gt;
++  &lt;/project&gt;
++&lt;/projects&gt;
+\ No newline at end of file
+
+Added: trunk/examples/basecamp_api/models/todos.xml
+===================================================================
+--- trunk/examples/basecamp_api/models/todos.xml	2006-04-18 21:55:26 UTC (rev 50)
++++ trunk/examples/basecamp_api/models/todos.xml	2006-04-19 21:50:27 UTC (rev 51)
+@@ -0,0 +1,13 @@
++&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
++&lt;!-- THIS IS A SNAPSHOT OF LIVE DATA FROM BASECAMP. USED DURING DEVELOPMENT ONLY --&gt;
++&lt;todo-lists&gt;
++  &lt;todo-list&gt;
++    &lt;name&gt;list for urgent things to do&lt;/name&gt;
++    &lt;project-id type=&quot;integer&quot;&gt;427919&lt;/project-id&gt;
++    &lt;private type=&quot;boolean&quot;&gt;false&lt;/private&gt;
++    &lt;id type=&quot;integer&quot;&gt;763869&lt;/id&gt;
++    &lt;description/&gt;
++    &lt;position type=&quot;integer&quot;&gt;1&lt;/position&gt;
++    &lt;milestone-id type=&quot;integer&quot;&gt;0&lt;/milestone-id&gt;
++  &lt;/todo-list&gt;
++&lt;/todo-lists&gt;
+\ No newline at end of file
+
+
+Property changes on: trunk/examples/basecamp_api/proxy/php
+___________________________________________________________________
+Name: svn:ignore
+   + _notes
+
+
+Modified: trunk/examples/basecamp_api/proxy/php/proxy.php
+===================================================================
+--- trunk/examples/basecamp_api/proxy/php/proxy.php	2006-04-18 21:55:26 UTC (rev 50)
++++ trunk/examples/basecamp_api/proxy/php/proxy.php	2006-04-19 21:50:27 UTC (rev 51)
+@@ -4,9 +4,11 @@
+ 	$password = &quot;apitest&quot;;
+ 	$baseUrl  = &quot;<A HREF="http://freja.projectpath.com/">http://freja.projectpath.com/</A>&quot;;
+ 
+-	$HTTPMethod     = $_GET['HTTP_REQUEST_METHOD'];
+-	$HTTPRequestUrl = $_GET['HTTP_REQUEST_URL'];
++	$HTTPMethod     = $_SERVER['REQUEST_METHOD'];
++	$HTTPRequestUrl = urldecode($_GET['url']);
++	
+ 
++	
+ 	include('Request.php');
+ 
+ 	// safety check, only request legit url
+@@ -33,10 +35,10 @@
+ 				break;
+ 			case 404:
+ 				header(&quot;HTTP/1.0 404 Not Found&quot;);
+-				exit;
+-			defaul:
++				die(&quot; 404 Not Found&quot;);				
++			default:
+ 				header(&quot;HTTP/1.0 502 Bad Gateway&quot;);
+-				exit;
++				die(&quot;Bad Gateway&quot;);
+ 		}
+ 		header('Content-Type: text/xml');
+ 		echo $response;
+
+
+Property changes on: trunk/examples/basecamp_api/views
+___________________________________________________________________
+Name: svn:ignore
+   + _notes
+
+
+Added: trunk/examples/basecamp_api/views/message_list.xsl
+===================================================================
+--- trunk/examples/basecamp_api/views/message_list.xsl	2006-04-18 21:55:26 UTC (rev 50)
++++ trunk/examples/basecamp_api/views/message_list.xsl	2006-04-19 21:50:27 UTC (rev 51)
+@@ -0,0 +1,20 @@
++&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
++&lt;xsl:stylesheet version=&quot;1.0&quot;
++	xmlns:xsl=&quot;<A HREF="http://www.w3.org/1999/XSL/Transform">http://www.w3.org/1999/XSL/Transform</A>&quot;&gt;
++
++&lt;xsl:template match=&quot;/posts&quot;&gt;	
++	&lt;ul&gt;
++		&lt;xsl:apply-templates /&gt;
++	&lt;/ul&gt;
++&lt;/xsl:template&gt;
++
++&lt;xsl:template match=&quot;post&quot;&gt;	
++	&lt;li&gt;
++		&lt;a href='#' id='post_{id}' class='editPostLink'&gt;&lt;xsl:value-of select=&quot;title&quot;/&gt;&lt;/a&gt;
++		&#160; &lt;xsl:value-of select=&quot;category/name&quot;/&gt;
++		&lt;xsl:apply-templates /&gt;
++	&lt;/li&gt;
++&lt;/xsl:template&gt;
++
++&lt;xsl:template match=&quot;text()&quot; /&gt;
++&lt;/xsl:stylesheet&gt;
+\ No newline at end of file
+
+Added: trunk/examples/basecamp_api/views/milestone_list.xsl
+===================================================================
+--- trunk/examples/basecamp_api/views/milestone_list.xsl	2006-04-18 21:55:26 UTC (rev 50)
++++ trunk/examples/basecamp_api/views/milestone_list.xsl	2006-04-19 21:50:27 UTC (rev 51)
+@@ -0,0 +1,20 @@
++&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
++&lt;xsl:stylesheet version=&quot;1.0&quot;
++	xmlns:xsl=&quot;<A HREF="http://www.w3.org/1999/XSL/Transform">http://www.w3.org/1999/XSL/Transform</A>&quot;&gt;
++
++&lt;xsl:template match=&quot;/milestones&quot;&gt;	
++	&lt;ul&gt;
++		&lt;xsl:apply-templates /&gt;
++	&lt;/ul&gt;
++&lt;/xsl:template&gt;
++
++&lt;xsl:template match=&quot;milestone&quot;&gt;	
++	&lt;li&gt;
++		&lt;a href='#' id='milestone_{id}' class='editDeadlineLink'&gt;&lt;xsl:value-of select=&quot;title&quot;/&gt;&lt;/a&gt;
++		&#160; &lt;xsl:value-of select=&quot;deadline&quot;/&gt;
++		&lt;xsl:apply-templates /&gt;
++	&lt;/li&gt;
++&lt;/xsl:template&gt;
++
++&lt;xsl:template match=&quot;text()&quot; /&gt;
++&lt;/xsl:stylesheet&gt;
+\ No newline at end of file
+
+Modified: trunk/examples/basecamp_api/views/project.xsl
+===================================================================
+--- trunk/examples/basecamp_api/views/project.xsl	2006-04-18 21:55:26 UTC (rev 50)
++++ trunk/examples/basecamp_api/views/project.xsl	2006-04-19 21:50:27 UTC (rev 51)
+@@ -19,12 +19,18 @@
+ 				&lt;/xsl:if&gt;
+ 				active
+ 			&lt;/option&gt;
+-			&lt;option value='inactive'&gt;
+-				&lt;xsl:if test=&quot;status='inactive'&quot;&gt;
++			&lt;option value='on-hold'&gt;
++				&lt;xsl:if test=&quot;status='on-hold'&quot;&gt;
+ 					&lt;xsl:attribute name='selected'&gt;selected&lt;/xsl:attribute&gt;
+ 				&lt;/xsl:if&gt;
+-				inactive
++				on-hold
+ 			&lt;/option&gt;
++			&lt;option value='archived'&gt;
++				&lt;xsl:if test=&quot;status='archived'&quot;&gt;
++					&lt;xsl:attribute name='selected'&gt;selected&lt;/xsl:attribute&gt;
++				&lt;/xsl:if&gt;
++				archived
++			&lt;/option&gt;			
+ 		&lt;/select&gt;&lt;br/&gt;
+ 		&lt;p&gt;
+ 			&lt;input type=&quot;button&quot; value=&quot;cancel&quot; /&gt;
+
+Added: trunk/examples/basecamp_api/views/project_selector.xsl
+===================================================================
+--- trunk/examples/basecamp_api/views/project_selector.xsl	2006-04-18 21:55:26 UTC (rev 50)
++++ trunk/examples/basecamp_api/views/project_selector.xsl	2006-04-19 21:50:27 UTC (rev 51)
+@@ -0,0 +1,19 @@
++&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
++&lt;xsl:stylesheet version=&quot;1.0&quot;
++	xmlns:xsl=&quot;<A HREF="http://www.w3.org/1999/XSL/Transform">http://www.w3.org/1999/XSL/Transform</A>&quot;&gt;
++
++&lt;xsl:template match=&quot;projects&quot;&gt;	
++	&lt;label for=&quot;currentProjectSelector&quot; class=&quot;preField&quot; &gt;Current Project: &lt;/label&gt;
++	&lt;select id=&quot;currentProjectSelector&quot;&gt;		
++		&lt;xsl:apply-templates /&gt;
++	&lt;/select&gt;
++&lt;/xsl:template&gt;
++
++&lt;xsl:template match=&quot;project&quot;&gt;	
++	&lt;option value=&quot;{id}&quot;&gt;
++		&lt;xsl:value-of select=&quot;name&quot;/&gt;
++	&lt;/option&gt;
++&lt;/xsl:template&gt;
++
++&lt;xsl:template match=&quot;text()&quot; /&gt;
++&lt;/xsl:stylesheet&gt;
+\ No newline at end of file
+
+Added: trunk/examples/basecamp_api/views/projects.xsl
+===================================================================
+--- trunk/examples/basecamp_api/views/projects.xsl	2006-04-18 21:55:26 UTC (rev 50)
++++ trunk/examples/basecamp_api/views/projects.xsl	2006-04-19 21:50:27 UTC (rev 51)
+@@ -0,0 +1,37 @@
++&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
++&lt;xsl:stylesheet version=&quot;1.0&quot;
++	xmlns:xsl=&quot;<A HREF="http://www.w3.org/1999/XSL/Transform">http://www.w3.org/1999/XSL/Transform</A>&quot;&gt;
++
++&lt;xsl:template match=&quot;projects&quot;&gt;	
++	&lt;xsl:apply-templates /&gt;
++&lt;/xsl:template&gt;
++
++&lt;xsl:template match=&quot;project&quot;&gt;	
++	&lt;form method=&quot;post&quot; action=&quot;#&quot; id=&quot;project__{id}&quot;&gt;
++		&lt;label for=&quot;projectname&quot; class=&quot;preField&quot;&gt;Project Name: &lt;/label&gt;
++		&lt;input type=&quot;text&quot; name=&quot;//project[id={id}]/name&quot; value=&quot;{name}&quot; /&gt;&lt;br/&gt;
++		
++		&lt;label for=&quot;projectstatus&quot; class=&quot;preField&quot;&gt;Project Status: &lt;/label&gt;
++		&lt;select name=&quot;//project[id={id}]/status&quot;&gt;
++			&lt;option value='active'&gt;
++				&lt;xsl:if test=&quot;status='active'&quot;&gt;
++					&lt;xsl:attribute name='selected'&gt;selected&lt;/xsl:attribute&gt;
++				&lt;/xsl:if&gt;
++				active
++			&lt;/option&gt;
++			&lt;option value='inactive'&gt;
++				&lt;xsl:if test=&quot;status='inactive'&quot;&gt;
++					&lt;xsl:attribute name='selected'&gt;selected&lt;/xsl:attribute&gt;
++				&lt;/xsl:if&gt;
++				inactive
++			&lt;/option&gt;
++		&lt;/select&gt;&lt;br/&gt;
++		&lt;p&gt;
++			&lt;input type=&quot;button&quot; value=&quot;cancel&quot; /&gt;
++			&lt;input type=&quot;submit&quot; value=&quot;ok&quot; /&gt;
++		&lt;/p&gt;
++	&lt;/form&gt;
++&lt;/xsl:template&gt;
++
++&lt;xsl:template match=&quot;text()&quot; /&gt;
++&lt;/xsl:stylesheet&gt;
+\ No newline at end of file
+
+Added: trunk/examples/basecamp_api/views/todo_list.xsl
+===================================================================
+--- trunk/examples/basecamp_api/views/todo_list.xsl	2006-04-18 21:55:26 UTC (rev 50)
++++ trunk/examples/basecamp_api/views/todo_list.xsl	2006-04-19 21:50:27 UTC (rev 51)
+@@ -0,0 +1,19 @@
++&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
++&lt;xsl:stylesheet version=&quot;1.0&quot;
++	xmlns:xsl=&quot;<A HREF="http://www.w3.org/1999/XSL/Transform">http://www.w3.org/1999/XSL/Transform</A>&quot;&gt;
++
++&lt;xsl:template match=&quot;/todo-lists&quot;&gt;	
++	&lt;ul&gt;
++		&lt;xsl:apply-templates /&gt;
++	&lt;/ul&gt;
++&lt;/xsl:template&gt;
++
++&lt;xsl:template match=&quot;todo-list&quot;&gt;	
++	&lt;li&gt;
++		&lt;a href='#' id='todolist_{id}' class='editToDoListLink'&gt;&lt;xsl:value-of select=&quot;name&quot;/&gt;&lt;/a&gt;
++		&lt;xsl:apply-templates /&gt;
++	&lt;/li&gt;
++&lt;/xsl:template&gt;
++
++&lt;xsl:template match=&quot;text()&quot; /&gt;
++&lt;/xsl:stylesheet&gt;
+\ No newline at end of file
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000046.html">[Freja-svn] r50 - trunk/examples/basecamp_api/proxy/php
+</A></li>
+	<LI>Next message: <A HREF="000048.html">[Freja-svn] r52 - in trunk: examples/contacts examples/contacts/views examples/tutorial examples/tutorial/views src src/auxiliary
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#47">[ date ]</a>
+              <a href="thread.html#47">[ thread ]</a>
+              <a href="subject.html#47">[ subject ]</a>
+              <a href="author.html#47">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/freja-svn">More information about the Freja-svn
+mailing list</a><br>
+</body></html>

@@ -1,0 +1,144 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Freja-svn] r12 - in trunk: examples/contacts lib
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/freja-svn/2006-March/index.html" >
+   <LINK REL="made" HREF="mailto:freja-svn%40lists.berlios.de?Subject=Re%3A%20%5BFreja-svn%5D%20r12%20-%20in%20trunk%3A%20examples/contacts%20lib&In-Reply-To=%3C200603191427.k2JERJWP002740%40sheep.berlios.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000006.html">
+   <LINK REL="Next"  HREF="000009.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Freja-svn] r12 - in trunk: examples/contacts lib</H1>
+    <B>troelskn at BerliOS</B> 
+    <A HREF="mailto:freja-svn%40lists.berlios.de?Subject=Re%3A%20%5BFreja-svn%5D%20r12%20-%20in%20trunk%3A%20examples/contacts%20lib&In-Reply-To=%3C200603191427.k2JERJWP002740%40sheep.berlios.de%3E"
+       TITLE="[Freja-svn] r12 - in trunk: examples/contacts lib">troelskn at berlios.de
+       </A><BR>
+    <I>Sun Mar 19 15:27:19 CET 2006</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000006.html">[Freja-svn] r11 - in trunk: examples/contacts examples/contacts/models/php_inc examples/contacts/views lib
+</A></li>
+        <LI>Next message: <A HREF="000009.html">[Freja-svn] r13 - trunk/lib
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#7">[ date ]</a>
+              <a href="thread.html#7">[ thread ]</a>
+              <a href="subject.html#7">[ subject ]</a>
+              <a href="author.html#7">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Author: troelskn
+Date: 2006-03-19 15:27:03 +0100 (Sun, 19 Mar 2006)
+New Revision: 12
+
+Modified:
+   trunk/examples/contacts/client.js
+   trunk/lib/Freja.js
+Log:
+Added some asynchronosity to the contacts example.
+
+Modified: trunk/examples/contacts/client.js
+===================================================================
+--- trunk/examples/contacts/client.js	2006-03-19 02:27:16 UTC (rev 11)
++++ trunk/examples/contacts/client.js	2006-03-19 14:27:03 UTC (rev 12)
+@@ -7,7 +7,6 @@
+ index.placeholder = &quot;content&quot;;
+ index.handlers[&quot;edit&quot;] = {
+ 	onclick : function(node) {
+-//		edit.render(contacts.get(node.getAttribute('pkey')));
+ 		edit.render(getModel(node.getAttribute('url')));
+ 	}
+ };
+@@ -16,12 +15,12 @@
+ 		if (!confirm(&quot;Really delete it?&quot;)) {
+ 			return;
+ 		}
+-//		var model = contacts.get(node.getAttribute('pkey'));
+ 		var model = getModel(node.getAttribute('url'));
+-		var d = model._delete()
++		var d = model.remove()
+ 		d.addCallback(function() {
+-			contacts.select().reload();
+-			index.render(contacts.select());
++			contacts.select().reload().addCallback(function() {
++				index.render(contacts.select());
++			});
+ 		});
+ 	}
+ };
+@@ -38,8 +37,9 @@
+ 	onsubmit : function(node) {
+ 		var d = contacts.create(getView(&quot;views/create.xsl&quot;).getValues());
+ 		d.addCallback(function() {
+-			contacts.select().reload();
+-			index.render(contacts.select());
++			contacts.select().reload().addCallback(function() {
++				index.render(contacts.select());
++			});
+ 		});
+ 		index.render(contacts.select());
+ 	}
+@@ -56,13 +56,13 @@
+ edit.handlers[&quot;form&quot;] = {
+ 	onsubmit : function(node) {
+ 		try {
+-//			var model = contacts.get(node.getAttribute('pkey'));
+ 			var model = getModel(node.getAttribute('url'));
+ 			model.updateFrom(getView(&quot;views/edit.xsl&quot;));
+ 			var d = model.save();
+ 			d.addCallback(function() {
+-				contacts.select().reload();
+-				index.render(contacts.select());
++				contacts.select().reload().addCallback(function() {
++					index.render(contacts.select());
++				});
+ 			});
+ 			index.render(contacts.select());
+ 		} catch (ex) {
+
+Modified: trunk/lib/Freja.js
+===================================================================
+--- trunk/lib/Freja.js	2006-03-19 02:27:16 UTC (rev 11)
++++ trunk/lib/Freja.js	2006-03-19 14:27:03 UTC (rev 12)
+@@ -260,7 +260,7 @@
+   * Deletes the model from the remote service
+   * @returns MochiKit.Async.Deferred
+   */
+-Freja.Model.prototype._delete = function() {
++Freja.Model.prototype.remove = function() {
+ 	var url = this.url;
+ 	var match = /^(file:\/\/.*\/)([^/]*)$/.exec(window.location.href);
+ 	if (match) {
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000006.html">[Freja-svn] r11 - in trunk: examples/contacts examples/contacts/models/php_inc examples/contacts/views lib
+</A></li>
+	<LI>Next message: <A HREF="000009.html">[Freja-svn] r13 - trunk/lib
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#7">[ date ]</a>
+              <a href="thread.html#7">[ thread ]</a>
+              <a href="subject.html#7">[ subject ]</a>
+              <a href="author.html#7">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/freja-svn">More information about the Freja-svn
+mailing list</a><br>
+</body></html>

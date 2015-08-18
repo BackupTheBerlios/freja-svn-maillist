@@ -1,0 +1,46 @@
+From cedsav at mail.berlios.de  Fri Oct 20 23:26:07 2006
+From: cedsav at mail.berlios.de (cedsav at mail.berlios.de)
+Date: Fri, 20 Oct 2006 23:26:07 +0200
+Subject: [Freja-svn] r68 - trunk/examples/contacts/views
+Message-ID: <200610202126.k9KLQ7Et024302@sheep.berlios.de>
+
+Author: cedsav
+Date: 2006-10-20 23:26:04 +0200 (Fri, 20 Oct 2006)
+New Revision: 68
+
+Modified:
+   trunk/examples/contacts/views/create.xsl
+   trunk/examples/contacts/views/index.xsl
+Log:
+Fixed contact example. Thx to Sias Mey
+
+Modified: trunk/examples/contacts/views/create.xsl
+===================================================================
+--- trunk/examples/contacts/views/create.xsl	2006-08-10 20:30:50 UTC (rev 67)
++++ trunk/examples/contacts/views/create.xsl	2006-10-20 21:26:04 UTC (rev 68)
+@@ -3,7 +3,7 @@
+ 	xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+ 
+ <xsl:template match="/">
+-	<form method="post" action="#" freja-behaviour="form">
++	<form method="post" action="#" class="form">
+ 		<p>email:<input name="email" type="text" value="" /></p>
+ 		<p>first_name:<input name="first_name" type="text" value="" /></p>
+ 		<p>surname:<input name="surname" type="text" value="" /></p>
+
+Modified: trunk/examples/contacts/views/index.xsl
+===================================================================
+--- trunk/examples/contacts/views/index.xsl	2006-08-10 20:30:50 UTC (rev 67)
++++ trunk/examples/contacts/views/index.xsl	2006-10-20 21:26:04 UTC (rev 68)
+@@ -18,7 +18,7 @@
+ 	</tr>
+ </xsl:for-each> 
+ 	<tr>
+-		<td align="right" colspan="2"><input type="button" value="create" freja-behaviour="create" /></td>
++		<td align="right" colspan="2"><input type="button" value="create" class="create" /></td>
+ 	</tr>
+ </table>
+ </xsl:template>
+
+
+

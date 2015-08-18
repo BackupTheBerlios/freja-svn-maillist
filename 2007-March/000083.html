@@ -1,0 +1,134 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Freja-svn] r85 - branch/2.0.1/examples/tutorial
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/freja-svn/2007-March/index.html" >
+   <LINK REL="made" HREF="mailto:freja-svn%40lists.berlios.de?Subject=Re%3A%20%5BFreja-svn%5D%20r85%20-%20branch/2.0.1/examples/tutorial&In-Reply-To=%3C200703211342.l2LDglc7020760%40sheep.berlios.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000082.html">
+   <LINK REL="Next"  HREF="000084.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Freja-svn] r85 - branch/2.0.1/examples/tutorial</H1>
+    <B>cedsav at mail.berlios.de</B> 
+    <A HREF="mailto:freja-svn%40lists.berlios.de?Subject=Re%3A%20%5BFreja-svn%5D%20r85%20-%20branch/2.0.1/examples/tutorial&In-Reply-To=%3C200703211342.l2LDglc7020760%40sheep.berlios.de%3E"
+       TITLE="[Freja-svn] r85 - branch/2.0.1/examples/tutorial">cedsav at mail.berlios.de
+       </A><BR>
+    <I>Wed Mar 21 14:42:47 CET 2007</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000082.html">[Freja-svn] r84 - branch/2.0.1/examples/contacts/views
+</A></li>
+        <LI>Next message: <A HREF="000084.html">[Freja-svn] r86 - in trunk: . examples/basecamp_api	examples/basecamp_api/css examples/basecamp_api/views	examples/contacts examples/contacts/models/php_inc	examples/contacts/views examples/tutorial	examples/tutorial/views lib lib/minimal lib/mochi+sarissa src	src/auxiliary tests
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#83">[ date ]</a>
+              <a href="thread.html#83">[ thread ]</a>
+              <a href="subject.html#83">[ subject ]</a>
+              <a href="author.html#83">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Author: cedsav
+Date: 2007-03-21 14:42:38 +0100 (Wed, 21 Mar 2007)
+New Revision: 85
+
+Added:
+   branch/2.0.1/examples/tutorial/example2.html
+   branch/2.0.1/examples/tutorial/example2.js
+Log:
+
+
+Added: branch/2.0.1/examples/tutorial/example2.html
+===================================================================
+--- branch/2.0.1/examples/tutorial/example2.html	2007-03-19 22:43:55 UTC (rev 84)
++++ branch/2.0.1/examples/tutorial/example2.html	2007-03-21 13:42:38 UTC (rev 85)
+@@ -0,0 +1,19 @@
++&lt;!DOCTYPE html PUBLIC &quot;-//W3C//DTD XHTML 1.0 Transitional//EN&quot; &quot;<A HREF="http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd</A>&quot;&gt;
++&lt;html xmlns=&quot;<A HREF="http://www.w3.org/1999/xhtml">http://www.w3.org/1999/xhtml</A>&quot;&gt;
++&lt;head&gt;
++&lt;meta http-equiv=&quot;Content-Type&quot; content=&quot;text/html; charset=utf-8&quot; /&gt;
++&lt;title&gt;Freja Example 2&lt;/title&gt;
++
++&lt;!-- Freja Framework Script --&gt;
++&lt;script type=&quot;text/javascript&quot; src=&quot;../../lib/MochiKit.js&quot;&gt;&lt;/script&gt;
++&lt;script type=&quot;text/javascript&quot; src=&quot;../../lib/Sarissa.js&quot;&gt;&lt;/script&gt;
++&lt;script type=&quot;text/javascript&quot; src=&quot;../../lib/Freja.js&quot;&gt;&lt;/script&gt;
++
++&lt;!-- Controller Code --&gt;
++&lt;script type=&quot;text/javascript&quot; src=&quot;example2.js&quot;&gt;&lt;/script&gt;
++&lt;/head&gt;
++
++&lt;body&gt;
++&lt;div id=&quot;content&quot;&gt;&lt;span style=&quot;color:white;background:firebrick&quot;&gt;Loading ...&lt;/span&gt;&lt;/div&gt;
++&lt;/body&gt;
++&lt;/html&gt;
+
+Added: branch/2.0.1/examples/tutorial/example2.js
+===================================================================
+--- branch/2.0.1/examples/tutorial/example2.js	2007-03-19 22:43:55 UTC (rev 84)
++++ branch/2.0.1/examples/tutorial/example2.js	2007-03-21 13:42:38 UTC (rev 85)
+@@ -0,0 +1,31 @@
++var data = getModel(&quot;models/data.xml&quot;);
++
++var display = getView(&quot;views/display.xsl&quot;);
++display.placeholder = &quot;content&quot;;
++display.behaviors[&quot;editLink&quot;] = {
++	onclick : function() {
++		edit.render(data);
++	}
++};
++
++var edit = getView(&quot;views/edit.xsl&quot;);
++edit.placeholder = &quot;content&quot;;
++edit.behaviors[&quot;editForm&quot;] = {
++	onsubmit : function() {
++		try {
++			data.updateFrom(edit);
++			display.render(data);
++		} catch (ex) {
++			alert(ex.message);
++		}
++	}
++};
++edit.behaviors[&quot;displayLink&quot;] = {
++	onclick : function() {
++		display.render(data);
++	}
++};
++
++connect(window, &quot;onload&quot;, function() {
++	display.render(data);
++});
+\ No newline at end of file
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000082.html">[Freja-svn] r84 - branch/2.0.1/examples/contacts/views
+</A></li>
+	<LI>Next message: <A HREF="000084.html">[Freja-svn] r86 - in trunk: . examples/basecamp_api	examples/basecamp_api/css examples/basecamp_api/views	examples/contacts examples/contacts/models/php_inc	examples/contacts/views examples/tutorial	examples/tutorial/views lib lib/minimal lib/mochi+sarissa src	src/auxiliary tests
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#83">[ date ]</a>
+              <a href="thread.html#83">[ thread ]</a>
+              <a href="subject.html#83">[ subject ]</a>
+              <a href="author.html#83">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/freja-svn">More information about the Freja-svn
+mailing list</a><br>
+</body></html>

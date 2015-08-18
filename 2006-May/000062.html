@@ -1,0 +1,1274 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Freja-svn] r65 - in trunk/examples/basecamp_api: . css images models views
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/freja-svn/2006-May/index.html" >
+   <LINK REL="made" HREF="mailto:freja-svn%40lists.berlios.de?Subject=Re%3A%20%5BFreja-svn%5D%20r65%20-%20in%20trunk/examples/basecamp_api%3A%20.%20css%20images%20models%20views&In-Reply-To=%3C200605192120.k4JLKcUj007050%40sheep.berlios.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000061.html">
+   
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Freja-svn] r65 - in trunk/examples/basecamp_api: . css images models views</H1>
+    <B>cedsav at berlios.de</B> 
+    <A HREF="mailto:freja-svn%40lists.berlios.de?Subject=Re%3A%20%5BFreja-svn%5D%20r65%20-%20in%20trunk/examples/basecamp_api%3A%20.%20css%20images%20models%20views&In-Reply-To=%3C200605192120.k4JLKcUj007050%40sheep.berlios.de%3E"
+       TITLE="[Freja-svn] r65 - in trunk/examples/basecamp_api: . css images models views">cedsav at berlios.de
+       </A><BR>
+    <I>Fri May 19 23:20:38 CEST 2006</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000061.html">[Freja-svn] r64 - trunk/src/auxiliary
+</A></li>
+        
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#62">[ date ]</a>
+              <a href="thread.html#62">[ thread ]</a>
+              <a href="subject.html#62">[ subject ]</a>
+              <a href="author.html#62">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Author: cedsav
+Date: 2006-05-19 23:20:12 +0200 (Fri, 19 May 2006)
+New Revision: 65
+
+Added:
+   trunk/examples/basecamp_api/images/
+   trunk/examples/basecamp_api/images/basecamp-remix.png
+   trunk/examples/basecamp_api/images/bg.png
+   trunk/examples/basecamp_api/images/bin_empty.png
+   trunk/examples/basecamp_api/images/comment.png
+   trunk/examples/basecamp_api/images/comment_add.png
+   trunk/examples/basecamp_api/images/comment_delete.png
+   trunk/examples/basecamp_api/images/comment_edit.png
+   trunk/examples/basecamp_api/images/comment_quote.png
+   trunk/examples/basecamp_api/images/database_lightning.png
+   trunk/examples/basecamp_api/images/frame-bg.png
+   trunk/examples/basecamp_api/images/frame-bottom-bg.png
+   trunk/examples/basecamp_api/images/frame-top-bg.png
+   trunk/examples/basecamp_api/images/header-bg.png
+   trunk/examples/basecamp_api/images/messages-footer-bg..png
+   trunk/examples/basecamp_api/images/messages-footer-bg.png
+   trunk/examples/basecamp_api/images/messages-footer..png
+   trunk/examples/basecamp_api/images/messages-footer.png
+   trunk/examples/basecamp_api/images/messages-header-bg..png
+   trunk/examples/basecamp_api/images/messages-header-bg.png
+   trunk/examples/basecamp_api/images/messages-header.png
+   trunk/examples/basecamp_api/images/note_add.png
+   trunk/examples/basecamp_api/images/note_delete.png
+   trunk/examples/basecamp_api/images/note_edit.png
+   trunk/examples/basecamp_api/images/user.png
+   trunk/examples/basecamp_api/images/user_add.png
+   trunk/examples/basecamp_api/images/user_delete.png
+   trunk/examples/basecamp_api/images/user_edit.png
+   trunk/examples/basecamp_api/models/new_comment.xml
+   trunk/examples/basecamp_api/views/comment.xsl
+Modified:
+   trunk/examples/basecamp_api/basecamp.js
+   trunk/examples/basecamp_api/css/main.css
+   trunk/examples/basecamp_api/index.html
+   trunk/examples/basecamp_api/views/message.xsl
+   trunk/examples/basecamp_api/views/message_list.xsl
+Log:
+
+
+Modified: trunk/examples/basecamp_api/basecamp.js
+===================================================================
+--- trunk/examples/basecamp_api/basecamp.js	2006-05-17 02:27:02 UTC (rev 64)
++++ trunk/examples/basecamp_api/basecamp.js	2006-05-19 21:20:12 UTC (rev 65)
+@@ -16,10 +16,11 @@
+ 
+ 	// Views
+ 	var project_view         = getView(&quot;views/project.xsl&quot;);
+-	var projectSelector_view = getView(&quot;views/project_selector.xsl&quot;);	
++	var projectSelector_view = getView(&quot;views/project_selector.xsl&quot;);
+ 	var todoList_view        = getView(&quot;views/todo_list.xsl&quot;);
+ 	var messageList_view     = getView(&quot;views/message_list.xsl&quot;);
+ 	var message_view         = getView(&quot;views/message.xsl&quot;);
++	var comment_view         = getView(&quot;views/comment.xsl&quot;);
+ 	var milestoneList_view   = getView(&quot;views/milestone_list.xsl&quot;);
+ 	var categoryList_view    = getView(&quot;views/category_list.xsl&quot;);
+ 	
+@@ -27,9 +28,9 @@
+ 	var projects   = getModel(&quot;models/projects.xml&quot;); 	// Snapshot. Live data: getModel(addProxyToUrl(&quot;/project/list&quot;)));	
+ 	var todos      = null; 	   
+ 	var messages   = null;   
+-	var milestones = null; 
+-	var newMessage = null;
++	var milestones = null; 	
+ 	var categories = null;
++	var comments   = null;
+ 	
+ 	// Variables
+ 	var currentProjectId = null;
+@@ -43,14 +44,14 @@
+ 			currentProjectId = projectId;
+ 			
+ 		todos      = getModel(&quot;models/todos.xml&quot;); 		// Snapshot. Live data: getModel(addProxyToUrl(&quot;/projects/&quot;+currentProjectId+&quot;/todos/lists&quot;));									
+-		messages   = getModel(&quot;models/posts.xml&quot;); 		// Snapshot. Live data: getModel(addProxyToUrl(&quot;/projects/&quot;+currentProjectId+&quot;/msg/archive&quot;));	
++		messages   = getModel(&quot;models/posts.xml&quot;);  // getModel(addProxyToUrl(&quot;/projects/&quot;+currentProjectId+&quot;/msg/archive&quot;));	 // 		// Snapshot.
+ 		milestones = getModel(&quot;models/milestones.xml&quot;); // Snapshot. Live data: getModel(addProxyToUrl(&quot;/projects/&quot;+currentProjectId+&quot;/milestones/list&quot;));
+-		categories = getModel(addProxyToUrl(&quot;/projects/&quot;+currentProjectId+&quot;/post_categories&quot;));
++		categories = getModel(&quot;models/categories.xml&quot;); // Snapshot. Live data: getModel(addProxyToUrl(&quot;/projects/&quot;+currentProjectId+&quot;/post_categories&quot;));
+ 		requestTemplate = getModel(&quot;models/new_request.xml&quot;);   // xml wrapper for posted data
+ 		messageTemplate = getModel(&quot;models/new_post.xml&quot;);      // skeleton for new data
+-		
++		commentTemplate = getModel(&quot;models/new_comment.xml&quot;);   // skeleton for new data
+ 	
+-		//Freja._aux.connect(categories, 'onload', function(){showModelSnapshot(categories)});
++		//Freja._aux.connect(messages, 'onload', loadAllComments);
+ 		
+ 		todoList_view.render(todos, 'placeholder_todos');
+ 		messageList_view.render(messages, 'placeholder_messages');
+@@ -79,16 +80,29 @@
+ 	
+ 	messageList_view.behaviors[&quot;editMessageLink&quot;] = {
+ 		onclick : function(node) {	
+-			var id = extractId(node.id);			
+-			if(!isMessageLoaded(id)) {
+-				loadMessage(id, function() { editMessage(id); });
+-			} else {
+-				editMessage(id);
+-			}			
++			var id = extractId(node.id);	
++			if(!isMessageFullyLoaded(id)) {
++				loadFullMessage(id); // prefetch full message				
++			} 			
++			editMessage(id);
+ 			return false;
+ 		}
+ 	}
+ 	
++	messageList_view.behaviors[&quot;trashMessageLink&quot;] = {
++		onclick : function(node) {	
++			if(confirm('Are you sure you want to delete this message?')) {
++				var id = extractId(node.id);
++				var trashed = messages.document.selectSingleNode(&quot;//post[id='&quot;+id+&quot;']&quot;);
++				trashed.setAttribute('synchronized','false');			
++				synchronize(messages,&quot;/msg/delete/&quot;+id);
++				trashed.parentNode.removeChild(trashed);
++				messageList_view.render(messages, 'placeholder_messages'); 
++			}
++			return false;
++		}
++	}
++	
+ 	messageList_view.behaviors[&quot;newMessageLink&quot;] = {
+ 		onclick : function(node) {				
+ 			id = createMessage();
+@@ -97,11 +111,62 @@
+ 		}
+ 	}
+ 	
++	messageList_view.behaviors[&quot;refreshCommentsLink&quot;] = {
++		onclick : function(node) {				
++			id  = extractId(node.id);
++			// loadComments(id);
++			messageList_view.render(messages, 'placeholder_messages');
++			showModelSnapshot(messages);	 
++			return false;
++		}
++	}	
++	
++	messageList_view.behaviors[&quot;newCommentLink&quot;] = {
++		onclick : function(node) {	
++			messageId = extractId(node.id);		
++			id = createComment(messageId);	
++			comment_view.render(messages, 'placeholder_messages', {commentId: id});
++			return false;
++		}
++	}
++	
++	messageList_view.behaviors[&quot;editCommentLink&quot;] = {
++		onclick : function(node) {	
++			var id = extractId(node.id);	
++			editComment(id);						
++			// if(!isCommentLoaded(id)) {
++			//	loadComment(id); // prefetch full message
++			// } 			
++			return false;
++		}
++	}
++	
++	messageList_view.behaviors[&quot;trashCommentLink&quot;] = {
++		onclick : function(node) {	
++			if(confirm('Are you sure you want to delete this comment?')) {
++				var id = extractId(node.id);
++				var trashed = messages.document.selectSingleNode(&quot;//comment[id='&quot;+id+&quot;']&quot;);
++				trashed.setAttribute('synchronized','false');			
++				synchronize(messages,&quot;/msg/delete_comment/&quot;+id);
++				trashed.parentNode.removeChild(trashed);
++				messageList_view.render(messages, 'placeholder_messages'); 
++			}
++			return false;
++		}
++	}
++	
+ 	message_view.behaviors[&quot;editMessageForm&quot;] = {
+ 		onsubmit : function(node) {	
++			var id = extractId(node.id);			
+ 			messages.updateFrom(message_view);
+ 			messageList_view.render(messages, 'placeholder_messages');
+-			synchronize(messages,&quot;/projects/&quot;+currentProjectId+&quot;/msg/create&quot;);
++			if(isTempId(id)) {
++				// new message
++				synchronize(messages,&quot;/projects/&quot;+currentProjectId+&quot;/msg/create&quot; , null, function() { messageList_view.render(messages, 'placeholder_messages');} );
++			} else {
++				// edit message
++				synchronize(messages,&quot;/msg/update/&quot;+id, null, function() { messageList_view.render(messages, 'placeholder_messages');} );
++			}
+ 			return false;
+ 		}
+ 	}
+@@ -113,6 +178,42 @@
+ 		}
+ 	}
+ 	
++	message_view.behaviors[&quot;getMessageBodyLink&quot;] = {
++		onclick : function(node) {		
++			var id = extractId(node.id);		
++							
++			if(isMessageFullyLoaded(id)) {		
++				editMessage(id);
++			} else {
++				loadFullMessage(id, function() {editMessage(id)});
++			}			
++			return false;
++		}
++	}
++		
++	comment_view.behaviors[&quot;editCommentForm&quot;] = {
++		onsubmit : function(node) {	
++			var id = extractId(node.id);			
++			messages.updateFrom(comment_view);
++			messageList_view.render(messages, 'placeholder_messages');
++			if(isTempId(id)) {
++				// new comment
++				synchronize(messages,&quot;/msg/create_comment&quot; , null, function() { messageList_view.render(messages, 'placeholder_messages');} );
++			} else {
++				// edit comment
++				synchronize(messages,&quot;/msg/update_comment/&quot;, {comment_id: id}, function() { messageList_view.render(messages, 'placeholder_messages');} );
++			}
++			return false;
++		}
++	}
++	
++	comment_view.behaviors[&quot;cancelAction&quot;] = {
++		onclick : function(node) {				
++			messageList_view.render(messages, 'placeholder_messages');
++			return false;
++		}
++	}
++		
+ 	milestoneList_view.behaviors[&quot;editMilestoneLink&quot;] = {
+ 		onclick : function(node) {
+ 			var id = extractId(node.id);
+@@ -138,7 +239,7 @@
+ 	// ---------------------------------------------------------------------------------------------
+ 	// MESSAGE MANAGEMENT
+ 	// ---------------------------------------------------------------------------------------------
+-	function isMessageLoaded(id) {		
++	function isMessageFullyLoaded(id) {		
+ 		var message = messages.document.selectSingleNode(&quot;//post[id='&quot;+id+&quot;']&quot;);
+ 		if(message) {
+ 			// message is in our message list, but could be the abbreviated version.
+@@ -148,7 +249,7 @@
+ 		return false;
+ 	}
+ 	
+-	function loadMessage(id, callback) {
++	function loadFullMessage(id, callback) {
+ 		
+ 		var newMessage = getModel(addProxyToUrl(&quot;/msg/get/&quot;+id));
+ 		
+@@ -167,9 +268,7 @@
+ 			} else {		
+ 				messages.document.documentElement.appendChild(importedNode);				
+ 			}	
+-				
+ 			callback();
+-
+ 			// need to destroy newMessage ?			
+ 		});		
+ 	}
+@@ -180,63 +279,157 @@
+ 			// problem, template is not loaded.
+ 			return;
+ 		} 
+-		var tmpid = 'tmp'+getRandomId();
++		var tmpid = getRandomId();
+ 		messageTemplate.set('/post/id', tmpid);
+ 		messageTemplate.set('/post/category-id', '4007205');
+ 				
+ 		if(messages.document.importNode) {
+-			newMessage = messages.document.importNode(messageTemplate.document.documentElement,true);
++			var newMessage = messages.document.importNode(messageTemplate.document.documentElement,true);
+ 		} // else try cloneNode
+ 
+-		messages.document.documentElement.appendChild(newMessage);
++		messages.document.documentElement.insertBefore(newMessage, messages.document.documentElement.firstChild);
+ 		return tmpid; 
+ 	}
+ 	
+ 	function editMessage(id) {
++		messages.set(&quot;/post[id='&quot;+id+&quot;']/@edit&quot;, 'true');
+ 		message_view.render(messages, 'placeholder_messages', {messageId: id});
+ 	}	
+ 	
++	function editComment(id) {
++		comment_view.render(messages, 'placeholder_messages', {commentId: id});
++	}
++	
++	function createComment(messageId) {
++		var tmpid = getRandomId();
++		commentTemplate.set('/comment/post-id', messageId);
++		commentTemplate.set('/comment/id', tmpid);
++		if(messages.document.importNode) {
++			var newComment = messages.document.importNode(commentTemplate.document.documentElement,true);
++		} // else try cloneNode				
++		
++		var parentMessage = messages._query._find(messages.document,&quot;//post[id='&quot;+messageId+&quot;']&quot;);
++		if(parentMessage) {
++			var parentMessage = parentMessage.parentNode; // _find returns a text node
++			var commentList = parentMessage.getElementsByTagName('comments');
++			if(commentList.length==0) {
++				var commentRoot = messages.document.createElement('comments');
++				commentRoot = parentMessage.appendChild(commentRoot);
++			} else 
++				var commentRoot = commentList[0];
++			commentRoot.appendChild(newComment);
++		}
++		return tmpid;
++	}
++	
++	function loadAllComments() {
++		var posts = messages.document.getElementsByTagName('post');
++		for (var i=0;i&lt;posts.length;i++) {			
++			loadComments(posts[i]);
++		}
++	}
++		
++	function loadComments(message) {
++		var messageId = message.getElementsByTagName('id')[0].firstChild.nodeValue;
++		var messageComments = getModel(addProxyToUrl(&quot;/msg/comments/&quot;+messageId));
++		Freja._aux.connect(messageComments, 'onload', 
++			function() {
++				attachComments(message,messageComments);
++			} );
++	}
++	
++	function attachComments(message, messageComments) {	
++	 	var newComments = messages.document.importNode(messageComments.document.documentElement, true);	 	
++		message.appendChild(newComments,true);
++	}
+ 	// ---------------------------------------------------------------------------------------------
+-	//   
++	// Synchronize:
++	// 1. Takes the given model, finds XML elements that are out-of-sync (@synchronized=fase).
++	// 2. Copies each out-of-sync element to a new XML document within a &lt;request&gt; element.
++	// 3. Adds additional elements if provided in the additionalParameters object.
++	// 4. Sends the &lt;request&gt; XML to the given url (withUrl)
++	// 5. If responses is OK, replaces the out-of-sync element in the model with the received data.
++	// 6. Clear @synchronized attribute
++	// 7. Callback (if provided)
+ 	// ---------------------------------------------------------------------------------------------
+ 	
+-	function synchronize(model, withUrl) {
++	function synchronize(model, withUrl, additionalParameters, callback) {
+ 		
+ 		// get first record to be synchronized
+ 		var outofsync = model.document.selectSingleNode(&quot;//*[@synchronized='false']&quot;); 
+ 		
+-		while(outofsync) {		
++		if(outofsync) {		
+ 			// clean synchronized attribute before using outofsync to build the request 
+ 			// (basecamp API doesn't like foreign attributes)
+ 			outofsync.removeAttribute('synchronized');
+ 				
+-			// build request
++			// clean previous request if any.
+ 			var requestNode = requestTemplate.document.documentElement
++			while(requestNode.firstChild)
++				requestNode.removeChild(requestNode.firstChild);
++
++			// prepare request
++			requestTemplate.url = addProxyToUrl(withUrl);
++			
++			// add request parameters if any
++			if(additionalParameters) {
++				for(var p in additionalParameters) {
++					var paramElement = requestTemplate.document.createElement(p);
++					paramElement.appendChild(requestTemplate.document.createTextNode(additionalParameters[p]));
++					requestNode.appendChild(paramElement);
++				}
++			}
++
++			// add data to request			
+ 			requestNode.appendChild(requestTemplate.document.importNode(outofsync, true));
+-			requestTemplate.url = addProxyToUrl(withUrl);			
+-
++						
+ 			// clean tmp ids
+-			var idNode = requestNode.getElementsByTagName('id')[0];
+-			while(idNode) {
+-				idNode.parentNode.removeChild(idNode);
+-				idNode = requestNode.getElementsByTagName('id')[0];			
+-			}
++			var idNodes = requestNode.getElementsByTagName('id');	
++			for(var i=idNodes.length-1; i&gt;=0; i--) {							
++				if(idNodes[i].firstChild &amp;&amp; isTempId(idNodes[i].firstChild.nodeValue)) {
++					idNodes[i].parentNode.removeChild(idNodes[i]);						
++				}
++			}			
++			// clean whatever basecamp API chokes on
++			var nodes = requestNode.getElementsByTagName('updated-on');	
++			for(var i=nodes.length-1; i&gt;=0; i--) {			
++				nodes[i].parentNode.removeChild(nodes[i]);
++			}		
+ 			
+ 			showModelSnapshot(requestTemplate);	
+-
++			showHTTPResponse(&quot;WAITING...&quot;);
++			
+ 			// send request			
+ 			var d = requestTemplate.save();	
+ 			d.addCallback(function(obj) {
++								
++				showHTTPResponse(&quot;OK:\n&quot;+obj.responseText);
++				var updatedData =  model.document.importNode(obj.responseXML.documentElement, true); 
++					
++				if(updatedData) {
++					// Replace current model data with what we've received.
++					// (mostly to get the record's id, but more new data may be present)
++					while(outofsync.firstChild)
++						outofsync.removeChild(outofsync.firstChild);	
++					while(updatedData.firstChild) {						
++						outofsync.appendChild(updatedData.firstChild);	
++					}
++				}					
+ 				outofsync.setAttribute('synchronized','true');
++											
++				//showModelSnapshot(model);
++				if(callback) 
++					callback();
++				
+ 			});
+ 			d.addErrback(function(obj) {
+ 				showHTTPResponse(&quot;ERROR:\n&quot;+obj.responseText);
+-				outofsync.setAttribute('synchronized','false');
++				outofsync.setAttribute('synchronized','failed');
+ 			});
+ 			outofsync.setAttribute('synchronized','pending'); 
+ 			
+ 			//is there more to synchronize?
+-			outofsync = model.document.selectSingleNode(&quot;//*[@synchronized='false']&quot;); 
++			//outofsync = model.document.selectSingleNode(&quot;//*[@synchronized='false']&quot;); 
+ 		}
+ 	}
+ 	
+@@ -270,13 +463,18 @@
+ 		id = id.substr(id.lastIndexOf('__')+2);
+ 		return id;
+ 	}
+-	
++	// Temp ids are used locally but do not match Basecamp record ids.
++	function isTempId(id) {
++		if(id.indexOf('tmpid-')==0)
++			return true
++		return false;
++	}
+ 	function getRandomId() {
+ 		var seed = (new Date()).getTime();
+ 		seed = seed.toString().substr(6);
+ 		for (var i=0; i&lt;3;i++)
+ 			seed += String.fromCharCode(48 + Math.floor((Math.random()*10)));
+-		return &quot;id-&quot; + seed
++		return &quot;tmpid-&quot; + seed
+ 	}
+ 	
+ 	function addProxyToUrl(resourceUrl) {
+@@ -291,12 +489,12 @@
+ 	function showModelSnapshot(model) {
+ 		var xml = Freja._aux.serializeXML(model.document);
+ 		var dbg = document.getElementById('placeholder_debug');
+-		dbg.innerHTML = &quot;&lt;textarea cols='60' rows='15'&gt;&quot;+xml+&quot;&lt;/textarea&gt;&quot;;		
++		dbg.innerHTML = &quot;&lt;textarea cols='60' rows='15'&gt;&quot;+(new Date()).toLocaleTimeString() + ' ' + xml+&quot;&lt;/textarea&gt;&quot;;		
+ 		dbg.style.display = &quot;block&quot;;
+ 	}
+ 	function showHTTPResponse(txt) {
+-		var dbg = document.getElementById('placeholder_debug');
+-		dbg.innerHTML = &quot;&lt;textarea cols='60' rows='15'&gt;&quot;+txt+&quot;&lt;/textarea&gt;&quot;;	
++		var dbg = document.getElementById('placeholder_debug2');
++		dbg.innerHTML = &quot;&lt;textarea cols='60' rows='15'&gt;&quot;+ (new Date()).toLocaleTimeString()+ ' ' +txt+&quot;&lt;/textarea&gt;&quot;;	
+ 		dbg.style.display = &quot;block&quot;;
+ 	}
+ 	// ---------------------------------------------------------------------------------------------
+
+Modified: trunk/examples/basecamp_api/css/main.css
+===================================================================
+--- trunk/examples/basecamp_api/css/main.css	2006-05-17 02:27:02 UTC (rev 64)
++++ trunk/examples/basecamp_api/css/main.css	2006-05-19 21:20:12 UTC (rev 65)
+@@ -1,11 +1,145 @@
+ 
++/* ------------------------------------------------------------------ */
+ body {
+ 	margin: 0;
+ 	padding: 0;
++	font-family: Trebuchet, Verdana, Arial, Helvetica, sans-serif;
++	background-image: url(../images/bg.png);
+ }
++#header {
++	background-image: url(../images/header-bg.png);
++	height: 49px;
++}
++
++a img {
++	border: none;
++}
++h3 {
++	margin: 0;
++	padding: 5px 15px;
++	font-size: medium;
++}
++form {
++	padding: 5px 15px;
++}
++label.preField {
++	display: -moz-inline-box;
++	display: inline-block;
++	border-bottom: 1px dotted #ccc;
++}
++.meta {
++	font-size: xx-small;
++	color: #999;
++}
++.category {
++	color: #AD7347;
++	font-weight: bold;
++}
++.clickable {
++	cursor: pointer;
++}
++/* ------------------------------------------------------------------ */
+ #placeholder_debug {
+ 	border-top: 1px solid #000;
+ 	background-color: #555;
+ 	display: none;
+ }
++/* ------------------------------------------------------------------ */
+ 
++#placeholder_projectSelector {
++	padding: 10px;
++}
++/* ------------------------------------------------------------------ */
++/* BASIC FRAME
++/* ------------------------------------------------------------------ */
++.frame { 
++	width: 289px;
++}
++.frame .frameContent {
++	background-image: url(../images/frame-bg.png);
++	background-repeat: no-repeat;
++}
++.frame .top {
++	background-image: url(../images/frame-top-bg.png);
++	background-repeat: no-repeat;
++}
++.frame .bottom {
++	background-image: url(../images/frame-bottom-bg.png);
++	background-repeat: no-repeat;
++}
++
++/* ------------------------------------------------------------------ */
++/* MESSAGES
++/* ------------------------------------------------------------------ */
++.messages {
++	width: 25em;
++}
++.messages .top {
++	background-image: url(../images/messages-header-bg.png);
++	background-repeat: no-repeat;
++	background-position: right;
++	height: 29px;
++}
++#placeholder_messages {
++	
++	background-color:#fef9e2;
++	border-left: 1px solid #333;
++	border-right: 1px solid #333;	
++}
++.messages .bottom {
++	background-image: url(../images/messages-footer-bg.png);
++	background-repeat: no-repeat;
++	background-position: right;
++	height: 37px;
++}
++
++/* ------------------------------------------------------------------ */
++.messageList ul {
++	margin: 0;
++	padding: 0;
++}
++.messageList ul li {
++	list-style-type: none;
++	padding: 5px 15px;
++}
++.messageList .trashMessageLink, .messageList .trashCommentLink  {
++	visibility: hidden;
++}
++.messageList ul li:hover .trashMessageLink,  .messageList ul li:hover .trashCommentLink {
++	visibility: visible;
++}
++.messageList ul li a {
++	text-decoration: none;
++	font-weight: bold;
++}
++.messageList a.newCommentLink {
++	font-size: small;
++	font-weight: normal !important;
++}
++
++.messageList .newMessageLink {
++	float: right;
++	margin: 6px 12px 0 0;
++}
++.commentList {
++	position: absolute;
++	z-index: 20;
++	border: 3px solid #ccc;
++	background-color: #444;
++	color: #eee;
++	padding: 20px;
++}
++.commentList li {
++	font-size: 80%;
++	line-height: 140%;
++}
++
++/* ------------------------------------------------------------------ */
++.editMessageForm label.preField {
++	width: 6em;
++}
++/* ------------------------------------------------------------------ */
++.editCommentForm label.preField {
++	width: 6em;
++}
++
+
+Added: trunk/examples/basecamp_api/images/basecamp-remix.png
+===================================================================
+(Binary files differ)
+
+
+Property changes on: trunk/examples/basecamp_api/images/basecamp-remix.png
+___________________________________________________________________
+Name: svn:mime-type
+   + application/octet-stream
+
+Added: trunk/examples/basecamp_api/images/bg.png
+===================================================================
+(Binary files differ)
+
+
+Property changes on: trunk/examples/basecamp_api/images/bg.png
+___________________________________________________________________
+Name: svn:mime-type
+   + application/octet-stream
+
+Added: trunk/examples/basecamp_api/images/bin_empty.png
+===================================================================
+(Binary files differ)
+
+
+Property changes on: trunk/examples/basecamp_api/images/bin_empty.png
+___________________________________________________________________
+Name: svn:mime-type
+   + application/octet-stream
+
+Added: trunk/examples/basecamp_api/images/comment.png
+===================================================================
+(Binary files differ)
+
+
+Property changes on: trunk/examples/basecamp_api/images/comment.png
+___________________________________________________________________
+Name: svn:mime-type
+   + application/octet-stream
+
+Added: trunk/examples/basecamp_api/images/comment_add.png
+===================================================================
+(Binary files differ)
+
+
+Property changes on: trunk/examples/basecamp_api/images/comment_add.png
+___________________________________________________________________
+Name: svn:mime-type
+   + application/octet-stream
+
+Added: trunk/examples/basecamp_api/images/comment_delete.png
+===================================================================
+(Binary files differ)
+
+
+Property changes on: trunk/examples/basecamp_api/images/comment_delete.png
+___________________________________________________________________
+Name: svn:mime-type
+   + application/octet-stream
+
+Added: trunk/examples/basecamp_api/images/comment_edit.png
+===================================================================
+(Binary files differ)
+
+
+Property changes on: trunk/examples/basecamp_api/images/comment_edit.png
+___________________________________________________________________
+Name: svn:mime-type
+   + application/octet-stream
+
+Added: trunk/examples/basecamp_api/images/comment_quote.png
+===================================================================
+(Binary files differ)
+
+
+Property changes on: trunk/examples/basecamp_api/images/comment_quote.png
+___________________________________________________________________
+Name: svn:mime-type
+   + application/octet-stream
+
+Added: trunk/examples/basecamp_api/images/database_lightning.png
+===================================================================
+(Binary files differ)
+
+
+Property changes on: trunk/examples/basecamp_api/images/database_lightning.png
+___________________________________________________________________
+Name: svn:mime-type
+   + application/octet-stream
+
+Added: trunk/examples/basecamp_api/images/frame-bg.png
+===================================================================
+(Binary files differ)
+
+
+Property changes on: trunk/examples/basecamp_api/images/frame-bg.png
+___________________________________________________________________
+Name: svn:mime-type
+   + application/octet-stream
+
+Added: trunk/examples/basecamp_api/images/frame-bottom-bg.png
+===================================================================
+(Binary files differ)
+
+
+Property changes on: trunk/examples/basecamp_api/images/frame-bottom-bg.png
+___________________________________________________________________
+Name: svn:mime-type
+   + application/octet-stream
+
+Added: trunk/examples/basecamp_api/images/frame-top-bg.png
+===================================================================
+(Binary files differ)
+
+
+Property changes on: trunk/examples/basecamp_api/images/frame-top-bg.png
+___________________________________________________________________
+Name: svn:mime-type
+   + application/octet-stream
+
+Added: trunk/examples/basecamp_api/images/header-bg.png
+===================================================================
+(Binary files differ)
+
+
+Property changes on: trunk/examples/basecamp_api/images/header-bg.png
+___________________________________________________________________
+Name: svn:mime-type
+   + application/octet-stream
+
+Added: trunk/examples/basecamp_api/images/messages-footer-bg..png
+===================================================================
+(Binary files differ)
+
+
+Property changes on: trunk/examples/basecamp_api/images/messages-footer-bg..png
+___________________________________________________________________
+Name: svn:mime-type
+   + application/octet-stream
+
+Added: trunk/examples/basecamp_api/images/messages-footer-bg.png
+===================================================================
+(Binary files differ)
+
+
+Property changes on: trunk/examples/basecamp_api/images/messages-footer-bg.png
+___________________________________________________________________
+Name: svn:mime-type
+   + application/octet-stream
+
+Added: trunk/examples/basecamp_api/images/messages-footer..png
+===================================================================
+(Binary files differ)
+
+
+Property changes on: trunk/examples/basecamp_api/images/messages-footer..png
+___________________________________________________________________
+Name: svn:mime-type
+   + application/octet-stream
+
+Added: trunk/examples/basecamp_api/images/messages-footer.png
+===================================================================
+(Binary files differ)
+
+
+Property changes on: trunk/examples/basecamp_api/images/messages-footer.png
+___________________________________________________________________
+Name: svn:mime-type
+   + application/octet-stream
+
+Added: trunk/examples/basecamp_api/images/messages-header-bg..png
+===================================================================
+(Binary files differ)
+
+
+Property changes on: trunk/examples/basecamp_api/images/messages-header-bg..png
+___________________________________________________________________
+Name: svn:mime-type
+   + application/octet-stream
+
+Added: trunk/examples/basecamp_api/images/messages-header-bg.png
+===================================================================
+(Binary files differ)
+
+
+Property changes on: trunk/examples/basecamp_api/images/messages-header-bg.png
+___________________________________________________________________
+Name: svn:mime-type
+   + application/octet-stream
+
+Added: trunk/examples/basecamp_api/images/messages-header.png
+===================================================================
+(Binary files differ)
+
+
+Property changes on: trunk/examples/basecamp_api/images/messages-header.png
+___________________________________________________________________
+Name: svn:mime-type
+   + application/octet-stream
+
+Added: trunk/examples/basecamp_api/images/note_add.png
+===================================================================
+(Binary files differ)
+
+
+Property changes on: trunk/examples/basecamp_api/images/note_add.png
+___________________________________________________________________
+Name: svn:mime-type
+   + application/octet-stream
+
+Added: trunk/examples/basecamp_api/images/note_delete.png
+===================================================================
+(Binary files differ)
+
+
+Property changes on: trunk/examples/basecamp_api/images/note_delete.png
+___________________________________________________________________
+Name: svn:mime-type
+   + application/octet-stream
+
+Added: trunk/examples/basecamp_api/images/note_edit.png
+===================================================================
+(Binary files differ)
+
+
+Property changes on: trunk/examples/basecamp_api/images/note_edit.png
+___________________________________________________________________
+Name: svn:mime-type
+   + application/octet-stream
+
+Added: trunk/examples/basecamp_api/images/user.png
+===================================================================
+(Binary files differ)
+
+
+Property changes on: trunk/examples/basecamp_api/images/user.png
+___________________________________________________________________
+Name: svn:mime-type
+   + application/octet-stream
+
+Added: trunk/examples/basecamp_api/images/user_add.png
+===================================================================
+(Binary files differ)
+
+
+Property changes on: trunk/examples/basecamp_api/images/user_add.png
+___________________________________________________________________
+Name: svn:mime-type
+   + application/octet-stream
+
+Added: trunk/examples/basecamp_api/images/user_delete.png
+===================================================================
+(Binary files differ)
+
+
+Property changes on: trunk/examples/basecamp_api/images/user_delete.png
+___________________________________________________________________
+Name: svn:mime-type
+   + application/octet-stream
+
+Added: trunk/examples/basecamp_api/images/user_edit.png
+===================================================================
+(Binary files differ)
+
+
+Property changes on: trunk/examples/basecamp_api/images/user_edit.png
+___________________________________________________________________
+Name: svn:mime-type
+   + application/octet-stream
+
+Modified: trunk/examples/basecamp_api/index.html
+===================================================================
+--- trunk/examples/basecamp_api/index.html	2006-05-17 02:27:02 UTC (rev 64)
++++ trunk/examples/basecamp_api/index.html	2006-05-19 21:20:12 UTC (rev 65)
+@@ -18,12 +18,44 @@
+ &lt;/head&gt;
+ 
+ &lt;body&gt;
+-&lt;div id=&quot;placeholder_projectSelector&quot;&gt;&lt;/div&gt;
+-&lt;div id=&quot;placeholder_main&quot;&gt;&lt;/div&gt;
+-&lt;div id=&quot;placeholder_todos&quot;&gt;&lt;/div&gt;
+-&lt;div id=&quot;placeholder_milestones&quot;&gt;&lt;/div&gt;
+-&lt;div id=&quot;placeholder_messages&quot;&gt;&lt;/div&gt;
+-&lt;div id=&quot;placeholder_categories&quot;&gt;&lt;/div&gt;
+-&lt;div id=&quot;placeholder_debug&quot;&gt;&lt;/div&gt;
++	&lt;div id=&quot;container&quot;&gt;
++		&lt;div id=&quot;header&quot;&gt;
++			&lt;img src=&quot;images/basecamp-remix.png&quot; alt=&quot;Basecamp remix&quot; align=&quot;right&quot; /&gt;
++			&lt;div id=&quot;placeholder_projectSelector&quot;&gt;&lt;/div&gt;
++		&lt;/div&gt;
++		&lt;div id=&quot;content&quot;&gt;			
++
++			&lt;div class=&quot;frame&quot;&gt;
++				&lt;div class=&quot;top&quot;&gt;TO-DOS&lt;/div&gt;
++				&lt;div id=&quot;placeholder_todos&quot; class=&quot;frameContent&quot;&gt;&lt;/div&gt;
++				&lt;div class=&quot;bottom&quot;&gt;&nbsp;&lt;/div&gt;
++			&lt;/div&gt;
++			
++			&lt;div class=&quot;frame&quot;&gt;
++				&lt;div class=&quot;top&quot;&gt;MILESTONES&lt;/div&gt;
++				&lt;div id=&quot;placeholder_milestones&quot; class=&quot;frameContent&quot;&gt;&lt;/div&gt;
++				&lt;div class=&quot;bottom&quot;&gt;&nbsp;&lt;/div&gt;
++			&lt;/div&gt;
++
++			
++			&lt;div class=&quot;messages&quot;&gt;
++				&lt;div class=&quot;top&quot;&gt;&lt;img src=&quot;images/messages-header.png&quot; alt=&quot;Messages&quot; /&gt;&lt;/div&gt;
++				&lt;div id=&quot;placeholder_messages&quot; class=&quot;frameContent&quot;&gt;&lt;/div&gt;
++				&lt;div class=&quot;bottom&quot;&gt;&lt;img src=&quot;images/messages-footer.png&quot; alt=&quot;*&quot; /&gt;&lt;/div&gt;
++			&lt;/div&gt;
++			
++			&lt;div class=&quot;frame&quot;&gt;
++				&lt;div class=&quot;top&quot;&gt;Misc.&lt;/div&gt;
++				&lt;div id=&quot;placeholder_categories&quot; class=&quot;frameContent&quot;&gt;&lt;/div&gt;
++				&lt;div class=&quot;bottom&quot;&gt;&nbsp;&lt;/div&gt;
++			&lt;/div&gt;
++			
++			
++			&lt;div id=&quot;placeholder_debug&quot;&gt;&lt;/div&gt;
++			&lt;div id=&quot;placeholder_debug2&quot;&gt;&lt;/div&gt;
++		&lt;/div&gt;
++		&lt;div id=&quot;footer&quot;&gt;&nbsp;
++		&lt;/div&gt;
++	&lt;/div&gt;
+ &lt;/body&gt;
+ &lt;/html&gt;
+
+Added: trunk/examples/basecamp_api/models/new_comment.xml
+===================================================================
+--- trunk/examples/basecamp_api/models/new_comment.xml	2006-05-17 02:27:02 UTC (rev 64)
++++ trunk/examples/basecamp_api/models/new_comment.xml	2006-05-19 21:20:12 UTC (rev 65)
+@@ -0,0 +1,7 @@
++&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
++&lt;comment&gt;
++    &lt;body&gt;&lt;/body&gt;
++	&lt;id type=&quot;integer&quot; /&gt;
++    &lt;post-id type=&quot;integer&quot;&gt;&lt;/post-id&gt;
++    &lt;attachments-count type=&quot;integer&quot;&gt;0&lt;/attachments-count&gt;
++&lt;/comment&gt;
+\ No newline at end of file
+
+Added: trunk/examples/basecamp_api/views/comment.xsl
+===================================================================
+--- trunk/examples/basecamp_api/views/comment.xsl	2006-05-17 02:27:02 UTC (rev 64)
++++ trunk/examples/basecamp_api/views/comment.xsl	2006-05-19 21:20:12 UTC (rev 65)
+@@ -0,0 +1,36 @@
++&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
++&lt;xsl:stylesheet version=&quot;1.0&quot;
++	xmlns:xsl=&quot;<A HREF="http://www.w3.org/1999/XSL/Transform">http://www.w3.org/1999/XSL/Transform</A>&quot;&gt;
++&lt;xsl:param name=&quot;commentId&quot; &gt;&lt;/xsl:param&gt;
++&lt;xsl:param name=&quot;title&quot; &gt;Edit Comment&lt;/xsl:param&gt;
++&lt;xsl:template match=&quot;/&quot;&gt;
++	&lt;xsl:apply-templates select=&quot;//comment[id=$commentId]&quot; /&gt;
++&lt;/xsl:template&gt;
++
++&lt;xsl:template match=&quot;comment&quot;&gt;	
++	&lt;div id=&quot;editComment&quot;&gt;
++		&lt;h3&gt;&lt;xsl:value-of select=&quot;$title&quot; /&gt;&lt;/h3&gt;
++
++		&lt;form method=&quot;post&quot; action=&quot;#&quot; id=&quot;comment__{id}&quot; class=&quot;editCommentForm&quot; &gt;
++			
++			&lt;xsl:if test=&quot;body&quot;&gt;
++				&lt;label for=&quot;commentbody&quot; class=&quot;preField&quot;&gt;Body: &lt;/label&gt;
++				&lt;textarea name=&quot;//comment[id='{id}']/body&quot; id=&quot;commentbody&quot;&gt;
++					&lt;xsl:value-of select=&quot;body&quot; /&gt;
++				&lt;/textarea&gt;
++			&lt;/xsl:if&gt;
++			
++			&lt;xsl:if test=&quot;posted-on&quot;&gt;
++				&lt;p class=&quot;meta&quot;&gt;Posted on: &lt;xsl:value-of select=&quot;posted-on&quot; /&gt;&lt;/p&gt;
++			&lt;/xsl:if&gt;
++			&lt;p&gt;
++				&lt;input type=&quot;hidden&quot; value=&quot;false&quot; name=&quot;//comment[id='{id}']/@synchronized&quot; /&gt;
++				&lt;input type=&quot;button&quot; value=&quot;cancel&quot; class=&quot;cancelAction&quot; /&gt;
++				&lt;input type=&quot;submit&quot; value=&quot;ok&quot; class=&quot;primaryAction&quot; /&gt;
++			&lt;/p&gt;
++		&lt;/form&gt;
++	&lt;/div&gt;
++&lt;/xsl:template&gt;
++
++&lt;xsl:template match=&quot;text()&quot; /&gt;
++&lt;/xsl:stylesheet&gt;
+\ No newline at end of file
+
+Modified: trunk/examples/basecamp_api/views/message.xsl
+===================================================================
+--- trunk/examples/basecamp_api/views/message.xsl	2006-05-17 02:27:02 UTC (rev 64)
++++ trunk/examples/basecamp_api/views/message.xsl	2006-05-19 21:20:12 UTC (rev 65)
+@@ -2,26 +2,38 @@
+ &lt;xsl:stylesheet version=&quot;1.0&quot;
+ 	xmlns:xsl=&quot;<A HREF="http://www.w3.org/1999/XSL/Transform">http://www.w3.org/1999/XSL/Transform</A>&quot;&gt;
+ &lt;xsl:param name=&quot;messageId&quot; &gt;&lt;/xsl:param&gt;
+-
++&lt;xsl:param name=&quot;title&quot; &gt;Edit Message&lt;/xsl:param&gt;
+ &lt;xsl:template match=&quot;posts&quot;&gt;
+-	&lt;xsl:apply-templates select=&quot;//post[id=$messageId]&quot; /&gt;
++		&lt;xsl:apply-templates select=&quot;//post[id=$messageId]&quot; /&gt;
+ &lt;/xsl:template&gt;
+ 
+ &lt;xsl:template match=&quot;post&quot;&gt;	
+-	&lt;form method=&quot;post&quot; action=&quot;#&quot; id=&quot;message__{id}&quot; class=&quot;editMessageForm&quot; &gt;
+-		&lt;label for=&quot;posttitle&quot; class=&quot;preField&quot;&gt;Title: &lt;/label&gt;
+-		&lt;input type=&quot;text&quot; name=&quot;//post[id='{id}']/title&quot; id=&quot;posttitle&quot; value=&quot;{title}&quot; /&gt;&lt;br/&gt;
+-		&lt;label for=&quot;postbody&quot; class=&quot;preField&quot;&gt;Body: &lt;/label&gt;
+-		&lt;textarea name=&quot;//post[id='{id}']/body&quot; id=&quot;postbody&quot;&gt;
+-			&lt;xsl:value-of select=&quot;body&quot; /&gt;
+-		&lt;/textarea&gt;
+-		&lt;p&gt;Posted on: &lt;xsl:value-of select=&quot;posted-on&quot; /&gt;&lt;/p&gt;
+-		&lt;p&gt;
+-			&lt;input type=&quot;hidden&quot; value=&quot;false&quot; name=&quot;//post[id='{id}']/@synchronized&quot; /&gt;
+-			&lt;input type=&quot;button&quot; value=&quot;cancel&quot; class=&quot;cancelAction&quot; /&gt;
+-			&lt;input type=&quot;submit&quot; value=&quot;ok&quot; class=&quot;primaryAction&quot; /&gt;
+-		&lt;/p&gt;
+-	&lt;/form&gt;
++	&lt;div id=&quot;editMessage&quot;&gt;
++		&lt;h3&gt;&lt;xsl:value-of select=&quot;$title&quot; /&gt;&lt;/h3&gt;
++		&lt;form method=&quot;post&quot; action=&quot;#&quot; id=&quot;message__{id}&quot; class=&quot;editMessageForm&quot; &gt;
++			&lt;label for=&quot;posttitle&quot; class=&quot;preField&quot;&gt;Title: &lt;/label&gt;
++			&lt;input type=&quot;text&quot; name=&quot;//post[id='{id}']/title&quot; id=&quot;posttitle&quot; value=&quot;{title}&quot; /&gt;&lt;br/&gt;
++			
++			&lt;xsl:if test=&quot;body&quot;&gt;
++				&lt;label for=&quot;postbody&quot; class=&quot;preField&quot;&gt;Body: &lt;/label&gt;
++				&lt;textarea name=&quot;//post[id='{id}']/body&quot; id=&quot;postbody&quot;&gt;
++					&lt;xsl:value-of select=&quot;body&quot; /&gt;
++				&lt;/textarea&gt;
++			&lt;/xsl:if&gt;
++			
++			&lt;xsl:if test=&quot;not(body)&quot;&gt;
++				This message is only partially loaded. &lt;a href='#' class='getMessageBodyLink' id='getBody__{id}'&gt;Get Full Message&lt;/a&gt;
++			&lt;/xsl:if&gt;
++			
++			&lt;p&gt;Posted on: &lt;xsl:value-of select=&quot;posted-on&quot; /&gt;&lt;/p&gt;
++			&lt;p&gt;
++				&lt;input type=&quot;hidden&quot; value=&quot;false&quot; name=&quot;//post[id='{id}']/@synchronized&quot; /&gt;
++				&lt;input type=&quot;button&quot; value=&quot;cancel&quot; class=&quot;cancelAction&quot; /&gt;
++				&lt;input type=&quot;submit&quot; value=&quot;ok&quot; class=&quot;primaryAction&quot; /&gt;
++			&lt;/p&gt;
++		&lt;/form&gt;
++	&lt;/div&gt;
++	
+ &lt;/xsl:template&gt;
+ 
+ &lt;xsl:template match=&quot;text()&quot; /&gt;
+
+Modified: trunk/examples/basecamp_api/views/message_list.xsl
+===================================================================
+--- trunk/examples/basecamp_api/views/message_list.xsl	2006-05-17 02:27:02 UTC (rev 64)
++++ trunk/examples/basecamp_api/views/message_list.xsl	2006-05-19 21:20:12 UTC (rev 65)
+@@ -1,26 +1,125 @@
+ &lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+-&lt;xsl:stylesheet version=&quot;1.0&quot;
+-	xmlns:xsl=&quot;<A HREF="http://www.w3.org/1999/XSL/Transform">http://www.w3.org/1999/XSL/Transform</A>&quot;&gt;
++&lt;xsl:stylesheet version=&quot;1.0&quot; xmlns:xsl=&quot;<A HREF="http://www.w3.org/1999/XSL/Transform">http://www.w3.org/1999/XSL/Transform</A>&quot;&gt;
++&lt;xsl:output method=&quot;xml&quot; indent=&quot;yes&quot; encoding=&quot;UTF-8&quot;/&gt;
+ 
++&lt;!-- ====================================================================================  
++  MESSAGE LIST (POSTS+COMMENTS)  
++ ==================================================================================== --&gt;
++
+ &lt;xsl:template match=&quot;/posts&quot;&gt;	
+-	&lt;h3&gt;Messages&lt;/h3&gt;
+-	&lt;p&gt;&lt;a href='#' class='newMessageLink'&gt;post a new message&lt;/a&gt;&lt;/p&gt;
+-	&lt;ul&gt;
+-		&lt;xsl:apply-templates /&gt;
+-	&lt;/ul&gt;
++	&lt;div id=&quot;messageList&quot; class=&quot;messageList&quot;&gt;
++		&lt;img src=&quot;images/note_add.png&quot; alt=&quot;Post Message&quot; title=&quot;Post a New Message&quot; class='newMessageLink clickable' /&gt;
++		&lt;h3&gt;Messages&lt;/h3&gt;		
++		&lt;ul&gt;
++			&lt;xsl:apply-templates /&gt;
++		&lt;/ul&gt;
++	&lt;/div&gt;
+ &lt;/xsl:template&gt;
+ 
+-&lt;xsl:template match=&quot;post&quot;&gt;	
+-	&lt;li&gt;&lt;a href='#' id='post__{id}' class='editMessageLink'&gt;&lt;xsl:value-of select=&quot;title&quot;/&gt;&lt;/a&gt;
+-		&lt;br/&gt;
+-		&lt;small&gt;Posted on &lt;xsl:value-of select=&quot;posted-on&quot;/&gt; in &lt;xsl:value-of select=&quot;category/name&quot;/&gt;
++&lt;!-- ==================================================================================== 
++  POST  
++ ==================================================================================== --&gt;
++
++&lt;xsl:template match=&quot;post[not(@edit) or @edit='false']&quot;&gt;	
++	&lt;li&gt;
++		&lt;a href='#' id='post__{id}' class='editMessageLink'&gt;&lt;xsl:value-of select=&quot;title&quot;/&gt;&lt;/a&gt;&#160;
++		&lt;xsl:if test=&quot;comments-count&quot;&gt;
++			(&lt;xsl:value-of select=&quot;comments-count&quot;/&gt;)
++		&lt;/xsl:if&gt;
++		&lt;img src=&quot;images/note_delete.png&quot; id='trash__{id}' alt=&quot;Delete Message&quot; title=&quot;Delete this Message&quot; class='trashMessageLink clickable' /&gt;&#160;
++		&lt;p class=&quot;meta&quot;&gt;Posted on &lt;xsl:value-of select=&quot;posted-on&quot;/&gt; in &lt;span class=&quot;category&quot;&gt;&lt;xsl:value-of select=&quot;category/name&quot;/&gt;&lt;/span&gt;&#160;
+ 		&lt;xsl:if test=&quot;attachments-count&gt;0&quot;&gt;
+ 			(&lt;xsl:value-of select=&quot;attachments-count&quot;/&gt; attachements)
+ 		&lt;/xsl:if&gt;
+-		&lt;/small&gt;
++		&lt;/p&gt;	
++	   &lt;img src=&quot;images/comment_add.png&quot; alt=&quot;Add Comment&quot; id=&quot;postcomment2__{id}&quot; title=&quot;Add a Comment&quot; class=&quot;newCommentLink clickable&quot; /&gt;  &lt;a href='#' title='Add a Comment' id=&quot;postcomment__{id}&quot; class=&quot;newCommentLink&quot; &gt;&#160;Post a comment&lt;/a&gt;	
++		&lt;xsl:if test=&quot;not(comments/comment)&quot;&gt;
++			&lt;p class=&quot;meta&quot;&gt;&lt;a href='#' id=&quot;comments__{id}&quot; class='refreshCommentsLink'&gt;Show Comments&lt;/a&gt;&lt;/p&gt;.
++		&lt;/xsl:if&gt;
++		&lt;xsl:if test=&quot;comments/comment&quot;&gt;
++			&lt;xsl:apply-templates /&gt;
++		&lt;/xsl:if&gt;	
++	&lt;/li&gt;
++&lt;/xsl:template&gt;
++
++&lt;!-- ====================================================================================  
++  POST (EDIT MODE) 
++ ==================================================================================== --&gt;
++
++&lt;xsl:template match=&quot;post[@edit='true']&quot;&gt;	
++	&lt;li&gt;
++		&lt;form method=&quot;post&quot; action=&quot;#&quot; id=&quot;message__{id}&quot; class=&quot;editMessageForm&quot; &gt;
++			&lt;label for=&quot;posttitle&quot; class=&quot;preField&quot;&gt;Title: &lt;/label&gt;
++			&lt;input type=&quot;text&quot; name=&quot;//post[id='{id}']/title&quot; id=&quot;posttitle&quot; value=&quot;{title}&quot; /&gt;&lt;br/&gt;
++			
++			&lt;xsl:if test=&quot;body&quot;&gt;
++				&lt;label for=&quot;postbody&quot; class=&quot;preField&quot;&gt;Body: &lt;/label&gt;
++				&lt;textarea name=&quot;//post[id='{id}']/body&quot; id=&quot;postbody&quot;&gt;
++					&lt;xsl:value-of select=&quot;body&quot; /&gt;
++				&lt;/textarea&gt;
++			&lt;/xsl:if&gt;
++			
++			&lt;xsl:if test=&quot;not(body)&quot;&gt;
++				This message is only partially loaded. &lt;a href='#' class='getMessageBodyLink' id='getBody__{id}'&gt;Get Full Message&lt;/a&gt;
++			&lt;/xsl:if&gt;
++			
++			&lt;p&gt;Posted on: &lt;xsl:value-of select=&quot;posted-on&quot; /&gt;&lt;/p&gt;
++			&lt;p&gt;
++				&lt;input type=&quot;hidden&quot; value=&quot;false&quot; name=&quot;//post[id='{id}']/@synchronized&quot; /&gt;
++				&lt;input type=&quot;button&quot; value=&quot;cancel&quot; class=&quot;cancelAction&quot; /&gt;
++				&lt;input type=&quot;submit&quot; value=&quot;ok&quot; class=&quot;primaryAction&quot; /&gt;
++			&lt;/p&gt;
++		&lt;/form&gt;
++	&lt;/li&gt;
++&lt;/xsl:template&gt;
++
++&lt;!-- ====================================================================================  
++  COMMENTS 
++ ==================================================================================== --&gt;
++
++&lt;xsl:template match=&quot;comments&quot;&gt;	
++	&lt;ul id=&quot;comments__{../id}&quot; class=&quot;commentList&quot;&gt;
+ 		&lt;xsl:apply-templates /&gt;
++	&lt;/ul&gt;
++&lt;/xsl:template&gt;
++
++&lt;xsl:template match=&quot;comment[not(@edit) or @edit='false']&quot;&gt;	
++	&lt;li&gt;
++		&lt;img src=&quot;images/comment_quote.png&quot; alt=&quot;&quot;&quot; align=&quot;left&quot; style=&quot;margin: 0 10px 0 0&quot; /&gt;&lt;xsl:value-of select=&quot;body&quot;/&gt;&#160;
++		&lt;img src=&quot;images/comment_edit.png&quot; id='editcomment__{id}' alt=&quot;Edit Comment&quot; title=&quot;Edit Comment&quot; class='editCommentLink clickable' /&gt;&#160;		
++		&lt;img src=&quot;images/comment_delete.png&quot; id='trashcomment__{id}' alt=&quot;Delete Comment&quot; title=&quot;Delete this Comment&quot; class='trashCommentLink clickable' /&gt;&#160;
++		&lt;p class=&quot;meta&quot;&gt;Posted on &lt;xsl:value-of select=&quot;posted-on&quot;/&gt; &lt;/p&gt;		
+ 	&lt;/li&gt;
+ &lt;/xsl:template&gt;
+ 
++&lt;!-- ====================================================================================  
++  COMMENT (EDIT MODE) 
++ ==================================================================================== --&gt;
++
++&lt;xsl:template match=&quot;comment[@edit='true']&quot;&gt;	
++	&lt;li&gt;
++		&lt;form method=&quot;post&quot; action=&quot;#&quot; id=&quot;comment__{id}&quot; class=&quot;editCommentForm&quot; &gt;
++			
++			&lt;xsl:if test=&quot;body&quot;&gt;
++				&lt;label for=&quot;commentbody&quot; class=&quot;preField&quot;&gt;Body: &lt;/label&gt;
++				&lt;textarea name=&quot;//comment[id='{id}']/body&quot; id=&quot;commentbody&quot;&gt;
++					&lt;xsl:value-of select=&quot;body&quot; /&gt;
++				&lt;/textarea&gt;
++			&lt;/xsl:if&gt;
++			
++			&lt;xsl:if test=&quot;posted-on&quot;&gt;
++				&lt;p class=&quot;meta&quot;&gt;Posted on: &lt;xsl:value-of select=&quot;posted-on&quot; /&gt;&lt;/p&gt;
++			&lt;/xsl:if&gt;
++			&lt;p&gt;
++				&lt;input type=&quot;hidden&quot; value=&quot;false&quot; name=&quot;//comment[id='{id}']/@synchronized&quot; /&gt;
++				&lt;input type=&quot;button&quot; value=&quot;cancel&quot; class=&quot;cancelAction&quot; /&gt;
++				&lt;input type=&quot;submit&quot; value=&quot;ok&quot; class=&quot;primaryAction&quot; /&gt;
++			&lt;/p&gt;
++		&lt;/form&gt;
++	&lt;/li&gt;
++&lt;/xsl:template&gt;
++
++
++
+ &lt;xsl:template match=&quot;text()&quot; /&gt;
+ &lt;/xsl:stylesheet&gt;
+\ No newline at end of file
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000061.html">[Freja-svn] r64 - trunk/src/auxiliary
+</A></li>
+	
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#62">[ date ]</a>
+              <a href="thread.html#62">[ thread ]</a>
+              <a href="subject.html#62">[ subject ]</a>
+              <a href="author.html#62">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/freja-svn">More information about the Freja-svn
+mailing list</a><br>
+</body></html>

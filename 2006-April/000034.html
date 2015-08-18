@@ -1,0 +1,594 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<HTML>
+ <HEAD>
+   <TITLE> [Freja-svn] r38 - in trunk: lib src src/auxiliary tests tests/data
+   </TITLE>
+   <LINK REL="Index" HREF="http://lists.berlios.de/pipermail/freja-svn/2006-April/index.html" >
+   <LINK REL="made" HREF="mailto:freja-svn%40lists.berlios.de?Subject=Re%3A%20%5BFreja-svn%5D%20r38%20-%20in%20trunk%3A%20lib%20src%20src/auxiliary%20tests%20tests/data&In-Reply-To=%3C200604100103.k3A13iih023784%40sheep.berlios.de%3E">
+   <META NAME="robots" CONTENT="index,nofollow">
+   <style type="text/css">
+       pre {
+           white-space: pre-wrap;       /* css-2.1, curent FF, Opera, Safari */
+           }
+   </style>
+   <META http-equiv="Content-Type" content="text/html; charset=us-ascii">
+   <LINK REL="Previous"  HREF="000033.html">
+   <LINK REL="Next"  HREF="000035.html">
+ </HEAD>
+ <BODY BGCOLOR="#ffffff">
+   <H1>[Freja-svn] r38 - in trunk: lib src src/auxiliary tests tests/data</H1>
+    <B>troelskn at BerliOS</B> 
+    <A HREF="mailto:freja-svn%40lists.berlios.de?Subject=Re%3A%20%5BFreja-svn%5D%20r38%20-%20in%20trunk%3A%20lib%20src%20src/auxiliary%20tests%20tests/data&In-Reply-To=%3C200604100103.k3A13iih023784%40sheep.berlios.de%3E"
+       TITLE="[Freja-svn] r38 - in trunk: lib src src/auxiliary tests tests/data">troelskn at berlios.de
+       </A><BR>
+    <I>Mon Apr 10 03:03:44 CEST 2006</I>
+    <P><UL>
+        <LI>Previous message: <A HREF="000033.html">[Freja-svn] r37 - trunk/src
+</A></li>
+        <LI>Next message: <A HREF="000035.html">[Freja-svn] r39 - in trunk/examples: contacts/views tutorial/views
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#34">[ date ]</a>
+              <a href="thread.html#34">[ thread ]</a>
+              <a href="subject.html#34">[ subject ]</a>
+              <a href="author.html#34">[ author ]</a>
+         </LI>
+       </UL>
+    <HR>  
+<!--beginarticle-->
+<PRE>Author: troelskn
+Date: 2006-04-10 03:02:51 +0200 (Mon, 10 Apr 2006)
+New Revision: 38
+
+Added:
+   trunk/src/auxiliary/mochi+sarissa.js
+Removed:
+   trunk/src/auxiliary/default.js
+Modified:
+   trunk/lib/Freja.js
+   trunk/src/View.js
+   trunk/tests/data/form-view.xsl
+   trunk/tests/test_Freja-Model.html
+   trunk/tests/test_Model.js
+   trunk/tests/test_View.js
+Log:
+fixed tests which were broken.
+
+Modified: trunk/lib/Freja.js
+===================================================================
+--- trunk/lib/Freja.js	2006-04-07 03:50:32 UTC (rev 37)
++++ trunk/lib/Freja.js	2006-04-10 01:02:51 UTC (rev 38)
+@@ -2,7 +2,7 @@
+ 
+     Freja 2.0.alpha
+ 
+-    Build $Thu, 6 Apr 2006 02:50:39 UTC$
++    Build $Mon, 10 Apr 2006 01:00:19 UTC$
+ 
+     Target: minimal
+ 
+@@ -85,7 +85,7 @@
+ 	if (!elem) v = document;
+ 	var names = [];
+ 	var values = [];
+-	var inputs = elem.getElementsByTagNames(&quot;INPUT&quot;);
++	var inputs = elem.getElementsByTagName(&quot;INPUT&quot;);
+ 	for (var i = 0; i &lt; inputs.length; ++i) {
+ 		var input = inputs[i];
+ 		if (input.name) {
+@@ -100,7 +100,7 @@
+ 			}
+ 		}
+ 	}
+-	var textareas = elem.getElementsByTagNames(&quot;TEXTAREA&quot;);
++	var textareas = elem.getElementsByTagName(&quot;TEXTAREA&quot;);
+ 	for (var i = 0; i &lt; textareas.length; ++i) {
+ 		var input = textareas[i];
+ 		if (input.name) {
+@@ -108,7 +108,7 @@
+ 			values.push(input.value);
+ 		}
+ 	}
+-	var selects = elem.getElementsByTagNames(&quot;SELECT&quot;);
++	var selects = elem.getElementsByTagName(&quot;SELECT&quot;);
+ 	for (var i = 0; i &lt; selects.length; ++i) {
+ 		var input = textareas[i];
+ 		if (input.name) {
+@@ -330,13 +330,14 @@
+ 	this._pending = null;
+ };
+ Freja._aux.Deferred.prototype.callback = function() {
+-	if (this._good.length == 0) {
++	if (this._good.length == 0) {	
+ 		this._pending = [this.callback, arguments];
+ 		return;
+ 	}
+ 	for (var i=0; i &lt; this._good.length; i++) {
+-		this._good[i].apply(window, arguments);
++		this._good[i].apply(window, arguments);		
+ 	}
++	this._good = [];
+ };
+ Freja._aux.Deferred.prototype.errback = function() {
+ 	if (this._bad.length == 0) {
+@@ -346,11 +347,11 @@
+ 	for (var i=0; i &lt; this._bad.length; i++) {
+ 		this._bad[i].apply(window, arguments);
+ 	}
++	this._bad = [];
+ };
+ Freja._aux.Deferred.prototype.addCallbacks = function(fncOK, fncError) {
+ 	if (fncOK) this._good[this._good.length] = fncOK;
+ 	if (fncError) this._bad[this._bad.length] = fncError;
+-
+ 	if (this._pending) {
+ 		this._pending[0].apply(this, this._pending[1]);
+ 	}
+@@ -359,16 +360,21 @@
+ 	this.addCallbacks(fncOK);
+ };
+ Freja._aux.Deferred.prototype.addErrback = function(fncError) {
+-	this.addCallbacks(null, fncOK);
++	this.addCallbacks(null, fncError);
+ };
+ if (document.implementation &amp;&amp; document.implementation.hasFeature(&quot;XPath&quot;, &quot;3.0&quot;)) {
+ 	XMLDocument.prototype.selectNodes = function(sExpr, contextNode) {
+ 		var nsDoc = this;
+ 		var nsresolver = this.createNSResolver(this.documentElement);
+-		var oResult = this.evaluate(sExpr,
+-			(contextNode ? contextNode : this),
+-			nsresolver,
+-			XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
++		
++		try {
++			var oResult = this.evaluate(sExpr,
++				(contextNode ? contextNode : this),
++				nsresolver,
++				XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
++		} catch(e) {
++			throw new Error(&quot;Can't evaluate expression &quot; + sExpr);
++		}
+ 		var nodeList = new Array(oResult.snapshotLength);
+ 		nodeList.item = function(i) {
+ 			return (i &lt; 0 || i &gt;= this.length) ? null : this[i];
+@@ -421,10 +427,15 @@
+ 	}
+ };
+ Freja.QueryEngine.prototype.get = function(document, expression) {
+-	return this._find(document, expression).nodeValue;
++	var node = this._find(document, expression);
++	if(node) return node.nodeValue;
++	return null;
+ };
+ Freja.QueryEngine.prototype.set = function(document, expression, value) {
+-	this._find(document, expression).nodeValue = value;
++	var node = this._find(document, expression);	
++	if(node) {
++		node.nodeValue = value;
++	}
+ };
+ /**
+   * XPath query engine.
+@@ -439,8 +450,15 @@
+ 		return node.firstChild;
+ 	} else if (node &amp;&amp; node.firstChild &amp;&amp; node.firstChild.nodeType == 4) {
+ 		return node.firstChild;
++	} else if (node &amp;&amp; !node.firstChild) {
++		// this is an empty node &lt;tag /&gt;. When using 'get' it's fine to return null,
++		// but for 'set', we need to create a textnode somewhere.
++		// for lack of better idea, will do it here.
++		var n = document.createTextNode('');
++		return node.appendChild(n);
+ 	}
+-	throw new Error(&quot;Can't evaluate expression &quot; + expression);
++//	throw new Error(&quot;Can't evaluate expression &quot; + expression);
++	return null;
+ };
+ /**
+   * SimplePath
+@@ -634,15 +652,15 @@
+   */
+ Freja.View.prototype.render = function(model, placeholder, xslParameters) {
+ 	if (typeof(placeholder) == &quot;undefined&quot;) placeholder = this.placeholder;
++	if (typeof(xslParameters) == &quot;undefined&quot;) xslParameters = this.xslParameters;
+ 
+-	var Handler = function(model, view, deferred) {
++	var Handler = function(model, view, deferred, xslParameters) {
+ 		this.model = model;
+ 		this.view = view;
+ 		this.deferred = deferred;
++		this.xslParameters = xslParameters;
+ 	};
+-
+ 	Handler.prototype.trigger = function() {
+-	
+ 		try {
+ 			if (!this.view.ready) {
+ 				Freja._aux.connect(this.view, &quot;onload&quot;, Freja._aux.bind(this.trigger, this));
+@@ -662,14 +680,15 @@
+ 				// wrap pojo's in
+ 				model = { document : Freja._aux.loadXML(&quot;&lt;?xml version='1.0' ?&gt;\n&quot; + Freja._aux.xmlize(this.model, &quot;item&quot;)) };
+ 			}
+-			var trans = this.view._renderer.transform(model, this.view, xslParameters);
++
++			var trans = this.view._renderer.transform(model, this.view, this.xslParameters);
+ 			trans.addCallback(Freja._aux.bind(function(html) {
+ 				this._destination.innerHTML = html;
+ 			}, this.view));
+ 			trans.addCallback(Freja._aux.bind(function() {
+ 				Freja._aux.signal(this, &quot;onrendercomplete&quot;, this._destination)
+ 			}, this.view));
+-			//trans.addCallback(this.deferred.callback);
++			trans.addCallback(this.deferred.callback);
+ 			trans.addErrback(this.deferred.errback);
+ 		} catch (ex) {
+ 			this.deferred.errback(ex);
+@@ -683,7 +702,7 @@
+ 		// Perhaps we should leave it to the programmer to do this.
+ 		this._destination.innerHTML = Freja.AssetManager.THROBBER_HTML;
+ 
+-		var h = new Handler(model, this, d);
++		var h = new Handler(model, this, d, xslParameters);
+ 		h.trigger();
+ 	} catch (ex) {
+ 		d.errback(ex);
+@@ -698,7 +717,7 @@
+ Freja.View.prototype._connectBehaviour = function(destination) {
+ 	try {
+ 		var connectCallback = function(node, eventType, callback) {
+-		
++
+ 			Freja._aux.connect(node, eventType, Freja._aux.bind(
+ 				function(e) {
+ 					var allow = false;
+@@ -715,12 +734,12 @@
+ 			);
+ 		};
+ 		var applyHandlers = function(node, handlers) {
+-			
++
+ 			for (var i = 0, c = node.childNodes, l = c.length; i &lt; l; ++i) {
+ 				var child = c[i];
+ 				if (child.nodeType == 1) {
+-					var id = child.getAttribute(&quot;id&quot;);
+-					if (id != &quot;&quot;) {				
++					var id = child.getAttribute(&quot;freja:behaviour&quot;);
++					if (id != &quot;&quot;) {
+ 						var handler = handlers[id];
+ 						if (handler) {
+ 							for (var eventType in handler) {
+@@ -736,14 +755,14 @@
+ 				}
+ 			}
+ 		};
+-		
++
+ 		// Avoid traversing the DOM tree if there's no handler to process.
+ 		// @note: is there a better way? this.handlers.length is always 0.
+ 		for (var ids in this.handlers) {
+ 			applyHandlers(destination, this.handlers);
+ 			break;
+-		}	
+-		
++		}
++
+ 	} catch (ex) {
+ 		alert(ex.message);
+ 	}
+@@ -752,7 +771,7 @@
+   * Returns the values of a formview
+   */
+ Freja.View.prototype.getValues = function() {
+-	return formContents(this._destination);
++	return Freja._aux.formContents(this._destination);
+ };
+ /**
+   * Base object for viewrenderers
+@@ -776,7 +795,10 @@
+ 			// fix empty textareas
+ 			// Can't this be fixed by outputting as html rather than xml ?
+ 			// &lt;xsl:output method=&quot;html&quot; /&gt;
+-			html = html.replace(/&lt;textarea([^\/&gt;]*)\/&gt;/gi,&quot;&lt;textarea $1&gt;&lt;/textarea&gt;&quot;);
++			// (cedsav) don't remember all the details but method=&quot;xml&quot; is the way to go.
++			// method=&quot;html&quot; would output html not xhtml, plus I think it implies that
++			// you want to output a valid html document (with html, head and body tags).
++			html = html.replace(/&lt;textarea([^&gt;]*)\/&gt;/gi,&quot;&lt;textarea $1&gt;&lt;/textarea&gt;&quot;);
+ 			d.callback(html);
+ 		}
+ 	} catch (ex) {
+
+Modified: trunk/src/View.js
+===================================================================
+--- trunk/src/View.js	2006-04-07 03:50:32 UTC (rev 37)
++++ trunk/src/View.js	2006-04-10 01:02:51 UTC (rev 38)
+@@ -48,10 +48,10 @@
+ 				// wrap pojo's in
+ 				model = { document : Freja._aux.loadXML(&quot;&lt;?xml version='1.0' ?&gt;\n&quot; + Freja._aux.xmlize(this.model, &quot;item&quot;)) };
+ 			}
+-			
++
+ 			var trans = this.view._renderer.transform(model, this.view, this.xslParameters);
+-			trans.addCallback(Freja._aux.bind(function(html) {									
+-				this._destination.innerHTML = html;				
++			trans.addCallback(Freja._aux.bind(function(html) {
++				this._destination.innerHTML = html;
+ 			}, this.view));
+ 			trans.addCallback(Freja._aux.bind(function() {
+ 				Freja._aux.signal(this, &quot;onrendercomplete&quot;, this._destination)
+@@ -85,7 +85,7 @@
+ Freja.View.prototype._connectBehaviour = function(destination) {
+ 	try {
+ 		var connectCallback = function(node, eventType, callback) {
+-		
++
+ 			Freja._aux.connect(node, eventType, Freja._aux.bind(
+ 				function(e) {
+ 					var allow = false;
+@@ -102,12 +102,12 @@
+ 			);
+ 		};
+ 		var applyHandlers = function(node, handlers) {
+-			
++
+ 			for (var i = 0, c = node.childNodes, l = c.length; i &lt; l; ++i) {
+ 				var child = c[i];
+ 				if (child.nodeType == 1) {
+-					var id = child.getAttribute(&quot;id&quot;);
+-					if (id != &quot;&quot;) {				
++					var id = child.getAttribute(&quot;freja:behaviour&quot;);
++					if (id != &quot;&quot;) {
+ 						var handler = handlers[id];
+ 						if (handler) {
+ 							for (var eventType in handler) {
+@@ -123,14 +123,14 @@
+ 				}
+ 			}
+ 		};
+-		
++
+ 		// Avoid traversing the DOM tree if there's no handler to process.
+ 		// @note: is there a better way? this.handlers.length is always 0.
+ 		for (var ids in this.handlers) {
+ 			applyHandlers(destination, this.handlers);
+ 			break;
+-		}	
+-		
++		}
++
+ 	} catch (ex) {
+ 		alert(ex.message);
+ 	}
+
+Deleted: trunk/src/auxiliary/default.js
+===================================================================
+--- trunk/src/auxiliary/default.js	2006-04-07 03:50:32 UTC (rev 37)
++++ trunk/src/auxiliary/default.js	2006-04-10 01:02:51 UTC (rev 38)
+@@ -1,132 +0,0 @@
+-/**
+-  * Freja._aux
+-  * wrapper for external dependencies (frameworks).
+-  *
+-  * This is the default auxiliary adapter. It bridges Freja to MochiKit + Sarissa
+-  *
+-  * You shouldn't rely on this functionality - it's merely a hook for Freja towards
+-  * external dependencies. This is the only part of the application you'll need to
+-  * adjust, to make Freja play ball with your favourite framework.
+-  */
+-if (typeof(dojo) != &quot;undefined&quot;) {
+-	dojo.require(&quot;MochiKit.Base&quot;);
+-	dojo.require(&quot;MochiKit.Signal&quot;);
+-	dojo.require(&quot;MochiKit.Async&quot;);
+-	dojo.require(&quot;Sarissa&quot;);
+-}
+-if (typeof(JSAN) != &quot;undefined&quot;) {
+-	JSAN.use(&quot;MochiKit.Base&quot;, []);
+-	JSAN.use(&quot;MochiKit.Signal&quot;, []);
+-	JSAN.use(&quot;MochiKit.Async&quot;, []);
+-	JSAN.use(&quot;Sarissa&quot;, []);
+-}
+-try {
+-	if (typeof(MochiKit.Base) == &quot;undefined&quot;) {
+-		throw &quot;&quot;;
+-	}
+-	if (typeof(MochiKit.Signal) == &quot;undefined&quot;) {
+-		throw &quot;&quot;;
+-	}
+-	if (typeof(MochiKit.Async) == &quot;undefined&quot;) {
+-		throw &quot;&quot;;
+-	}
+-	if (typeof(Sarissa) == &quot;undefined&quot;) {
+-		throw &quot;&quot;;
+-	}
+-} catch (e) {
+-	throw new Error(&quot;Freja depends on MochiKit.Base, MochiKit.Signal, MochiKit.Async and Sarissa!&quot;);
+-}
+-if (typeof(Freja) == &quot;undefined&quot;) {
+-	Freja = {};
+-}
+-Freja._aux = {};
+-/** bind(func, self) : function */
+-Freja._aux.bind = MochiKit.Base.bind;
+-/** formContents(elem) : Array */
+-Freja._aux.formContents = MochiKit.DOM.formContents;
+-/** getElement(id) : HTMLElement */
+-Freja._aux.getElement = MochiKit.DOM.getElement;
+-
+-/** registerSignals(src, signals) : void */
+-Freja._aux.registerSignals = MochiKit.Signal.registerSignals;
+-/** connect(src, signal, fnc) : void */
+-Freja._aux.connect = MochiKit.Signal.connect;
+-/** signal(src, signal, arg) : void */
+-Freja._aux.signal = MochiKit.Signal.signal;
+-/** createDeferred() : Deferred */
+-Freja._aux.createDeferred = function() {
+-	return new MochiKit.Async.Deferred();
+-};
+-/** openXMLHttpRequest(method, url, async, user, pass) : XMLHttpRequest */
+-Freja._aux.openXMLHttpRequest = function(method, url, async, user, pass) {
+-	var req = new XMLHttpRequest();
+-	if (user &amp;&amp; pass) {
+-		req.open(method, url, async, user, pass);
+-	} else {
+-		req.open(method, url, async);
+-	}
+-	if (method == &quot;POST&quot; || method == &quot;PUT&quot;) {
+-		req.setRequestHeader(&quot;Content-Type&quot;, &quot;application/x-www-form-urlencoded&quot;);
+-	}
+-	return req;
+-};
+-/** sendXMLHttpRequest(req, sendContent) : Deferred */
+-Freja._aux.sendXMLHttpRequest = MochiKit.Async.sendXMLHttpRequest;
+-/** xmlize(anyObject, objectName) : string */
+-Freja._aux.xmlize = Sarissa.xmlize;
+-/** serializeXML(node) : string */
+-Freja._aux.serializeXML = Sarissa.serialize;
+-/** loadXML(string) : XMLDocument */
+-Freja._aux.loadXML = function(text) {
+-	return (new DOMParser()).parseFromString(text, &quot;text/xml&quot;);
+-};
+-/** transformXSL(XMLDocument, XSLDocument) : string */
+-Freja._aux.transformXSL = function(xml, xsl) {
+-	var processor = new XSLTProcessor();
+-	processor.importStylesheet(xsl);
+-	return Freja._aux.serializeXML(processor.transformToDocument(xml));
+-
+-};
+-/** cloneXMLDocument(document) : XMLDocument */
+-Freja._aux.cloneXMLDocument = function(xmlDoc) {
+-	var clone = null;
+-	try {
+-		clone = xmlDoc.cloneNode(true);
+-	} catch(e) { /* squelch */ }
+-
+-	// Can't clone a DocumentNode in Safari &amp; Opera. Let's try something else.
+-	// @note Wouldn't it be easier to serialize the document to string and the parse it to a new document ?
+-	if (!clone) {
+-		if (document.implementation &amp;&amp; document.implementation.createDocument) {
+-			clone = document.implementation.createDocument(&quot;&quot;, xmlDoc.documentElement.nodeName, null);
+-			// importNode is not safe in Safari ! the source document is altered. used cloneNode to fix the prblm
+-			var data = clone.importNode(xmlDoc.documentElement.cloneNode(true), true);
+-			try {
+-				clone.appendChild(data);
+-			} catch(e) {
+-				// Opera has already created a documentElement and can't append another root node
+-				var rootNode = clone.documentElement;
+-				for (var i = data.childNodes.length; i &gt;= 0; i--) {
+-					rootNode.insertBefore(data.childNodes[i], rootNode.firstChild);
+-				}
+-				// need to copy root node attributes
+-				for (var i = 0; i &lt; xmlDoc.documentElement.attributes.length; i++) {
+-					var name  = xmlDoc.documentElement.attributes.item(i).name;
+-					var value = xmlDoc.documentElement.attributes.item(i).value;
+-					clone.documentElement.setAttribute(name, value);
+-				}
+-			}
+-		}
+-	}
+-	return clone;
+-};
+-/** hasSupportForXSLT() : boolean */
+-Freja._aux.hasSupportForXSLT = function() { return (typeof(XSLTProcessor) != &quot;undefined&quot;); };
+-/** createQueryEngine() : Freja.QueryEngine */
+-Freja._aux.createQueryEngine = function() {
+-	if (Sarissa.IS_ENABLED_SELECT_NODES) {
+-		return new Freja.QueryEngine.XPath();
+-	} else {
+-		return new Freja.QueryEngine.SimplePath();
+-	}
+-};
+
+Copied: trunk/src/auxiliary/mochi+sarissa.js (from rev 37, trunk/src/auxiliary/default.js)
+
+Modified: trunk/tests/data/form-view.xsl
+===================================================================
+--- trunk/tests/data/form-view.xsl	2006-04-07 03:50:32 UTC (rev 37)
++++ trunk/tests/data/form-view.xsl	2006-04-10 01:02:51 UTC (rev 38)
+@@ -1,12 +1,15 @@
+ &lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+-&lt;xsl:stylesheet version=&quot;1.0&quot; xmlns:xsl=&quot;<A HREF="http://www.w3.org/1999/XSL/Transform">http://www.w3.org/1999/XSL/Transform</A>&quot;&gt;
++&lt;xsl:stylesheet version=&quot;1.0&quot;
++	xmlns:xsl=&quot;<A HREF="http://www.w3.org/1999/XSL/Transform">http://www.w3.org/1999/XSL/Transform</A>&quot;
++	xmlns:freja=&quot;<A HREF="http://formassembly.com/freja">http://formassembly.com/freja</A>&quot;
++&gt;
+ 
+ &lt;xsl:template match=&quot;item&quot;&gt;	
+-	&lt;form method=&quot;post&quot; handler=&quot;form&quot;&gt;
++	&lt;form method=&quot;post&quot; freja:behaviour=&quot;form&quot;&gt;
+ 		&lt;h3&gt;&lt;input name=&quot;item/name&quot; type=&quot;text&quot; value=&quot;{name}&quot; /&gt;&lt;/h3&gt;
+ 		&lt;p&gt;&lt;textarea name=&quot;item/description&quot;&gt;&lt;xsl:value-of select=&quot;description&quot; /&gt;&lt;/textarea&gt;&lt;/p&gt;
+ 		&lt;p&gt;&lt;input name=&quot;item/price&quot; type=&quot;text&quot; value=&quot;{price}&quot; /&gt;&lt;/p&gt;
+-		&lt;input type=&quot;submit&quot; value=&quot;ok&quot; handler=&quot;form-submit&quot; id=&quot;form-submit&quot; /&gt;
++		&lt;input type=&quot;submit&quot; value=&quot;ok&quot; freja:behaviour=&quot;form-submit&quot; id=&quot;form-submit&quot; /&gt;
+ 	&lt;/form&gt;
+ &lt;/xsl:template&gt;
+ 
+
+Modified: trunk/tests/test_Freja-Model.html
+===================================================================
+--- trunk/tests/test_Freja-Model.html	2006-04-07 03:50:32 UTC (rev 37)
++++ trunk/tests/test_Freja-Model.html	2006-04-10 01:02:51 UTC (rev 38)
+@@ -3,9 +3,7 @@
+     &lt;!-- MochiKit is needed by SimpleTest --&gt;
+     &lt;script type=&quot;text/javascript&quot; src=&quot;../lib/MochiKit.js&quot;&gt;&lt;/script&gt;
+     &lt;script type=&quot;text/javascript&quot; src=&quot;SimpleTest/SimpleTest.js&quot;&gt;&lt;/script&gt;
+-&lt;!--
+     &lt;script type=&quot;text/javascript&quot; src=&quot;../lib/Sarissa.js&quot;&gt;&lt;/script&gt;
+---&gt;
+     &lt;script type=&quot;text/javascript&quot; src=&quot;../lib/Freja.js&quot;&gt;&lt;/script&gt;
+     &lt;link rel=&quot;stylesheet&quot; type=&quot;text/css&quot; href=&quot;SimpleTest/test.css&quot;&gt;
+ &lt;/head&gt;
+
+Modified: trunk/tests/test_Model.js
+===================================================================
+--- trunk/tests/test_Model.js	2006-04-07 03:50:32 UTC (rev 37)
++++ trunk/tests/test_Model.js	2006-04-10 01:02:51 UTC (rev 38)
+@@ -4,6 +4,8 @@
+ 
+ tests.test_Model = function (t) {
+ 	// test of SimplePath (XPath query replacement)
++	t.ok(typeof(Freja) == &quot;object&quot;);
++
+ 	var q = new Freja.QueryEngine.SimplePath();
+ 	var doc = document.createElement(&quot;DIV&quot;);
+ 	var span = document.createElement(&quot;SPAN&quot;);
+
+Modified: trunk/tests/test_View.js
+===================================================================
+--- trunk/tests/test_View.js	2006-04-07 03:50:32 UTC (rev 37)
++++ trunk/tests/test_View.js	2006-04-10 01:02:51 UTC (rev 38)
+@@ -15,8 +15,9 @@
+ 	var out = document.createElement(&quot;DIV&quot;);
+ 	view.render(model, out);
+ 
+-	t.is(out.getElementsByTagName(&quot;H3&quot;).length, 1);
+-	t.is(out.getElementsByTagName(&quot;H3&quot;).item(0).firstChild.nodeValue, model.get(&quot;item/name&quot;), &quot;Rendered view should contain the models value&quot;);
++//	alert(out.innerHTML);
++	t.is(out.getElementsByTagName(&quot;H3&quot;).length, 1, &quot;The rendered view should contain 1 H3 tag&quot;);
++	t.is(out.getElementsByTagName(&quot;H3&quot;).item(0).firstChild.nodeValue, model.get(&quot;item/name&quot;), &quot;Rendered view should contain the model's value&quot;);
+ 
+ 	// test of pojo model
+ 	Freja.AssetManager.clearCache();
+
+
+</PRE>
+
+<!--endarticle-->
+    <HR>
+    <P><UL>
+        <!--threads-->
+	<LI>Previous message: <A HREF="000033.html">[Freja-svn] r37 - trunk/src
+</A></li>
+	<LI>Next message: <A HREF="000035.html">[Freja-svn] r39 - in trunk/examples: contacts/views tutorial/views
+</A></li>
+         <LI> <B>Messages sorted by:</B> 
+              <a href="date.html#34">[ date ]</a>
+              <a href="thread.html#34">[ thread ]</a>
+              <a href="subject.html#34">[ subject ]</a>
+              <a href="author.html#34">[ author ]</a>
+         </LI>
+       </UL>
+
+<hr>
+<a href="https://lists.berlios.de/mailman/listinfo/freja-svn">More information about the Freja-svn
+mailing list</a><br>
+</body></html>
